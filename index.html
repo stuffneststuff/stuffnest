@@ -1,0 +1,1657 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>𝕾𝖙𝖚𝖋𝖋𝖓𝖊𝖘𝖙</title>
+    <link id="dynamic-favicon" rel="icon" type="image/png" href="https://lh3.googleusercontent.com/sitesv/AAzXCkdooyvQa4VchjEeV9bKMfWOGoUOq8ys0wkiNq4nmFiIW6DszHG8cRIH5ZEPPFk2wMcw5-WwSZmnrQi0_iFYbcAxeNvJlgOQAtKrfYzwK0x1noX5ToMTj_yXASRnHCpnhgoVLzr2tI9EJDjF9wFQx3wMKNrM45NbTU1UqMc-2YuuzcNotekvd4g98i8=w16383">  
+
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Particles.js for the background effect -->
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <!-- Confetti library for the "Happy New Year" effect -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.4.0/dist/confetti.browser.min.js"></script>
+    <!-- Three.js for 3D rendering -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+  /* Custom cursor for entire page and interactive elements */
+  body, button, a, input, textarea {
+    cursor: url('https://cdn-icons-png.flaticon.com/512/32/32195.png') 0 0, auto;
+  }
+</style>
+
+    <style>
+    #header-clock:hover #digital-clock {
+  opacity: 0;
+}
+#header-clock:hover #analog-clock {
+  opacity: 1;
+}
+
+    body, button, a, input, textarea {
+  cursor: url('https://cur.cursors-4u.net/cursors/cur-11/cur1057.cur'), auto;
+}
+
+      /* Custom cursor for entire page and interactive elements */
+  body, button, a, input, textarea {
+    cursor: url('https://cdn-icons-png.flaticon.com/512/32/32195.png') 0 0, auto;
+  }
+        /* Custom font import for a clean look */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden; /* Prevents horizontal scroll from particle animation 
+            transition: all 0.5s ease-in-out;
+        }
+        /* Retro theme for the hidden toggle */
+        body.retro-theme {
+            background-color: #f1f1f1;
+            color: #1a1a1a;
+        }
+        body.retro-theme .bg-gray-900 {
+            background-color: #e0e0e0;
+        }
+        body.retro-theme .bg-gray-800 {
+            background-color: #d1d1d1;
+        }
+        body.retro-theme .bg-gray-700 {
+            background-color: #c0c0c0;
+        }
+        body.retro-theme .text-gray-300 {
+            color: #333;
+        }
+        body.retro-theme .text-gray-400 {
+            color: #555;
+        }
+        body.retro-theme .hero-content {
+            filter: none;
+        }
+        /* Developer mode theme */
+        body.dev-mode {
+            background-color: #2e1065;
+            color: #f0f9ff;
+        }
+        body.dev-mode .bg-gray-900 {
+            background-color: #2e1065;
+        }
+        body.dev-mode .bg-gray-800 {
+            background-color: #4c1d95;
+        }
+        body.dev-mode .bg-gray-700 {
+            background-color: #6d28d9;
+        }
+        body.dev-mode .text-gray-300, body.dev-mode .text-gray-400 {
+            color: #e0e7ff;
+        }
+
+        /* Animation for fade-in effect on scroll */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .fade-in.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        /* Style for Particles.js container */
+        #particles-js {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 0;
+            background-color: #111827; /* Match hero section background */
+        }
+        .hero-content {
+            position: relative;
+            z-index: 10;
+        }
+        /* Full-screen canvas for fireworks animation */
+        #fireworks-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            pointer-events: none; /* Allows clicks to pass through */
+        }
+        /* Developer Console Overlay */
+        #dev-console, #secret-message-modal, #dev-mode-modal, #about-secret-modal, #time-secret-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 10000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        #dev-console-content, #secret-message-modal-content, #dev-mode-modal-content, #about-secret-modal-content, #time-secret-modal-content {
+            background-color: #1f2937;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            max-width: 600px;
+            width: 90%;
+            position: relative;
+            border: 2px solid #3b82f6;
+            color: #d1d5db;
+            text-align: center;
+        }
+        .close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+            transition: color 0.2s;
+        }
+        .close-btn:hover {
+            color: #d1d5db;
+        }
+        .dev-detail {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #374151;
+        }
+        /* Animation for the hero heading when the easter egg is triggered */
+        @keyframes rainbow-glow {
+            0%, 100% { color: #f9a8d4; text-shadow: 0 0 5px #f9a8d4; }
+            16% { color: #818cf8; text-shadow: 0 0 5px #818cf8; }
+            33% { color: #38bdf8; text-shadow: 0 0 5px #38bdf8; }
+            50% { color: #34d399; text-shadow: 0 0 5px #34d399; }
+            66% { color: #fbbf24; text-shadow: 0 0 5px #fbbf24; }
+            83% { color: #fb7185; text-shadow: 0 0 5px #fb7185; }
+        }
+        .hero-heading-glow {
+            animation: rainbow-glow 4s ease-in-out infinite;
+        }
+        /* Animation for a temporary space launch effect */
+        @keyframes starfield-move {
+            from { transform: translateY(0); }
+            to { transform: translateY(200%); }
+        }
+        .starfield-launch {
+            animation: starfield-move 1s linear infinite;
+        }
+        /* New CSS for the time warp effect */
+        .time-warped {
+            filter: hue-rotate(180deg) saturate(150%) contrast(120%);
+        }
+        /* New CSS for nav bar mini-konami effect */
+        .nav-glow {
+            box-shadow: 0 0 15px rgba(128, 0, 128, 0.8);
+            border-bottom: 2px solid purple;
+        }
+        /* Styles for the 3D scroll section */
+        #three-d-scroll-section {
+            height: 80vh; /* Give it enough height to scroll */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden; /* Hide overflow from canvas */
+            background-color: #1a1a1a;
+            flex-direction: column;
+            padding: 2rem;
+        }
+        #three-d-canvas-container {
+            width: 100%;
+            max-width: 800px;
+            height: 100%;
+            max-height: 600px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        #three-d-canvas {
+            display: block;
+            width: 100% !important; /* Override Three.js inline styles */
+            height: 100% !important;
+        }
+        /* Styles for the 2D expanding image section */
+        #expanding-image-section {
+            height: 70vh; /* Give it enough height to scroll */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #2d3748;
+            padding: 2rem;
+            flex-direction: column;
+        }
+        #expanding-image {
+            width: 50px; /* Initial small size */
+            height: 50px;
+            object-fit: contain;
+            transform: scale(0.1); /* Start very small */
+            transition: transform 0.1s ease-out; /* Smooth scaling */
+        }
+    </style>
+    
+</head>
+<body class="bg-gray-900 text-white leading-relaxed">
+  <style>
+  /* Custom cursor for entire page and interactive elements */
+  body, button, a, input, textarea {
+    cursor: url('https://cdn-icons-png.flaticon.com/512/32/32195.png') 0 0, auto;
+  }
+</style>
+
+
+    <!-- Developer Console Overlay -->
+    <div id="dev-console" class="hidden">
+        <div id="dev-console-content">
+            <button class="close-btn" id="close-dev-console">&times;</button>
+            <h2 class="text-3xl font-bold text-center mb-6 text-blue-400">Developer Details</h2>
+            <div class="space-y-4">
+                <div class="dev-detail">
+                    <span class="font-semibold text-gray-300">App ID:</span>
+                    <span id="dev-app-id" class="text-gray-400">Loading...</span>
+                </div>
+                <div class="dev-detail">
+                    <span class="font-semibold text-gray-300">User ID:</span>
+                    <span id="dev-user-id" class="text-gray-400">Loading...</span>
+                </div>
+                <div class="dev-detail">
+                    <span class="font-semibold text-gray-300">Current Time:</span>
+                    <span id="dev-time" class="text-gray-400">Loading...</span>
+                </div>
+                <div class="dev-detail">
+                    <span class="font-semibold text-gray-300">Viewport Size:</span>
+                    <span id="dev-viewport" class="text-gray-400">Loading...</span>
+                </div>
+                <div class="dev-detail">
+                    <span class="font-semibold text-gray-300">Browser User-Agent:</span>
+                    <span id="dev-user-agent" class="text-gray-400">Loading...</span>
+                </div>
+                <button id="refresh-dev-details" class="mt-4 w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors">Refresh Details</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Secret Message Modal for Konami Code -->
+    <div id="secret-message-modal" class="hidden">
+        <div id="secret-message-modal-content">
+            <button class="close-btn" id="close-secret-message">&times;</button>
+            <h3 class="text-3xl font-bold text-yellow-400 mb-4">You found the secret!</h3>
+            <p class="text-lg text-gray-300">Looks like you know a thing or two about gaming history. Congratulations!</p>
+        </div>
+    </div>
+
+    <!-- Developer Mode Modal -->
+    <div id="dev-mode-modal" class="hidden">
+        <div id="dev-mode-modal-content">
+            <button class="close-btn" id="close-dev-mode">&times;</button>
+            <h3 class="text-3xl font-bold text-green-400 mb-4">Developer Mode Unlocked!</h3>
+            <p class="text-lg text-gray-300">Welcome, explorer. A new path has been revealed.</p>
+        </div>
+    </div>
+
+    <!-- About Secret Modal -->
+    <div id="about-secret-modal" class="hidden">
+        <div id="about-secret-modal-content">
+            <button class="close-btn" id="close-about-secret">&times;</button>
+            <h3 class="text-3xl font-bold text-purple-400 mb-4">About Us (Secret Edition)</h3>
+            <p class="text-lg text-gray-300">We're just a bunch of pixels, bytes, and dreams, bringing you endless fun!</p>
+        </div>
+    </div>
+
+    <!-- Time Secret Modal -->
+    <div id="time-secret-modal" class="hidden">
+        <div id="time-secret-modal-content">
+            <button class="close-btn" id="close-time-secret">&times;</button>
+            <h3 class="text-3xl font-bold text-red-400 mb-4">The Stars Align!</h3>
+            <p class="text-lg text-gray-300">You've arrived at the perfect moment. The cosmos greets you!</p>
+        </div>
+    </div>
+    
+    <!-- Header Section -->
+    <header class="bg-gray-800 shadow-lg sticky top-0 z-50">
+        <nav id="nav-bar" class="container mx-auto px-4 py-4 flex justify-between items-center flex-wrap">
+            <!-- Logo/Site Title -->
+            <div class="relative group">
+                <a href="#" class="text-3xl font-extrabold text-blue-400 hover:text-blue-300 transition-colors duration-300">
+                    Stuffnest
+                </a>
+                <!-- Hidden Credits button -->
+                <button id="secret-credits-btn" class="absolute inset-0 w-full h-full opacity-0 z-50 cursor-pointer"></button>
+            </div>
+            
+            <!-- Music and Search Container -->
+            <div class="flex items-center space-x-4 mt-2 md:mt-0 order-3 md:order-2">
+        
+                <!-- Music Toggle Button -->
+                <button id="music-toggle" class="p-2 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors duration-300">
+                    <svg id="music-icon" class="w-6 h-6 text-gray-300" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18.571 5.923a1.429 1.429 0 00-2-1.282l-3.571 2.5v-2.5a1.429 1.429 0 00-2.857 0v5.572a1.429 1.429 0 00-1.429 1.429c0 .788.641 1.428 1.429 1.428s1.428-.64 1.428-1.428V8.714l3.571-2.5v5.572a1.429 1.429 0 00-1.429 1.429c0 .788.641 1.428 1.429 1.428s1.429-.64 1.429-1.428V7.205a1.429 1.429 0 001.429 1.428c0 .788.641 1.429 1.429 1.429s1.429-.641 1.429-1.429V5.923zM9.429 12.143a1.429 1.429 0 110-2.857 1.429 1.429 0 010 2.857z"/>
+                    </svg>
+                </button>
+                <!-- Secret Theme Toggle Button -->
+                <button id="secret-theme-toggle" class="absolute top-0 right-0 w-8 h-8 opacity-0 z-50"></button>
+                <!-- Search Bar -->
+                <div class="relative w-40 md:w-64">
+                    <input id="search-input" type="text" placeholder="Search games..." class="w-full bg-gray-700 text-gray-300 rounded-full py-2 pl-4 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <button id="search-button" class="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 focus:outline-none">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <div class="hidden md:flex space-x-6 text-lg order-2 md:order-3">
+                <a href="#" class="text-gray-300 hover:text-white hover:underline transition-colors duration-300">Home</a>
+                <a href="#" class="text-gray-300 hover:text-white hover:underline transition-colors duration-300">Games</a>
+                <a href="#" id="about-link" class="text-gray-300 hover:text-white hover:underline transition-colors duration-300">About</a>
+                <a href="#" id="contact-link" class="text-gray-300 hover:text-white hover:underline transition-colors duration-300">Contact</a>
+            </div>
+
+            <!-- Mobile Menu Button (Hamburger) -->
+            <button id="mobile-menu-button" class="md:hidden text-gray-300 hover:text-white focus:outline-none order-2">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+            <div id="header-clock" class="ml-4 relative w-24 h-8 md:w-28 md:h-10 text-gray-300 font-mono select-none cursor-default flex items-center justify-center">
+  <div id="digital-clock" class="absolute inset-0 flex items-center justify-center text-sm md:text-base transition-opacity duration-300">00:00:00 AM</div>
+  <canvas id="analog-clock" width="112" height="112" class="absolute inset-0 mx-auto my-auto opacity-0 transition-opacity duration-300"></canvas>
+</div>
+
+
+        </nav>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-gray-800 absolute w-full left-0 z-40 transition-transform duration-300 transform -translate-y-full">
+            <div class="flex flex-col items-center py-4 space-y-4 text-lg">
+                <a href="#" class="block text-gray-300 hover:text-white transition-colors duration-300">Home</a>
+                <a href="#" class="block text-gray-300 hover:text-white transition-colors duration-300">Games</a>
+                <a href="#" class="block text-gray-300 hover:text-white transition-colors duration-300">Contact</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Full-screen fireworks canvas -->
+        <canvas id="fireworks-canvas"></canvas>
+
+        <!-- Hero Section -->
+        <section id="hero-section" class="bg-gray-900 text-center py-20 md:py-32 relative overflow-hidden fade-in">
+            <!-- Particles.js container -->
+            <div id="particles-js"></div>
+            <div class="container mx-auto px-4 hero-content">
+                <h1 id="hero-heading" class="text-5xl md:text-7xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
+                    Stuffnest
+                </h1>
+                <p class="text-xl md:text-2xl text-gray-300 mb-8 max-w-2xl mx-auto">
+                    Discover and play thousands of free online games instantly. No downloads, just pure fun!
+                </p>
+                <a href="#" id="explore-games-btn" class="bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300">
+                    Explore Games
+                </a>
+            </div>
+        </section>
+        
+        <section id="calendar-section" class="py-16 bg-gray-800 fade-in">
+  <div class="container mx-auto px-4">
+    <h2 class="text-4xl font-bold text-center mb-8"></h2>
+    <div id="calendar" class="bg-gray-900 rounded-lg p-6 max-w-md mx-auto text-white">
+      <div class="flex justify-between items-center mb-4">
+        <button id="prev-month" class="px-3 py-1 rounded bg-blue-600 hover:bg-blue-700">Prev</button>
+        <h3 id="calendar-month-year" class="text-xl font-semibold"></h3>
+        <button id="next-month" class="px-3 py-1 rounded bg-blue-600 hover:bg-blue-700">Next</button>
+      </div>
+      <div class="grid grid-cols-7 gap-2 text-center text-sm font-semibold mb-2">
+        <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+      </div>
+      <div id="calendar-days" class="grid grid-cols-7 gap-1 text-center"></div>
+    </div>
+  </div>
+</section>
+
+
+        <!-- Featured Games Section -->
+        <section class="py-16 bg-gray-800 fade-in">
+            <div class="container mx-auto px-4">
+                <h2 class="text-4xl font-bold text-center mb-12">Featured Games</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Game Card 1 (CFT) - This is the one with the click secret -->
+                    <div id="game-card-1" class="bg-gray-900 rounded-xl shadow-xl overflow-hidden transform hover:scale-105 transition-transform duration-300 group">
+                        <img id="game-card-1-img" src="https://i.imgur.com/6a2yBz1.png" alt="Arcade Rush Thumbnail" class="w-full h-48 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-2xl font-semibold mb-2">CFT</h3>
+                            <p class="text-gray-400 mb-4">Capture The Flag</p>
+                            <a href="/cft.html" class="inline-block bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-full transition-colors duration-300">Play Now</a>
+                        </div>
+                    </div>
+                    <!-- Game Card 2 () - The hover secret is here -->
+                    <div id="game-card-2" class="bg-gray-900 rounded-xl shadow-xl overflow-hidden transform hover:scale-105 transition-transform duration-300 group">
+                        <img id="game-card-2-img" src="https://i.imgur.com/vTZAJhP.png" alt="Puzzle Quest Thumbnail" class="w-full h-48 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-2xl font-semibold mb-2">The first clicker</h3>
+                            <p class="text-gray-400 mb-4">play more click more</p>
+                            <a href="https://sites.google.com/view/play-fun-games-io/ggggggggg" class="inline-block bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-full transition-colors duration-300">Play Now</a>
+                        </div>
+                    </div>
+                    <!-- Game Card 3 (Flight SIm) - This is the one with the new alt-click secret -->
+                    <div id="game-card-3" class="bg-gray-900 rounded-xl shadow-xl overflow-hidden transform hover:scale-105 transition-transform duration-300 group">
+                        <img id="game-card-3-img" src="https://i.imgur.com/6dHUJUd.png" alt="Space Explorer Thumbnail" class="w-full h-48 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-2xl font-semibold mb-2">Flight Simulator</h3>
+                            <p class="text-gray-400 mb-4">Flight Simulator</p>
+                            <a href="https://sites.google.com/view/play-fun-games-io/flight" class="inline-block bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-full transition-colors duration-300">Play Now</a>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </section>
+
+        <!-- New 3D Scroll Animation Section -->
+
+       
+        <!-- How to Play Section -->
+        
+
+        <!-- Trending Games Section -->
+        <section id="trending-games" class="py-16 bg-gray-800 fade-in">
+            <div class="container mx-auto px-4">
+                <h2 class="text-4xl font-bold text-center mb-12">Trending Games</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Trending Game Card 1 -->
+                      <div id="game-card-1" class="bg-gray-900 rounded-xl shadow-xl overflow-hidden transform hover:scale-105 transition-transform duration-300 group">
+                        <img id="game-card-1-img" src="https://i.imgur.com/6a2yBz1.png" alt="Arcade Rush Thumbnail" class="w-full h-48 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-2xl font-semibold mb-2">CFT</h3>
+                            <p class="text-gray-400 mb-4">Capture The Flag</p>
+                            <a href="/cft.html" class="inline-block bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-full transition-colors duration-300">Play Now</a>
+                        </div>
+                    </div>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+          <!-- BEta -->
+        <section id="trending-games" class="py-16 bg-gray-800 fade-in">
+            <div class="container mx-auto px-4">
+                <h2 class="text-4xl font-bold text-center mb-12">Beta Games</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="game-card bg-gray-900 rounded-xl shadow-xl overflow-hidden transform hover:scale-105 transition-transform duration-300 group">
+                        <img src="https://placehold.co/600x400/3498db/ecf0f1?text=Comming+Soon" alt="Flappy Bird thumbnail" class="w-full h-48 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-2xl font-semibold mb-2">Chess</h3>
+                            <p class="text-gray-400 mb-4">Chess is comming to town fully relesed on 12/20/25</p>
+                            <a href="/chess.html" class="inline-block bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-full transition-colors duration-300">Try Now</a>
+                        </div>
+                    </div>
+                
+        </section>
+        <!-- Newsletter Section -->
+
+        <!-- Call to Action Section -->
+        <section class="bg-gray-900 py-16 fade-in">
+            <div class="container mx-auto px-4 text-center">
+                <h2 class="text-4xl font-bold mb-4">Ready to Play?</h2>
+                <p class="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+                    Join thousands of players and start having fun today. It's completely free!
+                </p>
+                <a href="#" class="bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-3 px-10 rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300">
+                    Start Playing!
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer Section -->
+    <footer class="bg-gray-800 py-8 mt-12">
+        <div class="container mx-auto px-4 text-center text-gray-400">
+            <div class="flex justify-center space-x-6 mb-4">
+                <a href="#" id="about-link" class="hover:text-white transition-colors duration-300">About</a>
+                <a href="#" class="hover:text-white transition-colors duration-300">Terms of Service</a>
+                <a href="#" class="hover:text-white transition-colors duration-300">Privacy Policy</a>
+                <!-- This is the very subtle hint link for the hero heading rainbow effect -->
+                <a href="#" id="hint-link" class="text-gray-800 hover:text-white text-xs opacity-0 hover:opacity-100 transition-opacity duration-300">Hint</a>
+            </div>
+            <!-- Social Media Icons -->
+            <div class="flex justify-center space-x-4 mb-4">
+                <a href="#" class="text-gray-400 hover:text-white transition-colors duration-300">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.253.148 4.773 1.935 4.904 4.885.059 1.258.071 1.666.071 4.85s-.012 3.584-.07 4.85c-.148 3.253-1.935 4.773-4.885 4.904-1.258.059-1.666.071-4.85.071s-3.584-.012-4.85-.07c-3.253-.148-4.773-1.935-4.904-4.885-.059-1.258-.071-1.666-.071-4.85s.012-3.584.07-4.85c.148-3.253 1.935-4.773 4.885-4.904 1.258-.059 1.666-.071 4.85-.071zm0-2.163c-3.284 0-3.692.013-4.981.072-4.354.201-6.19 2.05-6.39 6.42-.058 1.289-.071 1.697-.071 4.981s.013 3.692.071 4.981c.2 4.354 2.05 6.19 6.42 6.39 1.289.058 1.697.071 4.981.071s3.692-.013 4.981-.071c4.354-.2 6.19-2.05 6.39-6.42.058-1.289.071-1.697.071-4.981s-.013-3.692-.071-4.981c-.2-4.354-2.05-6.19-6.42-6.39-1.289-.058-1.697-.071-4.981-.071zm0 6.634a5.366 5.366 0 100 10.733 5.366 5.366 0 000-10.733zm0 8.733a3.366 3.366 0 110-6.734 3.366 3.366 0 010 6.734zm6.059-8.487c-.822 0-1.488.665-1.488 1.488s.666 1.488 1.488 1.488 1.488-.665 1.488-1.488-.666-1.488-1.488-1.488z" />
+                    </svg>
+                </a>
+                <a href="#" class="text-gray-400 hover:text-white transition-colors duration-300">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M22.162 5.659a8.033 8.033 0 01-2.316.637c.88-1.39 1.548-2.618 1.874-4.24a8.033 8.033 0 00-2.585.992c-.82-1.04-1.95-1.802-3.27-2.112-2.73-1.01-5.71.186-7.058 2.502-1.127 2.053-.945 4.6.435 6.467-3.415-.11-6.61-1.8-8.7-4.502-1.12 1.957-.456 4.35.918 5.86-1.24-.03-2.42-.43-3.45-1.02a4.43 4.43 0 00-.012 1.34c0 2.5.955 4.67 2.76 6.32-1.04-.05-2.02-.3-2.91-.79a4.425 4.425 0 001.378 4.706c2.47 2.09 5.48 2.89 8.65 2.58A13.25 13.25 0 0012 21c-2.4 0-4.66-.51-6.7-1.44a14.28 14.28 0 0013.91-11.83z" />
+                    </svg>
+                </a>
+                <a href="#" class="text-gray-400 hover:text-white transition-colors duration-300">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M2.03 2.6A9.95 9.95 0 0112 0c2.4 0 4.64.93 6.32 2.61A9.95 9.95 0 0122 12c0 2.4-1.01 4.64-2.61 6.32A9.95 9.95 0 0112 22a9.95 9.95 0 01-8.32-3.69A9.95 9.95 0 012 12c0-2.4.93-4.64 2.61-6.32zM7 8a1 1 0 100-2 1 1 0 000 2zm10 0a1 1 0 100-2 1 1 0 000 2zM9 13a3 3 0 016 0 1 1 0 002 0 5 5 0 00-10 0 1 1 0 002 0z" />
+                    </svg>
+                </a>
+            </div>
+            <div class="relative inline-block" id="copyright-container">
+                <span id="copyright-text"></span>
+                <span id="secret-hover-message" class="absolute bottom-full left-1/2 -translate-x-1/2 p-2 rounded-md bg-blue-500 text-white text-sm whitespace-nowrap opacity-0 transition-opacity duration-300 pointer-events-none">You're awesome for exploring!</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript for Mobile Menu, Scroll Animations, and Music -->
+    <script>
+      function updateHeaderClock() {
+  const digitalClock = document.getElementById('digital-clock');
+  const analogClock = document.getElementById('analog-clock');
+  if (!digitalClock || !analogClock) return;
+
+  const now = new Date();
+
+  // Digital clock formatting
+  let hours = now.getHours();
+  const minutes = now.getMinutes();
+  const seconds = now.getSeconds();
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12 || 12;
+  const pad = (n) => n.toString().padStart(2, '0');
+  digitalClock.textContent = `${pad(hours)}:${pad(minutes)}:${pad(seconds)} ${ampm}`;
+
+  // Analog clock drawing
+  const ctx = analogClock.getContext('2d');
+  const width = analogClock.width;
+  const height = analogClock.height;
+  const radius = width / 2;
+  ctx.clearRect(0, 0, width, height);
+  ctx.save();
+  ctx.translate(radius, radius);
+
+  // Draw clock face
+  ctx.beginPath();
+  ctx.arc(0, 0, radius - 4, 0, 2 * Math.PI);
+  ctx.fillStyle = '#1f2937'; // dark background
+  ctx.fill();
+  ctx.lineWidth = 4;
+  ctx.strokeStyle = '#3b82f6'; // blue border
+  ctx.stroke();
+
+  // Draw hour marks
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = '#60a5fa'; // lighter blue
+  for (let i = 0; i < 12; i++) {
+    ctx.beginPath();
+    ctx.moveTo(0, -radius + 10);
+    ctx.lineTo(0, -radius + 20);
+    ctx.stroke();
+    ctx.rotate(Math.PI / 6);
+  }
+
+  // Calculate angles
+  const h = now.getHours() % 12 + minutes / 60;
+  const m = minutes + seconds / 60;
+  const s = seconds;
+
+  // Draw hour hand
+  ctx.save();
+  ctx.rotate((Math.PI / 6) * h);
+  ctx.lineWidth = 5;
+  ctx.strokeStyle = '#3b82f6';
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(0, -radius * 0.5);
+  ctx.stroke();
+  ctx.restore();
+
+  // Draw minute hand
+  ctx.save();
+  ctx.rotate((Math.PI / 30) * m);
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = '#60a5fa';
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(0, -radius * 0.75);
+  ctx.stroke();
+  ctx.restore();
+
+  // Draw second hand
+  ctx.save();
+  ctx.rotate((Math.PI / 30) * s);
+  ctx.strokeStyle = '#ef4444'; // red
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, 10);
+  ctx.lineTo(0, -radius * 0.85);
+  ctx.stroke();
+  ctx.restore();
+
+  // Draw center dot
+  ctx.beginPath();
+  ctx.arc(0, 0, 6, 0, 2 * Math.PI);
+  ctx.fillStyle = '#3b82f6';
+  ctx.fill();
+
+  ctx.restore();
+}
+
+// Initialize and update every second
+setInterval(updateHeaderClock, 1000);
+updateHeaderClock();
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Mobile Menu functionality
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuButton.addEventListener('click', () => {
+                if (mobileMenu.classList.contains('hidden')) {
+                    mobileMenu.classList.remove('hidden');
+                    mobileMenu.classList.remove('-translate-y-full');
+                    mobileMenu.classList.add('translate-y-0');
+                } else {
+                    mobileMenu.classList.remove('translate-y-0');
+                    mobileMenu.classList.add('-translate-y-full');
+                    setTimeout(() => {
+                        mobileMenu.classList.add('hidden');
+                    }, 300);
+                }
+            });
+
+            // Scroll-triggered animations
+            const fadeInElements = document.querySelectorAll('.fade-in');
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.1
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+
+            fadeInElements.forEach(el => observer.observe(el));
+            
+            // Music functionality using a base64 encoded data URL
+            const musicToggle = document.getElementById('music-toggle');
+            const musicIcon = document.getElementById('music-icon');
+            const audio = new Audio();
+            let isMusicPlaying = false;
+            
+            // A simple PCM-like audio data for a simple beep tone.
+            // This is a minimal example of a base64-encoded WAV file.
+            // It's a 440 Hz sine wave for 1 second.
+            const base64AudioData = "https://embed.screenapp.io/app/v/tcOrB9-f8k?embed=true";
+            
+            audio.src = base64AudioData;
+            audio.loop = true; // Loop the audio
+            
+            musicToggle.addEventListener('click', () => {
+                if (!isMusicPlaying) {
+                    audio.play().catch(e => console.error("Audio play failed:", e));
+                    isMusicPlaying = true;
+                    // Change icon to 'playing' state
+                    musicIcon.innerHTML = `<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-.585 1.585L9.414 11l-2 2a1 1 0 001.414 1.414l2-2a1 1 0 000-1.414l-2-2A1 1 0 008 7z" clip-rule="evenodd" />`;
+                } else {
+                    audio.pause();
+                    isMusicPlaying = false;
+                    // Change icon back to 'paused' state
+                    musicIcon.innerHTML = `<path d="M18.571 5.923a1.429 1.429 0 00-2-1.282l-3.571 2.5v-2.5a1.429 1.429 0 00-2.857 0v5.572a1.429 1.429 0 00-1.429 1.429c0 .788.641 1.428 1.429 1.428s1.428-.64 1.428-1.428V8.714l3.571-2.5v5.572a1.429 1.429 0 00-1.429 1.429c0 .788.641 1.428 1.429 1.428s1.429-.64 1.429-1.428V7.205a1.429 1.429 0 001.429 1.428c0 .788.641 1.429 1.429 1.429s1.429-.641 1.429-1.429V5.923zM9.429 12.143a1.429 1.429 0 110-2.857 1.429 1.429 0 010 2.857z"/>`;
+                }
+            });
+            
+            // Functional Search Bar
+            const searchInput = document.getElementById('search-input');
+            const searchButton = document.getElementById('search-button');
+
+            const performSearch = () => {
+                const query = searchInput.value.trim().toLowerCase();
+                if (query === 'happy new year') {
+                    triggerNewYearEffect();
+                } else if (query === '//~dev') {
+                    devConsole.style.display = 'flex';
+                    updateDevDetails();
+                } else if (query === 'launch sequence') {
+                    triggerLaunchSequence();
+                } else if (query === 'time warp') {
+                    document.body.classList.toggle('time-warped');
+                } else if (query !== '') {
+                    window.location.href = `search-results.html?query=${encodeURIComponent(query)}`;
+                }
+                searchInput.value = ''; // Clear the input after action
+            };
+            
+            // Search on Enter key press
+            searchInput.addEventListener('keyup', (event) => {
+                if (event.key === 'Enter') {
+                    performSearch();
+                }
+            });
+
+            // Search on button click
+            searchButton.addEventListener('click', performSearch);
+            
+            // Fun Feature: "Happy New Year" fireworks and confetti effect
+            const fireworksCanvas = document.getElementById('fireworks-canvas');
+            const ctx = fireworksCanvas.getContext('2d');
+            let fireworks = [];
+
+            // Resize canvas to fill the window
+            function resizeCanvas() {
+                fireworksCanvas.width = window.innerWidth;
+                fireworksCanvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+
+            // Fireworks particle class
+            class Firework {
+                constructor(x, y, color) {
+                    this.x = x;
+                    this.y = y;
+                    this.color = color;
+                    this.particles = [];
+                    this.isExploded = false;
+                    this.life = 0;
+                    this.maxLife = 60;
+                    this.speed = {
+                        x: (Math.random() - 0.5) * 5,
+                        y: Math.random() * -5 - 5
+                    };
+                }
+
+                update() {
+                    if (!this.isExploded) {
+                        this.x += this.speed.x;
+                        this.y += this.speed.y;
+                        this.speed.y += 0.1; // Gravity
+                        this.life++;
+                        if (this.life >= this.maxLife || this.speed.y > 0) {
+                            this.explode();
+                        }
+                    } else {
+                        this.particles.forEach(p => p.update());
+                        this.particles = this.particles.filter(p => p.life > 0);
+                    }
+                }
+
+                draw() {
+                    if (!this.isExploded) {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                    } else {
+                        this.particles.forEach(p => p.draw());
+                    }
+                }
+
+                explode() {
+                    this.isExploded = true;
+                    for (let i = 0; i < 50; i++) {
+                        this.particles.push(new Particle(this.x, this.y, this.color));
+                    }
+                }
+            }
+
+            // Firework explosion particle class
+            class Particle {
+                constructor(x, y, color) {
+                    this.x = x;
+                    this.y = y;
+                    this.color = color;
+                    this.life = 60;
+                    this.speed = {
+                        x: (Math.random() - 0.5) * Math.random() * 8,
+                        y: (Math.random() - 0.5) * Math.random() * 8
+                    };
+                    this.gravity = 0.05;
+                }
+
+                update() {
+                    this.x += this.speed.x;
+                    this.y += this.speed.y;
+                    this.speed.y += this.gravity;
+                    this.life--;
+                }
+
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, 1, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.globalAlpha = this.life / 60; // Fade out effect
+                    ctx.fill();
+                }
+            }
+
+            // Main animation loop for fireworks
+            function animateFireworks() {
+                requestAnimationFrame(animateFireworks);
+                ctx.clearRect(0, 0, fireworksCanvas.width, fireworksCanvas.height);
+                fireworks.forEach(f => f.update());
+                fireworks.forEach(f => f.draw());
+                fireworks = fireworks.filter(f => f.particles.length > 0 || !f.isExploded);
+            }
+
+            function triggerFireworks() {
+                // Launch a series of fireworks
+                const colors = ['#ff6347', '#ffb83d', '#3dff7b', '#47b2ff', '#ff65e2', '#ffffff'];
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(() => {
+                        const x = Math.random() * fireworksCanvas.width;
+                        const y = fireworksCanvas.height;
+                        const color = colors[Math.floor(Math.random() * colors.length)];
+                        fireworks.push(new Firework(x, y, color));
+                    }, i * 500);
+                }
+            }
+
+            // Confetti function
+            function triggerConfetti() {
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }
+
+            // Combined New Year effect
+            function triggerNewYearEffect() {
+                triggerFireworks();
+                triggerConfetti();
+            }
+
+            animateFireworks();
+            
+            // Developer console functionality
+            const devConsole = document.getElementById('dev-console');
+            const closeDevConsoleBtn = document.getElementById('close-dev-console');
+            const refreshDevDetailsBtn = document.getElementById('refresh-dev-details');
+            
+            // Elements to display details
+            const devAppId = document.getElementById('dev-app-id');
+            const devUserId = document.getElementById('dev-user-id');
+            const devTime = document.getElementById('dev-time');
+            const devViewport = document.getElementById('dev-viewport');
+            const devUserAgent = document.getElementById('dev-user-agent');
+            
+            // Function to update the details displayed in the console
+            const updateDevDetails = () => {
+                // Check if __app_id is defined in the environment, otherwise use a placeholder
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                const userId = typeof __initial_auth_token !== 'undefined' ? 'Authenticated User' : 'Anonymous User';
+                
+                devAppId.textContent = appId;
+                devUserId.textContent = userId;
+                devTime.textContent = new Date().toLocaleTimeString();
+                devViewport.textContent = `${window.innerWidth}px x ${window.innerHeight}px`;
+                devUserAgent.textContent = navigator.userAgent;
+            };
+
+            closeDevConsoleBtn.addEventListener('click', () => {
+                devConsole.style.display = 'none';
+            });
+            
+            refreshDevDetailsBtn.addEventListener('click', updateDevDetails);
+            
+            // Particles.js configuration
+            const particlesConfig = {
+                "particles": {
+                    "number": {
+                        "value": 80,
+                        "density": {
+                            "enable": true,
+                            "value_area": 800
+                        }
+                    },
+                    "color": {
+                        "value": "#ffffff"
+                    },
+                    "shape": {
+                        "type": "circle",
+                        "stroke": {
+                            "width": 0,
+                            "color": "#000000"
+                        },
+                        "polygon": {
+                            "nb_sides": 5
+                        }
+                    },
+                    "opacity": {
+                        "value": 0.5,
+                        "random": false,
+                        "anim": {
+                            "enable": false,
+                            "speed": 1,
+                            "opacity_min": 0.1,
+                            "sync": false
+                        }
+                    },
+                    "size": {
+                        "value": 3,
+                        "random": true,
+                        "anim": {
+                            "enable": false,
+                            "speed": 40,
+                            "size_min": 0.1,
+                            "sync": false
+                        }
+                    },
+                    "line_linked": {
+                        "enable": true,
+                        "distance": 150,
+                        "color": "#ffffff",
+                        "opacity": 0.4,
+                        "width": 1
+                    },
+                    "move": {
+                        "enable": true,
+                        "speed": 6,
+                        "direction": "none",
+                        "random": false,
+                        "straight": false,
+                        "out_mode": "out",
+                        "bounce": false,
+                        "attract": {
+                            "enable": false,
+                            "rotateX": 600,
+                            "rotateY": 1200
+                        }
+                    }
+                },
+                "interactivity": {
+                    "detect_on": "canvas",
+                    "events": {
+                        "onhover": {
+                            "enable": true,
+                            "mode": "repulse"
+                        },
+                        "onclick": {
+                            "enable": true,
+                            "mode": "push"
+                        },
+                        "resize": true
+                    },
+                    "modes": {
+                        "grab": {
+                            "distance": 400,
+                            "line_linked": {
+                                "opacity": 1
+                            }
+                        },
+                        "bubble": {
+                            "distance": 400,
+                            "size": 40,
+                            "duration": 2,
+                            "opacity": 8,
+                            "speed": 3
+                        },
+                        "repulse": {
+                            "distance": 200,
+                            "duration": 0.4
+                        },
+                        "push": {
+                            "particles_nb": 4
+                        },
+                        "remove": {
+                            "particles_nb": 2
+                        }
+                    }
+                },
+                "retina_detect": true
+            };
+            particlesJS('particles-js', particlesConfig);
+
+            // Existing Easter Eggs
+            
+            // Konami Code Easter Egg
+            const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+            let konamiCodeIndex = 0;
+            const secretMessageModal = document.getElementById('secret-message-modal');
+            const closeSecretMessageBtn = document.getElementById('close-secret-message');
+            
+            document.addEventListener('keydown', (event) => {
+                const key = event.key;
+                if (key === konamiCode[konamiCodeIndex]) {
+                    konamiCodeIndex++;
+                    if (konamiCodeIndex === konamiCode.length) {
+                        // Konami code entered successfully!
+                        secretMessageModal.style.display = 'flex';
+                        konamiCodeIndex = 0; // Reset for next time
+                    }
+                } else {
+                    konamiCodeIndex = 0; // Reset if the wrong key is pressed
+                }
+            });
+
+            closeSecretMessageBtn.addEventListener('click', () => {
+                secretMessageModal.style.display = 'none';
+            });
+            
+            // Footer Hint Link Easter Egg
+            const hintLink = document.getElementById('hint-link');
+            const heroHeading = document.getElementById('hero-heading');
+            
+            hintLink.addEventListener('click', (event) => {
+                event.preventDefault();
+                heroHeading.classList.add('hero-heading-glow');
+                // Remove the effect after a few seconds
+                setTimeout(() => {
+                    heroHeading.classList.remove('hero-heading-glow');
+                }, 4000);
+            });
+
+            // Game Card 1 (Arcade Rush) click combo
+            const gameCard1Img = document.getElementById('game-card-1-img');
+            let clickCount = 0;
+            let clickTimer;
+
+            gameCard1Img.addEventListener('click', () => {
+                clickCount++;
+                if (clickTimer) clearTimeout(clickTimer);
+
+                clickTimer = setTimeout(() => {
+                    clickCount = 0; // Reset count if too slow
+                }, 500);
+
+                if (clickCount === 5) {
+                    heroHeading.textContent = "You found the secret level!";
+                    heroHeading.classList.add('hero-heading-glow');
+                    setTimeout(() => {
+                        heroHeading.textContent = "Dive into a World of Fun";
+                        heroHeading.classList.remove('hero-heading-glow');
+                    }, 3000);
+                    clickCount = 0;
+                }
+            });
+            
+            // Game Card 3 (Space Explorer) with Alt-click secret
+            const gameCard3Img = document.getElementById('game-card-3-img');
+            gameCard3Img.addEventListener('click', (event) => {
+                if (event.altKey) {
+                    const originalSrc = gameCard3Img.src;
+                    gameCard3Img.src = "https://placehold.co/600x400/ff0000/ffffff?text=MISSION+CONTROL";
+                    gameCard3Img.style.filter = "invert(1)";
+                    setTimeout(() => {
+                        gameCard3Img.src = originalSrc;
+                        gameCard3Img.style.filter = "none";
+                    }, 1000);
+                    event.preventDefault(); // Prevent default link behavior
+                }
+            });
+
+            // "Launch Sequence" search command
+            const body = document.body;
+            function triggerLaunchSequence() {
+                // Temporarily increase particle speed and add a vertical movement
+                const particles = window.pJSDom[0].pJS.particles;
+                particles.move.speed = 20;
+                particles.move.direction = 'top';
+                particles.move.straight = true;
+                particles.move.out_mode = 'out';
+                
+                // Set the particles background to black
+                document.getElementById('particles-js').style.backgroundColor = 'black';
+                
+                // Re-init the particles with new settings
+                window.pJSDom[0].pJS.fn.particlesRefresh();
+
+                // Reset to original state after 3 seconds
+                setTimeout(() => {
+                    particles.move.speed = 6;
+                    particles.move.direction = 'none';
+                    particles.move.straight = false;
+                    particles.move.out_mode = 'out';
+                    
+                    document.getElementById('particles-js').style.backgroundColor = '#111827';
+                    
+                    window.pJSDom[0].pJS.fn.particlesRefresh();
+                }, 3000);
+            }
+            
+            // Music Button Triple-Click
+            let musicClickCount = 0;
+            let musicClickTimer;
+            
+            musicToggle.addEventListener('click', () => {
+                musicClickCount++;
+                if (musicClickTimer) clearTimeout(musicClickTimer);
+
+                musicClickTimer = setTimeout(() => {
+                    musicClickCount = 0;
+                }, 500);
+
+                if (musicClickCount === 3) {
+                    // This is a simple visual and sound effect to replace the Tone.js melody
+                    console.log("Secret melody triggered!");
+                    // Play a short, distinct sound for the secret melody.
+                    const secretAudio = new Audio("data:audio/wav;base64,UklGRl9yX1gBWgBVAAAAPwBwAG8AdAB0AGcAYQB4AGsAYQBzAC4AZABlAA==");
+                    secretAudio.play();
+                    
+                    // Add a visual flair
+                    heroHeading.style.color = '#ffcc00';
+                    setTimeout(() => {
+                        heroHeading.style.color = '';
+                    }, 1000);
+
+                    musicClickCount = 0;
+                }
+            });
+            
+            // NEW SECRET: Hidden Theme Toggle
+            const secretThemeToggle = document.getElementById('secret-theme-toggle');
+            secretThemeToggle.addEventListener('click', () => {
+                document.body.classList.toggle('retro-theme');
+            });
+            
+            // NEW SECRET: Hover-to-reveal message in the footer
+            const copyrightContainer = document.getElementById('copyright-container');
+            const secretHoverMessage = document.getElementById('secret-hover-message');
+            copyrightContainer.addEventListener('mouseover', () => {
+                secretHoverMessage.classList.remove('opacity-0');
+                secretHoverMessage.classList.add('opacity-100');
+            });
+            copyrightContainer.addEventListener('mouseout', () => {
+                secretHoverMessage.classList.remove('opacity-100');
+                secretHoverMessage.classList.add('opacity-0');
+            });
+            
+            // NEW SECRET: Keyboard shortcut for the dev console
+            document.addEventListener('keydown', (event) => {
+                if (event.ctrlKey && event.altKey && event.key === 'd') {
+                    event.preventDefault(); // Prevent default browser behavior
+                    devConsole.style.display = 'flex';
+                    updateDevDetails();
+                }
+            });
+
+            // NEW SECRET: "Explore Games" button combo
+            const exploreGamesBtn = document.getElementById('explore-games-btn');
+            let exploreClickCount = 0;
+            let exploreClickTimer;
+            const originalExploreText = exploreGamesBtn.textContent;
+            exploreGamesBtn.addEventListener('click', (e) => {
+                exploreClickCount++;
+                if (exploreClickTimer) clearTimeout(exploreClickTimer);
+                exploreClickTimer = setTimeout(() => exploreClickCount = 0, 500);
+
+                if (exploreClickCount === 3) {
+                    e.preventDefault();
+                    exploreGamesBtn.textContent = "SECRET ACTIVATED!";
+                    exploreGamesBtn.classList.add('bg-red-500', 'hover:bg-red-600');
+                    setTimeout(() => {
+                        exploreGamesBtn.textContent = originalExploreText;
+                        exploreGamesBtn.classList.remove('bg-red-500', 'hover:bg-red-600');
+                    }, 2000);
+                    exploreClickCount = 0;
+                }
+            });
+
+            // NEW SECRET: Hidden "Credits" button on the title
+            const secretCreditsBtn = document.getElementById('secret-credits-btn');
+            secretCreditsBtn.addEventListener('click', () => {
+                const modalContent = document.getElementById('secret-message-modal-content');
+                const originalContent = modalContent.innerHTML;
+                modalContent.innerHTML = `
+                    <button class="close-btn" id="close-temp-modal">&times;</button>
+                    <h3 class="text-3xl font-bold text-yellow-400 mb-4">Site Credits</h3>
+                    <p class="text-lg text-gray-300">Created with a lot of love and a sprinkle of magic. <br>Happy exploring!</p>
+                `;
+                secretMessageModal.style.display = 'flex';
+
+                document.getElementById('close-temp-modal').addEventListener('click', () => {
+                    secretMessageModal.style.display = 'none';
+                    modalContent.innerHTML = originalContent; // Restore original content
+                });
+            });
+
+            // NEW SECRET: Hover image swap for "Puzzle Quest"
+            const gameCard2Img = document.getElementById('game-card-2-img');
+            gameCard2Img.addEventListener('mouseover', () => {
+                gameCard2Img.src = "https://i.imgur.com/72uxP7p.png";
+            });
+            gameCard2Img.addEventListener('mouseout', () => {
+                gameCard2Img.src = "https://i.imgur.com/vTZAJhP.png";
+            });
+
+            // NEW SECRET: Keyboard shortcut for random game
+            const gameCards = document.querySelectorAll('.game-card');
+            document.addEventListener('keydown', (event) => {
+                if (event.ctrlKey && event.key === '7') {
+                    event.preventDefault();
+                    const randomIndex = Math.floor(Math.random() * gameCards.length);
+                    const randomGameCard = gameCards[randomIndex];
+                    randomGameCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    randomGameCard.style.outline = '3px solid #ffcc00';
+                    setTimeout(() => {
+                        randomGameCard.style.outline = 'none';
+                    }, 1500);
+                }
+            });
+            
+            // NEW SECRET: URL parameter for dev mode
+            const devModeModal = document.getElementById('dev-mode-modal');
+            const closeDevModeBtn = document.getElementById('close-dev-mode');
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('secret') === 'unlocked') {
+                document.body.classList.add('dev-mode');
+                devModeModal.style.display = 'flex';
+            }
+            closeDevModeBtn.addEventListener('click', () => {
+                devModeModal.style.display = 'none';
+            });
+
+            // NEW SECRET: About Us section reveal
+            const aboutLink = document.getElementById('about-link');
+            const aboutSecretModal = document.getElementById('about-secret-modal');
+            const closeAboutSecretBtn = document.getElementById('close-about-secret');
+            let aboutClickCount = 0;
+            let aboutClickTimer;
+
+            aboutLink.addEventListener('click', (e) => {
+                e.preventDefault(); // Prevent default link behavior
+                aboutClickCount++;
+                if (aboutClickTimer) clearTimeout(aboutClickTimer);
+                aboutClickTimer = setTimeout(() => aboutClickCount = 0, 500); // Reset if clicks are too slow
+
+                if (aboutClickCount === 3) {
+                    aboutSecretModal.style.display = 'flex';
+                    aboutClickCount = 0; // Reset for next time
+                }
+            });
+            closeAboutSecretBtn.addEventListener('click', () => {
+                aboutSecretModal.style.display = 'none';
+            });
+
+            // NEW SECRET: Changing Hero Background Image
+            const heroSection = document.getElementById('hero-section');
+            const originalHeroBg = heroSection.style.backgroundImage;
+            document.addEventListener('keydown', (event) => {
+                if (event.shiftKey && event.key === 'I') {
+                    event.preventDefault();
+                    heroSection.style.backgroundImage = 'url("https://placehold.co/1920x1080/8b5cf6/ffffff?text=SECRET+UNLOCKED")';
+                    heroSection.style.backgroundSize = 'cover';
+                    heroSection.style.backgroundPosition = 'center';
+                    setTimeout(() => {
+                        heroSection.style.backgroundImage = originalHeroBg; // Revert
+                    }, 3000);
+                }
+            });
+
+            // NEW SECRET: Dynamic "How It Works" Titles
+            const howToPlaySteps = [
+                { element: document.getElementById('how-to-play-step-1'), titleElement: document.getElementById('how-to-play-step-1-title'), originalTitle: 'Discover', secretTitle: 'Uncover' },
+                { element: document.getElementById('how-to-play-step-2'), titleElement: document.getElementById('how-to-play-step-2-title'), originalTitle: 'Click to Play', secretTitle: 'Tap to Engage' },
+                { element: document.getElementById('how-to-play-step-3'), titleElement: document.getElementById('how-to-play-step-3-title'), originalTitle: 'Have Fun', secretTitle: 'Achieve Bliss' }
+            ];
+
+            howToPlaySteps.forEach(step => {
+                step.element.addEventListener('mouseover', () => {
+                    step.titleElement.textContent = step.secretTitle;
+                });
+                step.element.addEventListener('mouseout', () => {
+                    step.titleElement.textContent = step.originalTitle;
+                });
+            });
+
+            // NEW SECRET: Mini-Konami Code
+            const miniKonamiCode = ['ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight'];
+            let miniKonamiIndex = 0;
+            const navBar = document.getElementById('nav-bar');
+
+            document.addEventListener('keydown', (event) => {
+                const key = event.key;
+                if (key === miniKonamiCode[miniKonamiIndex]) {
+                    miniKonamiIndex++;
+                    if (miniKonamiIndex === miniKonamiCode.length) {
+                        navBar.classList.add('nav-glow');
+                        setTimeout(() => {
+                            navBar.classList.remove('nav-glow');
+                        }, 1000);
+                        miniKonamiIndex = 0; // Reset
+                    }
+                } else {
+                    miniKonamiIndex = 0; // Reset if wrong key
+                }
+            });
+
+            // NEW SECRET: Time-based secret
+            const timeSecretModal = document.getElementById('time-secret-modal');
+            const closeTimeSecretBtn = document.getElementById('close-time-secret');
+            const SECRET_HOUR = 0; // Midnight (00:00)
+            const SECRET_MINUTE = 0; // Midnight (00:00)
+
+            function checkTimeSecret() {
+                const now = new Date();
+                const currentHour = now.getHours();
+                const currentMinute = now.getMinutes();
+
+                if (currentHour === SECRET_HOUR && currentMinute === SECRET_MINUTE) {
+                    timeSecretModal.style.display = 'flex';
+                }
+            }
+
+            // Check on load and every minute
+            checkTimeSecret();
+            setInterval(checkTimeSecret, 60 * 1000); // Check every minute
+
+            closeTimeSecretBtn.addEventListener('click', () => {
+                timeSecretModal.style.display = 'none';
+            });
+
+            // NEW 3D SCROLL ANIMATION: Three.js setup for the spinning controller
+            const threeDCanvasContainer = document.getElementById('three-d-canvas-container');
+            const threeDCanvas = document.getElementById('three-d-canvas');
+            const threeDSection = document.getElementById('three-d-scroll-section');
+
+            // Scene, Camera, Renderer setup
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, threeDCanvasContainer.clientWidth / threeDCanvasContainer.clientHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ canvas: threeDCanvas, alpha: true }); // alpha: true for transparent background
+            renderer.setSize(threeDCanvasContainer.clientWidth, threeDCanvasContainer.clientHeight);
+            renderer.setPixelRatio(window.devicePixelRatio); // For sharper rendering on high-DPI screens
+
+            // Add lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Soft white light
+            scene.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8); // Directional light for shadows
+            directionalLight.position.set(0, 1, 1).normalize();
+            scene.add(directionalLight);
+
+            // Create a textured 3D object (a box representing a controller)
+            const geometry = new THREE.BoxGeometry(2, 1.2, 0.5); // Dimensions for a controller-like shape
+            const textureLoader = new THREE.TextureLoader();
+            const controllerTexture = textureLoader.load('https://placehold.co/500x500/000000/ffffff?text=GAME+CONTROLLER',
+                // On load callback
+                function (texture) {
+                    const material = new THREE.MeshLambertMaterial({ map: texture });
+                    const controller = new THREE.Mesh(geometry, material);
+                    scene.add(controller);
+                    camera.position.z = 3; // Move camera back to see the object
+
+                    // Animation loop for the 3D object
+                    function animate3D() {
+                        requestAnimationFrame(animate3D);
+
+                        // Calculate scroll progress within the 3D section
+                        const rect = threeDSection.getBoundingClientRect();
+                        // Check if the section is in view
+                        if (rect.top < window.innerHeight && rect.bottom > 0) {
+                            // Normalize scroll position from 0 (top of section enters view) to 1 (bottom of section leaves view)
+                            const scrollProgress = (window.innerHeight - rect.top) / (window.innerHeight + rect.height);
+                            controller.rotation.y = scrollProgress * Math.PI * 4; // Spin faster
+                            controller.rotation.x = scrollProgress * Math.PI * 2; // Add some X rotation
+                        }
+
+                        renderer.render(scene, camera);
+                    }
+                    animate3D();
+                },
+                // On progress callback
+                undefined,
+                // On error callback
+                function (err) {
+                    console.error('An error occurred loading the texture:', err);
+                    // Fallback to a basic color material if texture fails to load
+                    const material = new THREE.MeshLambertMaterial({ color: 0x888888 });
+                    const controller = new THREE.Mesh(geometry, material);
+                    scene.add(controller);
+                    camera.position.z = 3;
+                    function animate3DFallback() {
+                        requestAnimationFrame(animate3DFallback);
+                        const rect = threeDSection.getBoundingClientRect();
+                        if (rect.top < window.innerHeight && rect.bottom > 0) {
+                            const scrollProgress = (window.innerHeight - rect.top) / (window.innerHeight + rect.height);
+                            controller.rotation.y = scrollProgress * Math.PI * 4;
+                            controller.rotation.x = scrollProgress * Math.PI * 2;
+                        }
+                        renderer.render(scene, camera);
+                    }
+                    animate3DFallback();
+                }
+            );
+
+            // Handle window resize for the 3D canvas
+            window.addEventListener('resize', () => {
+                const width = threeDCanvasContainer.clientWidth;
+                const height = threeDCanvasContainer.clientHeight;
+                renderer.setSize(width, height);
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+            });
+
+            // NEW EXPANDING IMAGE ANIMATION
+            const expandingImageSection = document.getElementById('expanding-image-section');
+            const expandingImage = document.getElementById('expanding-image');
+
+            window.addEventListener('scroll', () => {
+                const rect = expandingImageSection.getBoundingClientRect();
+                // Check if the section is in view
+                if (rect.top < window.innerHeight && rect.bottom > 0) {
+                    // Calculate scroll progress within the section
+                    // 0 when the top of the section enters the viewport, 1 when the bottom leaves
+                    const scrollProgress = (window.innerHeight - rect.top) / (window.innerHeight + rect.height);
+                    
+                    // Clamp progress between 0 and 1
+                    const clampedProgress = Math.max(0, Math.min(1, scrollProgress));
+
+                    // Scale from 0.1 to 1 based on clampedProgress
+                    const scaleValue = 0.1 + (0.9 * clampedProgress);
+                    expandingImage.style.transform = `scale(${scaleValue})`;
+                } else if (rect.bottom <= 0) {
+                    // If scrolled past, ensure it's fully expanded
+                    expandingImage.style.transform = `scale(1)`;
+                } else if (rect.top >= window.innerHeight) {
+                    // If not yet in view, ensure it's small
+                    expandingImage.style.transform = `scale(0.1)`;
+                }
+            });
+        });
+        
+        // Simple Calendar Implementation
+(function() {
+    const calendarDays = document.getElementById('calendar-days');
+    const calendarMonthYear = document.getElementById('calendar-month-year');
+    const prevBtn = document.getElementById('prev-month');
+    const nextBtn = document.getElementById('next-month');
+
+    let currentDate = new Date();
+
+    function renderCalendar(date) {
+        calendarDays.innerHTML = '';
+        const year = date.getFullYear();
+        const month = date.getMonth();
+
+        calendarMonthYear.textContent = date.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+        // First day of the month
+        const firstDay = new Date(year, month, 1);
+        // Last day of the month
+        const lastDay = new Date(year, month + 1, 0);
+
+        const startDayIndex = firstDay.getDay(); // 0 (Sun) - 6 (Sat)
+        const daysInMonth = lastDay.getDate();
+
+        // Fill empty cells before first day of month
+        for (let i = 0; i < startDayIndex; i++) {
+            const emptyCell = document.createElement('div');
+            calendarDays.appendChild(emptyCell);
+        }
+
+        // Add actual days
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dayCell = document.createElement('div');
+            dayCell.textContent = day;
+            dayCell.className = "p-2 rounded hover:bg-blue-600 cursor-pointer";
+
+            // Highlight today
+            const today = new Date();
+            if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+                dayCell.classList.add('bg-blue-700', 'font-bold');
+            }
+
+            calendarDays.appendChild(dayCell);
+        }
+    }
+
+    prevBtn.addEventListener('click', () => {
+        currentDate.setMonth(currentDate.getMonth() - 1);
+        renderCalendar(currentDate);
+    });
+    nextBtn.addEventListener('click', () => {
+        currentDate.setMonth(currentDate.getMonth() + 1);
+        renderCalendar(currentDate);
+    });
+
+    renderCalendar(currentDate);
+})();
+
+        
+    </script>
+    <script>
+(function(){
+  // Define holidays by month or exact date
+  // Each key is either "MM" for whole month or "MM-DD" for exact date
+  const holidays = {
+    "01-01": { name: "January Fest", img: "https://www.google.com/logos/fnbx/new_years/icon_idle_2021.gif", href: "search-results.html?holiday=january" }, // whole January
+    "02-14": { name: "Valentine's Day", img: "https://placehold.co/128x128/ff6b9a/ffffff?text=❤", href: "search-results.html?holiday=valentine" },
+    "07": { name: "Summer Celebration", img: "https://placehold.co/128x128/3498db/ffffff?text=July", href: "search-results.html?holiday=july" }, // whole July
+    "10-31": { name: "Halloween", img: "https://placehold.co/128x128/ff8c00/ffffff?text=🎃", href: "search-results.html?holiday=halloween" },
+    "12": { name: "Christmas Month", img: "https://em-content.zobj.net/source/google/439/christmas-tree_1f384.png", href: "search-results.html?holiday=christmas" } // whole December
+  };
+
+  function createHolidayButton() {
+    if (document.getElementById('holiday-btn')) return; // already created
+    const a = document.createElement('a');
+    a.id = 'holiday-btn';
+    a.style.display = 'none';
+    a.style.position = 'fixed';
+    a.style.bottom = '20px';
+    a.style.right = '20px';
+    a.style.zIndex = '10001';
+    a.style.textDecoration = 'none';
+    a.setAttribute('target', '_blank');
+    a.setAttribute('rel', 'noopener noreferrer');
+
+    const img = document.createElement('img');
+    img.id = 'holiday-btn-img';
+    img.alt = 'Holiday';
+    img.style.width = '64px';
+    img.style.height = '64px';
+    img.style.borderRadius = '12px';
+    img.style.boxShadow = '0 6px 18px rgba(0,0,0,0.4)';
+    img.style.display = 'block';
+
+    a.appendChild(img);
+    document.body.appendChild(a);
+  }
+
+  function showHolidayButtonIfToday() {
+    const now = new Date();
+    const monthKey = String(now.getMonth() + 1).padStart(2, '0'); // e.g. "01"
+    const dayKey = String(now.getDate()).padStart(2, '0');      // e.g. "01"
+    const dateKey = `${monthKey}-${dayKey}`;                    // e.g. "01-01"
+    const btn = document.getElementById('holiday-btn');
+    const img = document.getElementById('holiday-btn-img');
+    if (!btn || !img) return;
+
+    // Priority to exact day match
+    if (holidays[dateKey]) {
+      const holiday = holidays[dateKey];
+      btn.href = holiday.href;
+      btn.title = holiday.name;
+      img.src = holiday.img;
+      btn.style.display = 'block';
+      return;
+    }
+
+    // If no exact date, check whole month match
+    if (holidays[monthKey]) {
+      const holiday = holidays[monthKey];
+      btn.href = holiday.href;
+      btn.title = holiday.name;
+      img.src = holiday.img;
+      btn.style.display = 'block';
+      return;
+    }
+
+    btn.style.display = 'none';
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    createHolidayButton();
+    showHolidayButtonIfToday();
+    setInterval(showHolidayButtonIfToday, 60 * 1000);
+  });
+})();
+
+
+
+</script>
+<!-- Holiday corner button (hidden by default) -->
+<a id="holiday-btn" href="#" title="" target="_blank"
+   style="display:none; position:fixed; bottom:20px; right:20px; z-index:10001; text-decoration:none;">
+  <img id="holiday-btn-img"
+       src=""
+       alt="Holiday"
+       style="width:64px; height:64px; border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,0.4); display:block;">
+</a>
+<script>
+(function(){
+  const favicon = document.getElementById('dynamic-favicon');
+
+  // Define special days or months and their favicons (different from holiday corner)
+  const faviconEvents = {
+    "01": "https://placehold.co/32x32/ffdd57/000000?text=J", // January month favicon example
+    "https://www.google.com/logos/fnbx/new_years/icon_idle_2021.gif", // January month favicon example
+    "02-14": "https://placehold.co/32x32/ff6b9a/ffffff?text=V", // Valentine's day
+    "07": "https://placehold.co/32x32/3498db/ffffff?text=J", // July
+    "10-31": "https://placehold.co/32x32/ff8c00/ffffff?text=H", // Halloween
+    "12": "https://i.imgur.com/JVOAKOS.png" // Christmas (different color/icon than corner)
+    
+  };
+
+  function updateFavicon() {
+    const now = new Date();
+    const monthKey = String(now.getMonth() + 1).padStart(2, '0');
+    const dayKey = String(now.getDate()).padStart(2, '0');
+    const dateKey = `${monthKey}-${dayKey}`;
+    
+    // Priority to exact date
+    if(faviconEvents[dateKey]){
+      favicon.href = faviconEvents[dateKey];
+      return;
+    }
+    if(faviconEvents[monthKey]){
+      favicon.href = faviconEvents[monthKey];
+      return;
+    }
+    // Default favicon if no match
+    favicon.href = "https://lh3.googleusercontent.com/sitesv/AAzXCkdooyvQa4VchjEeV9bKMfWOGoUOq8ys0wkiNq4nmFiIW6DszHG8cRIH5ZEPPFk2wMcw5-WwSZmnrQi0_iFYbcAxeNvJlgOQAtKrfYzwK0x1noX5ToMTj_yXASRnHCpnhgoVLzr2tI9EJDjF9wFQx3wMKNrM45NbTU1UqMc-2YuuzcNotekvd4g98i8=w16383";
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    updateFavicon();
+    // Update hourly just in case page remains open multiple days
+    setInterval(updateFavicon, 60 * 60 * 1000);
+  });
+})();
+</script>
+
+
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"version":"2024.11.0","token":"e3c1c9af36de41759418005494a48906","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html>
+
