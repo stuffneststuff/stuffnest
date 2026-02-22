@@ -1,9 +1,208 @@
-
 <!DOCTYPE html>
-<html>
-  <body>
-      <p>⚿404⚿</p>
-      <p></p>
-<p>ether our servers are down or you are not supost to be here<p>
-  </body>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>404</title>
+  <style>
+    html, body {
+      margin: 0; padding: 0;
+      background: black;
+      overflow: hidden;
+      touch-action: none;
+    }
+    canvas {
+      display: block;
+      touch-action: none;
+    }
+  </style>
+</head>
+<body>
+<canvas id="screen"></canvas>
+<script>
+  const canvas = document.getElementById('screen');
+  const ctx = canvas.getContext('2d');
+
+  // Declare paddle early so it can be used in resize() and other functions
+  const paddle = {
+    width: 100,
+    height: 10,
+    x: 150,
+    y: 0, // will be set by resize()
+    speed: 6,
+  };
+
+  let show404 = true;
+  let inGame = false;
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    paddle.y = canvas.height - 30;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  const bounceText = {
+    text: "GAMES",
+    x: 100,
+    y: 100,
+    dx: 3,
+    dy: 2,
+    fontSize: 40,
+    color: getRandomColor(),
+  };
+
+  function getRandomColor() {
+    const letters = '0123456789ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+  }
+
+  const ball = {
+    x: 300,
+    y: 300,
+    radius: 8,
+    dx: 4,
+    dy: -4,
+  };
+
+  const keys = {};
+  window.addEventListener('keydown', e => {
+    keys[e.key.toLowerCase()] = true;
+  });
+  window.addEventListener('keyup', e => {
+    keys[e.key.toLowerCase()] = false;
+  });
+
+  canvas.addEventListener('touchmove', e => {
+    if (!inGame) return;
+    const touch = e.touches[0];
+    paddle.x = touch.clientX - paddle.width / 2;
+  });
+
+  function drawCentered404() {
+    const message = "⚿404 That's an error⚿";
+    ctx.font = '32px Arial';
+    ctx.fillStyle = '#ffffff';
+    const textWidth = ctx.measureText(message).width;
+    ctx.fillText(message, (canvas.width - textWidth) / 2, canvas.height / 2);
+  }
+
+  function drawBouncingText() {
+    ctx.font = `${bounceText.fontSize}px Arial`;
+    ctx.fillStyle = bounceText.color;
+    ctx.fillText(bounceText.text, bounceText.x, bounceText.y);
+  }
+
+  function updateBouncingText() {
+    const textWidth = ctx.measureText(bounceText.text).width;
+    const textHeight = bounceText.fontSize;
+
+    bounceText.x += bounceText.dx;
+    bounceText.y += bounceText.dy;
+
+    if (bounceText.x < 0 || bounceText.x + textWidth > canvas.width) {
+      bounceText.dx *= -1;
+      bounceText.color = getRandomColor();
+    }
+    if (bounceText.y - textHeight < 0 || bounceText.y > canvas.height) {
+      bounceText.dy *= -1;
+      bounceText.color = getRandomColor();
+    }
+  }
+
+  function updateGame() {
+    ball.x += ball.dx;
+    ball.y += ball.dy;
+
+    if (ball.x < 0 || ball.x > canvas.width) ball.dx *= -1;
+    if (ball.y < 0) ball.dy *= -1;
+
+    if (
+      ball.y + ball.radius >= paddle.y &&
+      ball.x >= paddle.x &&
+      ball.x <= paddle.x + paddle.width
+    ) {
+      ball.dy *= -1;
+      ball.y = paddle.y - ball.radius;
+    }
+
+    if (ball.y > canvas.height) {
+      ball.x = canvas.width / 2;
+      ball.y = canvas.height / 2;
+      ball.dy = -4;
+    }
+
+    if ((keys['arrowleft'] || keys['a']) && paddle.x > 0) {
+      paddle.x -= paddle.speed;
+    }
+    if ((keys['arrowright'] || keys['d']) && paddle.x + paddle.width < canvas.width) {
+      paddle.x += paddle.speed;
+    }
+  }
+
+  function drawGame() {
+    ctx.fillStyle = '#0ff';
+    ctx.beginPath();
+    ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
+  }
+
+  let lastTapTime = 0;
+  canvas.addEventListener('touchend', e => {
+    const now = Date.now();
+    if (now - lastTapTime < 300) {
+      triggerGameFromTap(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+    }
+    lastTapTime = now;
+  });
+
+  canvas.addEventListener('dblclick', e => {
+    triggerGameFromTap(e.clientX, e.clientY);
+  });
+
+  function triggerGameFromTap(x, y) {
+    const message = "404 That's an error";
+    ctx.font = '32px Arial';
+    const textWidth = ctx.measureText(message).width;
+    const textX = (canvas.width - textWidth) / 2;
+    const textY = canvas.height / 2;
+    const margin = 40;
+
+    if (
+      x >= textX - margin && x <= textX + textWidth + margin &&
+      y >= textY - 32 && y <= textY + margin
+    ) {
+      show404 = false;
+      inGame = true;
+      paddle.y = canvas.height - 30;
+      ball.x = canvas.width / 2;
+      ball.y = canvas.height / 2;
+    }
+  }
+
+  function loop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (inGame) {
+      updateGame();
+      drawGame();
+    } else {
+      if (show404) drawCentered404();
+      updateBouncingText();
+      drawBouncingText();
+    }
+
+    requestAnimationFrame(loop);
+  }
+
+  loop();
+</script>
+</body>
 </html>
