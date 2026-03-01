@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rich Emoji Chat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @keyframes messageIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        body { 
+            background-color: #020617; 
+            color: #f8fafc; 
+            overflow: hidden; 
+            cursor: none;
+        }
+
+        #custom-cursor {
+            width: 20px; height: 20px;
+            background: rgba(99, 102, 241, 0.3);
+            border: 2px solid rgba(99, 102, 241, 0.8);
+            border-radius: 50%;
+            position: fixed; pointer-events: none; z-index: 9999;
+            transition: transform 0.1s ease-out; transform: translate(-50%, -50%);
+        }
+
+        #cursor-dot {
+            width: 4px; height: 4px; background: #818cf8;
+            border-radius: 50%; position: fixed; pointer-events: none;
+            z-index: 10000; transform: translate(-50%, -50%);
+        }
+
+        .cursor-hover #custom-cursor { transform: translate(-50%, -50%) scale(2.5); background: rgba(99, 102, 241, 0.1); border-color: #ffffff; }
+
+        .scrollbar-thin::-webkit-scrollbar { width: 6px; }
+        .scrollbar-thin::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+        
+        .hidden-element { display: none !important; }
+        .message-entry { animation: messageIn 0.3s ease-out forwards; }
+
+        button, input, [contenteditable="true"], [role="button"], .cursor-help { cursor: none; }
+
+        .glass-bubble { backdrop-filter: blur(8px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        
+        .custom-emoji {
+            display: inline-block;
+            width: 22px;
+            height: 22px;
+            vertical-align: middle;
+            margin: 0 1px;
+            object-fit: contain;
+        }
+
+        #rich-input {
+            min-height: 44px;
+            max-height: 120px;
+            overflow-y: auto;
+            word-break: break-word;
+            white-space: pre-wrap;
+        }
+
+        #rich-input:empty:before {
+            content: attr(placeholder);
+            color: #64748b;
+        }
+        
+        .emoji-picker {
+            position: absolute;
+            bottom: 100%;
+            right: 0;
+            margin-bottom: 10px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 10px;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 6px;
+            z-index: 50;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+            width: 260px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .admin-glow {
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
+            border-color: rgba(239, 68, 68, 0.5) !important;
+        }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85); z-index: 1000;
+            display: flex; align-items: center; justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body class="font-sans h-screen flex flex-col">
+
+    <div id="custom-cursor"></div>
+    <div id="cursor-dot"></div>
+
+    <!-- Admin Password Modal -->
+    <div id="admin-modal" class="modal-overlay hidden-element">
+        <div class="bg-slate-900 p-8 rounded-2xl border border-slate-700 w-80 shadow-2xl">
+            <h2 class="text-white font-bold mb-4 text-center tracking-widest uppercase text-xs">Admin Verification</h2>
+            <input type="password" id="admin-pass" placeholder="Enter Secret Key..." class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-center text-white focus:outline-none focus:border-rose-500 mb-4">
+            <button onclick="verifyAdmin()" class="w-full bg-rose-600 hover:bg-rose-500 py-3 rounded-lg text-xs font-bold uppercase tracking-widest">Login to Spectre</button>
+        </div>
+    </div>
+
+    <header class="h-16 flex items-center justify-between px-6 bg-slate-900 border-b border-slate-800 shadow-lg z-10">
+        <div class="flex items-center gap-3">
+            <div id="header-icon" class="bg-indigo-600 p-2 rounded-lg transition-colors duration-500"><i data-lucide="shield-check" class="text-white w-5 h-5"></i></div>
+            <div>
+                <h1 id="app-title" class="font-bold text-lg leading-none italic">SecureChat</h1>
+                <p id="app-subtitle" class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Encrypted Mod & Rich Input</p>
+            </div>
+        </div>
+        <div id="status-badge" class="cursor-help flex items-center gap-1.5 px-3 py-1 rounded-full border bg-emerald-500/10 border-emerald-500/20 text-emerald-500 transition-all duration-500">
+            <i id="status-icon" data-lucide="shield" class="w-3.5 h-3.5"></i>
+            <span id="status-text" class="text-[10px] font-bold uppercase tracking-widest">Protected</span>
+        </div>
+    </header>
+
+    <main class="flex-1 flex overflow-hidden">
+        <section class="flex-1 flex flex-col relative bg-slate-950">
+            <div id="messages-container" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 scrollbar-thin">
+                <div id="loading-state" class="h-full flex flex-col items-center justify-center text-slate-600">
+                    <i data-lucide="refresh-cw" class="w-8 h-8 animate-spin opacity-20 mb-2"></i>
+                    <p class="text-xs uppercase tracking-widest">Syncing Stream...</p>
+                </div>
+            </div>
+
+            <div class="p-4 md:p-6 bg-slate-900 border-t border-slate-800 shadow-2xl shrink-0">
+                <div id="spam-warning" class="hidden-element text-rose-400 text-[10px] font-bold uppercase mb-2 animate-pulse">
+                    Spam Filter Active: Please wait
+                </div>
+                
+                <form id="chat-form" class="max-w-4xl mx-auto relative">
+                    <div id="emoji-menu" class="emoji-picker hidden-element scrollbar-thin"></div>
+
+                    <div class="flex items-end gap-3">
+                        <div id="input-container" class="flex-1 relative bg-slate-800 rounded-xl border border-slate-700 focus-within:ring-2 focus-within:ring-indigo-500 transition-all">
+                            <div 
+                                id="rich-input" 
+                                contenteditable="true" 
+                                placeholder="Type a message..." 
+                                class="w-full px-4 py-3 text-sm text-white focus:outline-none"
+                            ></div>
+                            <button type="button" onclick="toggleEmojiPicker()" class="absolute right-3 top-3 text-slate-500 hover:text-indigo-400">
+                                <i data-lucide="smile" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                        
+                        <button type="submit" id="send-btn" class="p-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl transition-all shadow-lg active:scale-95 disabled:opacity-30">
+                            <i data-lucide="send" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // --- ADMIN & SEPARATE FORM CONFIG ---
+        let isAdmin = false;
+        const ADMIN_PASS = "〠";
+        
+        const CONFIG = {
+            // PUBLIC SETTINGS
+            publicFormUrl: "https://docs.google.com/forms/d/e/1FAIpQLSd4P8N2rx5ysMtABgMNxmbCdaW3jg9zAnhEkpwtxReeFvMGJA/formResponse",
+            publicEntryId: "entry.732896261",
+            publicCsvUrl: "https://docs.google.com/spreadsheets/d/1f5z-VcfuPnZYKuZTH1qFerR_ZkNfxjRNrD0Izt8jUQ4/export?format=csv",
+
+            // ADMIN SETTINGS (Completely different destination)
+            adminFormUrl: "https://docs.google.com/forms/d/e/1FAIpQLSeX3t7YqV_your_admin_form_here/formResponse", 
+            adminEntryId: "entry.987654321", 
+            adminCsvUrl: "https://docs.google.com/spreadsheets/d/1f5z-VcfuPnZYKuZTH1qFerR_ZkNfxjRNrD0Izt8jUQ4/export?format=csv&gid=999999",
+
+            refreshRate: 5000
+        };
+
+        // --- ENCRYPTED MODERATION ---
+        const ENCRYPTED_WORDS = ['YXNz', 'ZnVjaw==', 'c2hpdA==', 'Yml0Y2g=', 'ZGFtbg==', 'Y3JhcA==', 'cGlzcw==', 'ZGljaw==', 'cHVzc3k=', 'bmlnZ2Vy', 'ZmFnZ290'];
+        const BANNED_WORDS = ENCRYPTED_WORDS.map(w => atob(w));
+        const COOLDOWN_MS = 2500;
+        let lastSentAt = 0;
+
+        // --- EXTENDED EMOTE LIBRARY ---
+        const CUSTOM_EMOJIS = {
+            ":fire:": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f525/512.webp",
+            ":rocket:": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f680/512.webp",
+            ":heart:": "https://fonts.gstatic.com/s/e/notoemoji/latest/2764_fe0f/512.webp",
+            ":skull:": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f480/512.webp",
+            ":cool:": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f60e/512.webp",
+            ":party:": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f973/512.webp",
+            ":think:": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f914/512.webp",
+            ":cry:": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f62d/512.webp",
+            ":laugh:": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f602/512.webp",
+            ":star:": "https://fonts.gstatic.com/s/e/notoemoji/latest/2b50/512.webp",
+            ":check:": "https://fonts.gstatic.com/s/e/notoemoji/latest/2705/512.webp",
+            ":ghost:": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f47b/512.webp",
+            ":alien:": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f47d/512.webp",
+            ":robot:": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f916/512.webp",
+            ":crown:": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f451/512.webp",
+            ":money:": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f911/512.webp",
+            ":eyes:": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f440/512.webp",
+            ":gemini:": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Google_Gemini_logo.svg/120px-Google_Gemini_logo.svg.png"
+        };
+
+        const richInput = document.getElementById('rich-input');
+        const emojiMenu = document.getElementById('emoji-menu');
+        const messagesContainer = document.getElementById('messages-container');
+        const cursor = document.getElementById('custom-cursor');
+        const dot = document.getElementById('cursor-dot');
+
+        // --- ADMIN LOGIN ---
+        function checkUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('admin') === 'true') {
+                document.getElementById('admin-modal').classList.remove('hidden-element');
+            }
+        }
+
+        function verifyAdmin() {
+            const pass = document.getElementById('admin-pass').value;
+            if (pass === ADMIN_PASS) {
+                isAdmin = true;
+                document.getElementById('admin-modal').classList.add('hidden-element');
+                enableAdminUI();
+                fetchHistory(); 
+            } else {
+                const input = document.getElementById('admin-pass');
+                input.value = "";
+                input.classList.add('border-rose-500');
+                setTimeout(() => input.classList.remove('border-rose-500'), 1000);
+            }
+        }
+
+        function enableAdminUI() {
+            document.getElementById('header-icon').className = "bg-rose-600 p-2 rounded-lg";
+            document.getElementById('app-title').innerText = "Spectre Stream";
+            document.getElementById('app-subtitle').innerText = "Isolated Admin Control Panel";
+            document.getElementById('status-badge').className = "cursor-help flex items-center gap-1.5 px-3 py-1 rounded-full border bg-rose-500/10 border-rose-500/20 text-rose-500";
+            document.getElementById('status-text').innerText = "Privileged";
+            document.getElementById('input-container').classList.add('admin-glow');
+            document.getElementById('send-btn').className = "p-3 bg-rose-600 hover:bg-rose-500 rounded-xl transition-all shadow-lg active:scale-95";
+            myBadge = "👑";
+            myColor = "#ef4444";
+        }
+
+        // --- MODERATION ---
+        function checkModeration(text) {
+            const lower = text.toLowerCase();
+            for (const word of BANNED_WORDS) {
+                const regex = new RegExp(`\\b${word}\\b`, 'i');
+                if (regex.test(lower)) return { clean: false, word: word };
+            }
+            return { clean: true };
+        }
+
+        // --- RICH TEXT ---
+        function toggleEmojiPicker() { emojiMenu.classList.toggle('hidden-element'); }
+
+        function insertEmoji(code) {
+            const url = CUSTOM_EMOJIS[code];
+            const img = `<img src="${url}" class="custom-emoji" data-code="${code}" alt="${code}"> `;
+            richInput.focus();
+            document.execCommand('insertHTML', false, img);
+            emojiMenu.classList.add('hidden-element');
+        }
+
+        Object.entries(CUSTOM_EMOJIS).forEach(([code, url]) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'p-2 hover:bg-slate-800 rounded-lg flex items-center justify-center transition-transform hover:scale-110';
+            btn.innerHTML = `<img src="${url}" class="w-8 h-8 object-contain">`;
+            btn.onclick = () => insertEmoji(code);
+            emojiMenu.appendChild(btn);
+        });
+
+        function getRawText() {
+            let temp = document.createElement('div');
+            temp.innerHTML = richInput.innerHTML;
+            temp.querySelectorAll('img').forEach(img => {
+                const code = img.getAttribute('data-code');
+                if (code) img.replaceWith(code);
+            });
+            return temp.innerText.trim();
+        }
+
+        function textToHtml(text) {
+            let html = text.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[m]));
+            Object.entries(CUSTOM_EMOJIS).forEach(([code, url]) => {
+                const regex = new RegExp(code.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), 'g');
+                html = html.replace(regex, `<img src="${url}" class="custom-emoji">`);
+            });
+            return html;
+        }
+
+        // --- CURSOR ---
+        document.addEventListener('mousemove', (e) => {
+            dot.style.left = e.clientX + 'px'; dot.style.top = e.clientY + 'px';
+            cursor.style.left = e.clientX + 'px'; cursor.style.top = e.clientY + 'px';
+            document.body.classList.toggle('cursor-hover', !!e.target.closest('button, a, input, [contenteditable="true"], .cursor-help'));
+        });
+
+        // --- DATA HANDLER ---
+        let myBadge = Math.random().toString(36).substring(2, 4).toUpperCase();
+        let myColor = `hsl(${Math.random() * 360}, 60%, 60%)`;
+        let myFingerprints = new Set();
+
+        async function fetchHistory() {
+            try {
+                const url = isAdmin ? CONFIG.adminCsvUrl : CONFIG.publicCsvUrl;
+                const response = await fetch(url + `&t=${Date.now()}`);
+                const currentData = await response.text();
+                const rows = currentData.split('\n').filter(r => r.trim()).slice(1);
+                
+                messagesContainer.innerHTML = '';
+                rows.forEach((row) => {
+                    const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(s => s.replace(/^"|"$/g, '').trim());
+                    if (cols.length > 1 && cols[1]) {
+                        const isMe = myFingerprints.has(`${cols[1]}|${cols[0].substring(0, cols[0].lastIndexOf(':'))}`);
+                        appendMessageUI(cols[1], isMe);
+                    }
+                });
+                if (messagesContainer.innerHTML === '') {
+                   messagesContainer.innerHTML = '<div class="text-center text-slate-700 text-[10px] uppercase tracking-widest mt-10">No messages in this stream</div>';
+                }
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            } catch (e) { console.error("Sync Error", e); }
+        }
+
+        function appendMessageUI(text, isMe) {
+            const wrapper = document.createElement('div');
+            wrapper.className = `flex ${isMe ? 'justify-end' : 'justify-start'} message-entry mb-4`;
+            wrapper.innerHTML = `
+                <div class="flex max-w-[85%] ${isMe ? 'flex-row-reverse' : 'flex-row'} gap-2 items-end">
+                    <div class="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-[8px] font-bold shadow-sm" style="background-color: ${isMe ? myColor : '#334155'}">
+                        ${isMe ? myBadge : '??'}
+                    </div>
+                    <div class="px-4 py-2 rounded-2xl text-sm glass-bubble ${isMe ? (isAdmin ? 'bg-rose-700 rounded-br-none text-white' : 'bg-indigo-600 rounded-br-none') : 'bg-slate-800 rounded-bl-none'}">
+                        ${textToHtml(text)}
+                    </div>
+                </div>
+            `;
+            messagesContainer.appendChild(wrapper);
+        }
+
+        document.getElementById('chat-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const rawText = getRawText();
+            const now = Date.now();
+
+            if (!rawText) return;
+            if (now - lastSentAt < COOLDOWN_MS) {
+                document.getElementById('spam-warning').classList.remove('hidden-element');
+                return;
+            }
+
+            const modResult = checkModeration(rawText);
+            if (!modResult.clean) {
+                const originalHtml = richInput.innerHTML;
+                richInput.innerHTML = `<span class="text-rose-500 font-bold uppercase text-[10px]">Security: Restricted Content.</span>`;
+                setTimeout(() => { richInput.innerHTML = originalHtml; }, 2000);
+                return;
+            }
+
+            document.getElementById('spam-warning').classList.add('hidden-element');
+            lastSentAt = now;
+
+            const d = new Date();
+            const timeKey = `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()} ${d.getHours()}:${d.getMinutes().toString().padStart(2, '0')}`;
+            myFingerprints.add(`${rawText}|${timeKey}`);
+
+            const formData = new URLSearchParams();
+            const formUrl = isAdmin ? CONFIG.adminFormUrl : CONFIG.publicFormUrl;
+            const entryId = isAdmin ? CONFIG.adminEntryId : CONFIG.publicEntryId;
+            
+            formData.append(entryId, rawText);
+            fetch(formUrl, { method: 'POST', mode: 'no-cors', body: formData });
+            
+            richInput.innerHTML = '';
+            appendMessageUI(rawText, true);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            setTimeout(fetchHistory, 1500);
+        };
+
+        richInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                document.getElementById('chat-form').dispatchEvent(new Event('submit'));
+            }
+        });
+
+        lucide.createIcons();
+        window.onload = () => { 
+            checkUrlParams();
+            fetchHistory(); 
+            setInterval(fetchHistory, CONFIG.refreshRate); 
+        };
+    </script>
+</body>
+</html>
