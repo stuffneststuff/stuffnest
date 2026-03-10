@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Exam System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: { primary: '#2563eb', danger: '#dc2626', warning: '#f59e0b', success: '#16a34a' }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body { background-color: #f3f4f6; overflow-x: hidden; }
+        .secure-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 95vw;
+            height: 90vh;
+            background: white;
+            z-index: 50;
+            border-radius: 1rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .blur-bg { filter: blur(8px); pointer-events: none; user-select: none; }
+        .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+        .calc-btn { padding: 12px; font-weight: bold; border-radius: 0.5rem; transition: all 0.1s; }
+        .order-indicator { min-width: 24px; }
+    </style>
+</head>
+<body class="font-sans">
+
+    <!-- Global Toast Notifications -->
+    <div id="toast-container" class="fixed top-5 right-5 z-[100] flex flex-col gap-2"></div>
+
+    <!-- BACKGROUND CONTENT (Blurred when in test) -->
+    <div id="bg-content" class="min-h-screen flex flex-col items-center justify-center p-6 transition-all duration-500">
+        <div class="text-center max-w-lg bg-white p-8 rounded-2xl shadow-xl">
+            <i class="fas fa-shield-alt text-6xl text-primary mb-4"></i>
+            <h1 class="text-3xl font-bold mb-2">Secure Assessment Portal</h1>
+            <p class="text-gray-600 mb-6">Welcome to the secure testing environment. To begin, ensure you have the correct Quiz ID or Link from your instructor.</p>
+            
+            <div id="initial-actions" class="space-y-4">
+                <button id="start-exam-btn" class="w-full bg-primary text-white py-3 rounded-xl font-bold hover:bg-blue-700 shadow-lg transition-all">
+                    Enter Fullscreen Exam Mode
+                </button>
+                <button id="admin-gate-btn" class="w-full border-2 border-gray-300 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-50 transition-all">
+                    Teacher Tools / Setup
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- THE LOCKOUT / FULLSCREEN GATE (OVERLAY) -->
+    <div id="security-gate" class="fixed inset-0 bg-gray-900/95 z-[60] hidden flex flex-col items-center justify-center p-10 text-white text-center">
+        <div id="gate-icon" class="mb-6"><i class="fas fa-lock text-7xl text-danger animate-bounce"></i></div>
+        <h2 id="gate-title" class="text-4xl font-extrabold mb-4">Exam Locked</h2>
+        <p id="gate-message" class="text-xl text-gray-300 max-w-2xl mb-8">
+            A security breach was detected (Esc key, tab switch, or window resize). To resume, your teacher must enter a One-Time Unlock Code.
+        </p>
+        
+        <div id="resume-input-area" class="w-full max-w-sm flex flex-col gap-4">
+            <input type="text" id="resume-code-field" placeholder="Enter 8-digit Teacher Code" 
+                   class="p-4 rounded-lg bg-white/10 border border-white/20 text-white text-center text-2xl font-mono focus:outline-none focus:ring-2 focus:ring-primary">
+            <button id="resume-submit-btn" class="bg-primary hover:bg-blue-600 py-4 rounded-lg font-bold text-lg">
+                Unlock and Resume
+            </button>
+            <p class="text-sm text-gray-500">Quiz ID: <span id="gate-quiz-id" class="font-mono">DEFAULT</span></p>
+        </div>
+    </div>
+
+    <!-- THE SECURE EXAM MODAL (THE POPUP) -->
+    <div id="exam-popup" class="secure-modal hidden">
+        <header class="bg-gray-800 text-white px-6 py-4 flex justify-between items-center shrink-0">
+            <div class="flex items-center gap-4">
+                <span class="bg-danger px-2 py-1 rounded text-xs font-bold animate-pulse">LIVE EXAM</span>
+                <h3 class="font-bold text-lg" id="active-quiz-title">General Science Assessment</h3>
+            </div>
+            <div class="flex items-center gap-6">
+                <div id="exam-timer" class="font-mono text-xl text-warning">00:00</div>
+                <button id="open-tools-btn" class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg text-sm transition">
+                    <i class="fas fa-tools mr-2"></i>Reference Tools
+                </button>
+            </div>
+        </header>
+        
+        <main id="quiz-scroller" class="flex-grow overflow-y-auto p-8 bg-gray-50">
+            <div id="quiz-content" class="max-w-3xl mx-auto space-y-8 pb-20">
+                <!-- Questions render here -->
+            </div>
+        </main>
+
+        <footer class="bg-white border-t p-6 flex justify-between items-center shrink-0">
+            <p class="text-sm text-gray-500 italic"><i class="fas fa-eye mr-2"></i>Security Active: Any exit will lock your progress.</p>
+            <button id="finish-exam-btn" class="bg-success hover:bg-green-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg transition">
+                Submit Finished Exam
+            </button>
+        </footer>
+    </div>
+
+    <!-- REFERENCE TOOLS OVERLAY -->
+    <div id="tools-overlay" class="fixed inset-0 bg-black/60 z-[70] hidden flex items-center justify-center p-6">
+        <div class="bg-white w-full max-w-4xl h-[80vh] rounded-2xl flex flex-col shadow-2xl">
+            <div class="p-4 border-b flex justify-between items-center bg-primary text-white rounded-t-2xl">
+                <h4 class="font-bold"><i class="fas fa-briefcase mr-2"></i>Allowed Reference Tools</h4>
+                <button id="close-tools-btn" class="text-2xl">&times;</button>
+            </div>
+            <div id="tools-grid" class="flex-grow overflow-y-auto grid grid-cols-1 md:grid-cols-2 p-6 gap-6">
+                <!-- Calculator -->
+                <div class="border rounded-xl p-4 bg-gray-50 h-fit">
+                    <h5 class="font-bold mb-3 border-b pb-1">Scientific Calculator</h5>
+                    <div class="bg-black text-green-500 p-4 rounded text-right text-2xl font-mono mb-4 h-16 flex items-center justify-end" id="calc-display">0</div>
+                    <div class="calc-grid" id="calc-btns"></div>
+                </div>
+                <!-- Dictionary -->
+                <div class="border rounded-xl p-4 bg-gray-50 h-fit">
+                    <h5 class="font-bold mb-3 border-b pb-1">AI Dictionary Lookup</h5>
+                    <div class="flex gap-2 mb-4">
+                        <input type="text" id="dict-input" class="flex-grow p-2 border rounded" placeholder="Word...">
+                        <button id="dict-search-btn" class="bg-primary text-white px-4 py-2 rounded">Define</button>
+                    </div>
+                    <div id="dict-results" class="text-sm text-gray-700 italic">Enter a word to see definition...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TEACHER SETTINGS AREA (Outside the lock) -->
+    <div id="teacher-section" class="max-w-4xl mx-auto mt-20 p-8 bg-white rounded-2xl shadow-xl hidden">
+        <div class="flex justify-between items-center mb-8 border-b pb-4">
+            <h2 class="text-2xl font-bold text-gray-800">Teacher Management Console</h2>
+            <button id="close-teacher-btn" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times-circle text-2xl"></i></button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Unlock Code Generator -->
+            <div class="bg-blue-50 p-6 rounded-xl border border-blue-200">
+                <h3 class="font-bold text-blue-800 mb-4"><i class="fas fa-key mr-2"></i>Live Unlock Generator</h3>
+                <p class="text-xs text-blue-600 mb-4">This code refreshes every 60 seconds. Provide this to locked-out students.</p>
+                <div id="teacher-code-display" class="text-5xl font-mono font-black text-center text-blue-900 tracking-widest my-4">00000000</div>
+                <div class="w-full bg-blue-200 rounded-full h-1.5 mt-2">
+                    <div id="code-timer-bar" class="bg-blue-600 h-1.5 rounded-full" style="width: 100%"></div>
+                </div>
+                <div class="mt-6 p-4 bg-white rounded border border-blue-100 text-sm">
+                    <strong>Quiz ID:</strong> <span id="current-quiz-id-text" class="font-mono">DEFAULT</span>
+                    <button id="reset-quiz-id" class="ml-2 text-xs text-primary underline">Change ID</button>
+                </div>
+            </div>
+
+            <!-- Quiz Configuration -->
+            <div class="space-y-4">
+                <h3 class="font-bold text-gray-800">Quick Configuration</h3>
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded border">
+                    <span>Persistent State Clear</span>
+                    <button id="clear-local-btn" class="bg-danger text-white text-xs px-3 py-1 rounded">Reset All Progress</button>
+                </div>
+                <button id="generate-link-btn" class="w-full bg-success text-white py-3 rounded-lg font-bold">
+                    Generate Data Link (Copy Link)
+                </button>
+                <textarea id="data-link-out" readonly class="w-full h-20 text-xs p-2 bg-gray-100 border rounded mt-2 hidden"></textarea>
+            </div>
+        </div>
+        
+        <div id="questions-editor" class="mt-8">
+            <h3 class="font-bold mb-4">Question Editor (Local)</h3>
+            <div id="editor-list" class="space-y-4"></div>
+            <button id="add-q-btn" class="mt-4 bg-gray-200 w-full py-2 rounded-lg font-bold hover:bg-gray-300 transition">+ Add New Question</button>
+        </div>
+    </div>
+
+    <script>
+        // --- CONSTANTS & STATE ---
+        const TEACHER_PASSWORD = "p"; // Secret key for hash generation
+        const APP_ID = "SECURE_EXAM_V1";
+        
+        let state = {
+            quizId: localStorage.getItem(`${APP_ID}_quizId`) || 'EXAM-' + Math.random().toString(36).substring(2,8).toUpperCase(),
+            isLocked: localStorage.getItem(`${APP_ID}_locked`) === 'true',
+            lockReason: localStorage.getItem(`${APP_ID}_lockReason`) || '',
+            isSubmitted: localStorage.getItem(`${APP_ID}_submitted`) === 'true',
+            inTest: false,
+            answers: JSON.parse(localStorage.getItem(`${APP_ID}_answers`) || '{}'),
+            questions: [
+                { id: 1, text: "Which molecule carries genetic information?", type: 'mc', options: ['ATP', 'DNA', 'RNA', 'Protein'], correct: 1 },
+                { id: 2, text: "The capital of France is Paris.", type: 'tf', correct: true },
+                { id: 3, text: "Order the planets from the Sun:", type: 'order', items: ['Mercury', 'Venus', 'Earth', 'Mars'] }
+            ]
+        };
+
+        // --- UTILITIES ---
+        const $ = (id) => document.getElementById(id);
+        const toast = (msg, type='info') => {
+            const el = document.createElement('div');
+            el.className = `p-4 rounded-lg shadow-xl text-white font-bold transition-all duration-300 transform translate-x-10 ${type === 'danger' ? 'bg-danger' : 'bg-primary'}`;
+            el.innerHTML = msg;
+            $('toast-container').appendChild(el);
+            setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 3000);
+        };
+
+        // --- SECURITY LOGIC ---
+        function generateSecureCode(salt = state.quizId) {
+            const now = new Date();
+            const timeStep = Math.floor(now.getTime() / 60000); // New code every min
+            const base = TEACHER_PASSWORD + timeStep + salt;
+            let hash = 0;
+            for (let i = 0; i < base.length; i++) hash = ((hash << 5) - hash) + base.charCodeAt(i) | 0;
+            return Math.abs(hash).toString().padStart(8, '0').slice(-8);
+        }
+
+        function lockExam(reason) {
+            if (!state.inTest || state.isSubmitted) return;
+            
+            state.isLocked = true;
+            state.lockReason = reason;
+            localStorage.setItem(`${APP_ID}_locked`, 'true');
+            localStorage.setItem(`${APP_ID}_lockReason`, reason);
+            
+            if (document.fullscreenElement) document.exitFullscreen();
+            showSecurityGate();
+            toast("Security Breach: Exam Locked", "danger");
+        }
+
+        function unlockExam(code) {
+            const validCode = generateSecureCode();
+            if (code === validCode) {
+                state.isLocked = false;
+                state.lockReason = '';
+                localStorage.setItem(`${APP_ID}_locked`, 'false');
+                localStorage.removeItem(`${APP_ID}_lockReason`);
+                hideSecurityGate();
+                startExam(); // Re-enter
+                toast("Access Restored", "success");
+                return true;
+            }
+            return false;
+        }
+
+        // --- UI RENDERING ---
+        function showSecurityGate() {
+            $('security-gate').classList.remove('hidden');
+            $('gate-message').innerText = state.lockReason || "FullScreen mode exited. Unlock required.";
+            $('gate-quiz-id').innerText = state.quizId;
+            $('bg-content').classList.add('blur-bg');
+            $('exam-popup').classList.add('hidden');
+        }
+
+        function hideSecurityGate() {
+            $('security-gate').classList.add('hidden');
+            $('bg-content').classList.remove('blur-bg');
+        }
+
+        function startExam() {
+            if (state.isSubmitted) {
+                toast("Exam already submitted.", "danger");
+                return;
+            }
+            document.documentElement.requestFullscreen().then(() => {
+                state.inTest = true;
+                $('exam-popup').classList.remove('hidden');
+                $('bg-content').classList.add('blur-bg');
+                renderQuiz();
+            }).catch(() => {
+                toast("Please allow fullscreen to start the exam.", "danger");
+            });
+        }
+
+        function renderQuiz() {
+            const container = $('quiz-content');
+            container.innerHTML = '';
+            state.questions.forEach((q, idx) => {
+                const qDiv = document.createElement('div');
+                qDiv.className = "bg-white p-6 rounded-xl border border-gray-200 shadow-sm";
+                let html = `<p class="font-bold text-lg mb-4">${idx + 1}. ${q.text}</p>`;
+
+                if (q.type === 'mc') {
+                    q.options.forEach((opt, oIdx) => {
+                        html += `
+                            <label class="flex items-center gap-3 p-3 border rounded-lg mb-2 hover:bg-gray-50 cursor-pointer transition">
+                                <input type="radio" name="q${q.id}" value="${oIdx}" ${state.answers[q.id] == oIdx ? 'checked' : ''} onchange="saveAnswer(${q.id}, this.value)">
+                                <span>${opt}</span>
+                            </label>
+                        `;
+                    });
+                } else if (q.type === 'tf') {
+                    html += `
+                        <div class="flex gap-4">
+                            <button onclick="saveAnswer(${q.id}, true)" class="flex-grow p-3 border rounded-lg ${state.answers[q.id] === true ? 'bg-primary text-white' : 'bg-white'}">True</button>
+                            <button onclick="saveAnswer(${q.id}, false)" class="flex-grow p-3 border rounded-lg ${state.answers[q.id] === false ? 'bg-primary text-white' : 'bg-white'}">False</button>
+                        </div>
+                    `;
+                } else if (q.type === 'order') {
+                    const currentItems = state.answers[q.id] || [...q.items];
+                    html += `<div class="space-y-2" id="order-${q.id}">`;
+                    currentItems.forEach((item, iIdx) => {
+                        html += `
+                            <div class="flex items-center gap-2 p-3 bg-gray-50 border rounded-lg">
+                                <span class="order-indicator font-mono bg-gray-200 px-2 rounded">${iIdx + 1}</span>
+                                <span class="flex-grow">${item}</span>
+                                <div class="flex gap-1">
+                                    <button onclick="moveItem(${q.id}, ${iIdx}, -1)" class="p-1 text-gray-400 hover:text-primary"><i class="fas fa-chevron-up"></i></button>
+                                    <button onclick="moveItem(${q.id}, ${iIdx}, 1)" class="p-1 text-gray-400 hover:text-primary"><i class="fas fa-chevron-down"></i></button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += `</div>`;
+                }
+
+                qDiv.innerHTML = html;
+                container.appendChild(qDiv);
+            });
+        }
+
+        window.saveAnswer = (id, val) => {
+            state.answers[id] = val;
+            localStorage.setItem(`${APP_ID}_answers`, JSON.stringify(state.answers));
+            renderQuiz();
+        };
+
+        window.moveItem = (qId, index, dir) => {
+            let items = state.answers[qId] || [...state.questions.find(q => q.id === qId).items];
+            const newIdx = index + dir;
+            if (newIdx < 0 || newIdx >= items.length) return;
+            const temp = items[index];
+            items[index] = items[newIdx];
+            items[newIdx] = temp;
+            saveAnswer(qId, items);
+        };
+
+        // --- CALCULATOR ---
+        function initCalc() {
+            const btns = ['C', '(', ')', '/', '7', '8', '9', '*', '4', '5', '6', '-', '1', '2', '3', '+', '0', '.', '=', '%'];
+            const container = $('calc-btns');
+            container.innerHTML = '';
+            btns.forEach(b => {
+                const btn = document.createElement('button');
+                btn.className = "calc-btn bg-gray-200 hover:bg-gray-300";
+                btn.innerText = b;
+                btn.onclick = () => {
+                    const disp = $('calc-display');
+                    if (b === 'C') disp.innerText = '0';
+                    else if (b === '=') {
+                        try { disp.innerText = eval(disp.innerText); } 
+                        catch { disp.innerText = 'Error'; }
+                    } else {
+                        disp.innerText = disp.innerText === '0' ? b : disp.innerText + b;
+                    }
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        // --- DICTIONARY ---
+        async function defineWord() {
+            const word = $('dict-input').value.trim();
+            if (!word) return;
+            $('dict-results').innerText = "Searching...";
+            
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: `Define "${word}" simply.` }] }],
+                        generationConfig: { responseMimeType: "application/json", responseSchema: { type: "OBJECT", properties: { def: { type: "STRING" } } } }
+                    })
+                });
+                const data = await res.json();
+                $('dict-results').innerText = JSON.parse(data.candidates[0].content.parts[0].text).def;
+            } catch {
+                $('dict-results').innerText = "Could not find definition.";
+            }
+        }
+
+        // --- SYSTEM EVENTS ---
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement && state.inTest && !state.isSubmitted) {
+                lockExam("Fullscreen Exited. A teacher must verify your environment before you resume.");
+            }
+        });
+
+        window.addEventListener('blur', () => {
+            if (state.inTest) lockExam("Tab/Window switch detected. This event has been logged.");
+        });
+
+        window.addEventListener('resize', () => {
+            if (state.inTest) lockExam("Window resizing detected. Potential split-screen attempt.");
+        });
+
+        // Prevention keys
+        window.addEventListener('keydown', (e) => {
+            if (!state.inTest) return;
+            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
+                e.preventDefault();
+                lockExam("Developer Tools access attempted.");
+            }
+            if (e.ctrlKey && (e.key === 'c' || e.key === 'v')) {
+                toast("Copy/Paste is disabled", "danger");
+                e.preventDefault();
+            }
+        });
+
+        // --- BOOTSTRAP ---
+        window.onload = () => {
+            if (state.isLocked) showSecurityGate();
+            
+            $('start-exam-btn').onclick = startExam;
+            
+            $('admin-gate-btn').onclick = () => {
+                const p = prompt("Enter Teacher Password:");
+                if (p === TEACHER_PASSWORD) {
+                    $('teacher-section').classList.remove('hidden');
+                    $('bg-content').classList.add('hidden');
+                    initTeacherUI();
+                } else {
+                    toast("Incorrect Password", "danger");
+                }
+            };
+
+            $('close-teacher-btn').onclick = () => {
+                $('teacher-section').classList.add('hidden');
+                $('bg-content').classList.remove('hidden');
+            };
+
+            $('resume-submit-btn').onclick = () => {
+                const code = $('resume-code-field').value;
+                if (!unlockExam(code)) {
+                    toast("Invalid Teacher Code", "danger");
+                }
+            };
+
+            $('clear-local-btn').onclick = () => {
+                localStorage.clear();
+                location.reload();
+            };
+
+            $('finish-exam-btn').onclick = () => {
+                if (confirm("Are you sure you want to submit your exam? You cannot go back.")) {
+                    state.isSubmitted = true;
+                    state.inTest = false;
+                    localStorage.setItem(`${APP_ID}_submitted`, 'true');
+                    document.exitFullscreen();
+                    $('exam-popup').classList.add('hidden');
+                    $('bg-content').classList.remove('blur-bg');
+                    toast("Exam Submitted Successfully", "success");
+                    alert("Your responses have been saved locally. Thank you.");
+                }
+            };
+
+            $('open-tools-btn').onclick = () => {
+                $('tools-overlay').classList.remove('hidden');
+                initCalc();
+            };
+            $('close-tools-btn').onclick = () => $('tools-overlay').classList.add('hidden');
+            $('dict-search-btn').onclick = defineWord;
+
+            // Teacher Code Loop
+            setInterval(() => {
+                const code = generateSecureCode();
+                $('teacher-code-display').innerText = code;
+                const seconds = new Date().getSeconds();
+                $('code-timer-bar').style.width = ((60 - seconds) / 60 * 100) + '%';
+            }, 1000);
+        };
+
+        function initTeacherUI() {
+            $('current-quiz-id-text').innerText = state.quizId;
+            $('reset-quiz-id').onclick = () => {
+                state.quizId = 'EXAM-' + Math.random().toString(36).substring(2,8).toUpperCase();
+                localStorage.setItem(`${APP_ID}_quizId`, state.quizId);
+                $('current-quiz-id-text').innerText = state.quizId;
+            };
+        }
+    </script>
+</body>
+</html>
