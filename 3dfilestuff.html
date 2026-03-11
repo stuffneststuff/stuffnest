@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js Studio & Code Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { margin: 0; background-color: #1a1a1a; color: #e5e5e5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        #canvas-container { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 0; }
+        .panel { background: rgba(30, 30, 30, 0.95); backdrop-filter: blur(10px); border: 1px solid #333; }
+        .btn { transition: all 0.2s; }
+        .btn:hover { transform: translateY(-1px); }
+        .btn:active { transform: translateY(1px); }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #222; }
+        ::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #777; }
+        
+        /* Code Block Styling */
+        pre { margin: 0; white-space: pre-wrap; word-break: break-all; }
+
+        /* Toast Notification */
+        #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; pointer-events: none; }
+        .toast { background: rgba(40, 40, 40, 0.95); border-left: 4px solid #3b82f6; padding: 12px 24px; border-radius: 4px; color: white; margin-bottom: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); opacity: 0; transition: opacity 0.3s ease-in-out; pointer-events: auto; display: flex; align-items: center; gap: 10px; font-size: 0.9rem; }
+        .toast.show { opacity: 1; }
+        .toast.success { border-left-color: #22c55e; }
+        .toast.error { border-left-color: #ef4444; }
+        .toast.info { border-left-color: #3b82f6; }
+
+        /* Paint Mode Cursor */
+        .paint-mode-active #canvas-container {
+            cursor: crosshair !important;
+        }
+    </style>
+    <!-- Import Map for Three.js -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+</head>
+<body>
+
+    <!-- 3D Canvas -->
+    <div id="canvas-container"></div>
+    
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- UI Overlay -->
+    <div class="relative z-10 w-full h-full pointer-events-none flex justify-between p-4">
+        
+        <!-- Left Sidebar: Tools -->
+        <div class="panel w-64 h-full rounded-xl flex flex-col pointer-events-auto shadow-2xl overflow-hidden flex-shrink-0">
+            <div class="p-4 border-b border-gray-700 bg-gray-800">
+                <h1 class="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+                    <i class="fas fa-cube mr-2 text-white"></i>3D Studio
+                </h1>
+            </div>
+            
+            <div class="overflow-y-auto flex-1 p-4 space-y-6">
+                <!-- Add Objects -->
+                <div>
+                    <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Add Primitives</h3>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button onclick="addPrimitive('cube')" class="btn bg-gray-700 hover:bg-gray-600 p-2 rounded flex flex-col items-center gap-1 text-sm border border-gray-600">
+                            <i class="fas fa-cube text-blue-400"></i> Cube
+                        </button>
+                        <button onclick="addPrimitive('sphere')" class="btn bg-gray-700 hover:bg-gray-600 p-2 rounded flex flex-col items-center gap-1 text-sm border border-gray-600">
+                            <i class="fas fa-circle text-red-400"></i> Sphere
+                        </button>
+                        <button onclick="addPrimitive('plane')" class="btn bg-gray-700 hover:bg-gray-600 p-2 rounded flex flex-col items-center gap-1 text-sm border border-gray-600">
+                            <i class="fas fa-square text-green-400"></i> Plane
+                        </button>
+                        <button onclick="addPrimitive('torus')" class="btn bg-gray-700 hover:bg-gray-600 p-2 rounded flex flex-col items-center gap-1 text-sm border border-gray-600">
+                            <i class="fas fa-ring text-yellow-400"></i> Torus
+                        </button>
+                        <button onclick="addPrimitive('cylinder')" class="btn bg-gray-700 hover:bg-gray-600 p-2 rounded flex flex-col items-center gap-1 text-sm border border-gray-600">
+                            <i class="fas fa-circle-notch text-pink-400"></i> Cylinder
+                        </button>
+                        <button onclick="addPrimitive('cone')" class="btn bg-gray-700 hover:bg-gray-600 p-2 rounded flex flex-col items-center gap-1 text-sm border border-gray-600">
+                            <i class="fas fa-mountain text-teal-400"></i> Cone
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Scene Persistence -->
+                <div>
+                    <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Save / Share</h3>
+                    <div class="grid grid-cols-2 gap-2 mb-2">
+                        <button onclick="saveToLocalStorage()" class="btn bg-gray-700 hover:bg-gray-600 py-2 rounded text-xs border border-gray-600">
+                            <i class="fas fa-save text-blue-400 mr-1"></i> Browser
+                        </button>
+                        <button onclick="loadFromLocalStorage()" class="btn bg-gray-700 hover:bg-gray-600 py-2 rounded text-xs border border-gray-600">
+                            <i class="fas fa-folder-open text-yellow-400 mr-1"></i> Restore
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="downloadScene()" class="btn bg-gray-700 hover:bg-gray-600 py-2 rounded text-xs border border-gray-600">
+                            <i class="fas fa-download text-green-400 mr-1"></i> JSON
+                        </button>
+                        <button onclick="generateShareLink()" class="btn bg-blue-600 hover:bg-blue-500 py-2 rounded text-xs border border-blue-500 font-bold text-white shadow-lg shadow-blue-900/30">
+                            <i class="fas fa-link mr-1"></i> Share Link
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Import -->
+                <div>
+                    <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Import File</h3>
+                    <label class="btn bg-gray-700 hover:bg-gray-600 w-full py-2 rounded cursor-pointer text-center block text-sm border border-gray-600">
+                        <i class="fas fa-file-import mr-2 text-purple-400"></i> Load .GLB / .GLTF
+                        <input type="file" id="file-input" accept=".glb,.gltf" class="hidden" onchange="handleFileUpload(this)">
+                    </label>
+                    <p class="text-[10px] text-gray-500 mt-1 text-center">Supports binary GLB & GLTF</p>
+                </div>
+
+                <!-- Scene Actions -->
+                <div>
+                    <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Scene</h3>
+                    <button onclick="clearScene()" class="btn w-full py-2 rounded border border-red-500/50 text-red-400 hover:bg-red-900/20 text-sm">
+                        <i class="fas fa-trash-alt mr-2"></i> Clear Scene
+                    </button>
+                    <button onclick="toggleFirstPersonMode()" class="btn w-full py-2 rounded border border-yellow-500/50 text-yellow-400 hover:bg-yellow-900/20 text-sm mt-3" id="fp-toggle-button">
+                        <i class="fas fa-street-view mr-2"></i> Enter First Person Mode (F)
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-3 bg-gray-800 text-xs text-center text-gray-500 border-t border-gray-700">
+                Left Click: Select | Right Click: Pan <br> Scroll: Zoom (Slower)
+                <div class="mt-1 font-mono text-gray-400">
+                    <span class="text-blue-400">T/R/S</span>: Switch Gizmo Mode<br>
+                    <span class="text-green-400">Arrows/Space + Shift</span>: Move/Scale/Rotate Selected
+                </div>
+                <div class="mt-1 font-mono text-xs text-yellow-400" id="fp-info-text">
+                    WASD + Mouse Look in First Person Mode
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar: Properties & Code -->
+        <div class="panel w-80 h-full rounded-xl flex flex-col pointer-events-auto shadow-2xl overflow-hidden flex-shrink-0 ml-4">
+            
+            <!-- Tabs -->
+            <div class="flex border-b border-gray-700 bg-gray-800">
+                <button onclick="switchTab('props')" id="tab-props" class="flex-1 py-3 text-sm font-medium bg-gray-700 text-white border-b-2 border-blue-500">Properties</button>
+                <button onclick="switchTab('code')" id="tab-code" class="flex-1 py-3 text-sm font-medium text-gray-400 hover:text-white">Code Gen</button>
+            </div>
+
+            <!-- Properties Content -->
+            <div id="content-props" class="flex-1 overflow-y-auto p-4 space-y-6">
+                
+                <div id="no-selection" class="h-full flex flex-col items-center justify-center text-gray-500 opacity-50">
+                    <i class="fas fa-mouse-pointer text-4xl mb-4"></i>
+                    <p>Select an object to edit</p>
+                </div>
+
+                <div id="selection-controls" class="hidden space-y-5">
+                    
+                    <!-- Texture Tool -->
+                    <div class="bg-gray-800 rounded p-3 border border-gray-600">
+                        <label class="text-xs text-blue-400 uppercase font-bold mb-2 block"><i class="fas fa-paint-brush mr-1"></i> Texture Tool</label>
+                        
+                        <!-- Toggle Paint Mode -->
+                        <button id="btn-paint-mode" onclick="togglePaintMode()" class="btn w-full py-2 mb-3 rounded border text-sm flex items-center justify-center gap-2 border-gray-500 text-gray-300 hover:bg-gray-700">
+                            <i class="fas fa-fill-drip"></i> Enable Paint Mode
+                        </button>
+                        
+                        <div id="paint-controls" class="opacity-50 pointer-events-none transition-opacity duration-200">
+                            <input type="text" id="texture-url" placeholder="Paste Image URL here..." class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-xs text-white mb-2 focus:border-blue-500 focus:outline-none">
+                            
+                            <p class="text-[10px] text-gray-500 mb-2">Or pick a preset:</p>
+                            <div class="grid grid-cols-4 gap-1 mb-2">
+                                <button onclick="setPresetTexture('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/brick_diffuse.jpg')" class="h-8 bg-cover rounded hover:opacity-80 border border-gray-600" style="background-image: url('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/brick_diffuse.jpg')" title="Brick"></button>
+                                <button onclick="setPresetTexture('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/crate.gif')" class="h-8 bg-cover rounded hover:opacity-80 border border-gray-600" style="background-image: url('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/crate.gif')" title="Crate"></button>
+                                <button onclick="setPresetTexture('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/hardwood2_diffuse.jpg')" class="h-8 bg-cover rounded hover:opacity-80 border border-gray-600" style="background-image: url('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/hardwood2_diffuse.jpg')" title="Wood"></button>
+                                <button onclick="setPresetTexture('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/uv_grid_opengl.jpg')" class="h-8 bg-cover rounded hover:opacity-80 border border-gray-600" style="background-image: url('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/uv_grid_opengl.jpg')" title="Grid"></button>
+                            </div>
+                            
+                            <!-- Preserve Color Toggle -->
+                            <div class="flex items-center gap-2 mb-2">
+                                <input type="checkbox" id="preserve-color-toggle" class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 bg-gray-900 border-gray-700">
+                                <label for="preserve-color-toggle" class="text-xs text-gray-400 select-none cursor-pointer">Preserve Color (Tint Texture)</label>
+                            </div>
+
+                            <div class="text-[10px] text-yellow-400 italic">
+                                <i class="fas fa-info-circle"></i> In Paint Mode: Click a face on the object to apply. (Face selection works best on Cubes)
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Transform Modes -->
+                    <div class="flex bg-gray-700 p-1 rounded-lg">
+                        <button onclick="setTransformMode('translate')" class="flex-1 py-1 rounded hover:bg-gray-600 text-xs font-medium" id="mode-translate">Move</button>
+                        <button onclick="setTransformMode('rotate')" class="flex-1 py-1 rounded hover:bg-gray-600 text-xs font-medium" id="mode-rotate">Rotate</button>
+                        <button onclick="setTransformMode('scale')" class="flex-1 py-1 rounded hover:bg-gray-600 text-xs font-medium" id="mode-scale">Scale</button>
+                    </div>
+
+                    <!-- Material Color -->
+                    <div>
+                        <label class="text-xs text-gray-400 uppercase font-bold mb-2 block">Color</label>
+                        <div class="flex items-center gap-3">
+                            <input type="color" id="color-picker" class="w-10 h-10 rounded cursor-pointer bg-transparent border-0 p-0" oninput="updateObjectColor(this.value)">
+                            <span id="color-hex" class="text-sm font-mono text-gray-300">#ffffff</span>
+                        </div>
+                    </div>
+
+                    <!-- Material Type -->
+                    <div>
+                         <label class="text-xs text-gray-400 uppercase font-bold mb-2 block">Material Type</label>
+                         <select id="material-select" onchange="updateMaterialType(this.value)" class="w-full bg-gray-700 border border-gray-600 rounded p-2 text-sm text-white focus:outline-none focus:border-blue-500">
+                             <option value="MeshStandardMaterial">Standard (Lit)</option>
+                             <option value="MeshBasicMaterial">Basic (Flat)</option>
+                             <option value="MeshNormalMaterial">Normal (Debug)</option>
+                             <option value="MeshPhysicalMaterial">Physical (Glassy)</option>
+                         </select>
+                    </div>
+
+                     <!-- Wireframe Toggle -->
+                     <div class="flex items-center justify-between">
+                        <label class="text-xs text-gray-400 uppercase font-bold">Wireframe</label>
+                        <input type="checkbox" id="wireframe-toggle" onchange="updateWireframe(this.checked)" class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 bg-gray-700 border-gray-600">
+                    </div>
+                    
+                    <!-- Animation List (for imported models) -->
+                    <div id="animation-info" class="pt-4 border-t border-gray-700 hidden">
+                        <label class="text-xs text-gray-400 uppercase font-bold mb-2 block">Animations Found</label>
+                        <div id="animation-clips" class="text-sm text-gray-300 space-y-1"></div>
+                    </div>
+
+                    <!-- Delete Object -->
+                    <div class="pt-4 border-t border-gray-700">
+                        <button onclick="deleteSelected()" class="btn w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded text-sm font-medium">
+                            Delete Object
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Code Gen Content -->
+            <div id="content-code" class="hidden flex-1 flex flex-col h-full">
+                <div class="p-3 bg-gray-800 text-xs text-gray-400 border-b border-gray-700">
+                    This generates a standalone HTML file with your current scene.
+                </div>
+                <div class="flex-1 relative bg-gray-900 overflow-hidden">
+                    <textarea id="code-output" class="w-full h-full bg-gray-900 text-green-400 font-mono text-xs p-4 focus:outline-none resize-none" readonly></textarea>
+                    <button onclick="copyCode()" class="absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded text-xs shadow-lg border border-gray-600">
+                        <i class="fas fa-copy mr-1"></i> Copy
+                    </button>
+                </div>
+                <div class="p-3">
+                    <button onclick="generateCode()" class="btn w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded text-sm font-medium">
+                        <i class="fas fa-sync mr-2"></i> Refresh Code
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { TransformControls } from 'three/addons/controls/TransformControls.js';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+        // --- Global Variables ---
+        let scene, camera, renderer, orbit, transformControl;
+        let raycaster, pointer;
+        let selectedObject = null;
+        const objects = []; // Track interactable objects
+        
+        // Texture & Paint Variables
+        const textureLoader = new THREE.TextureLoader();
+        let isPaintMode = false;
+
+        // Animation variables
+        const clock = new THREE.Clock();
+        const mixers = []; // Store all active AnimationMixers
+
+        // --- First Person Variables ---
+        let isFirstPersonMode = false;
+        let moveForward = false;
+        let moveBackward = false;
+        let moveLeft = false;
+        let moveRight = false;
+        const velocity = new THREE.Vector3();
+        const direction = new THREE.Vector3();
+        const speed = 5.0; // Units per second for movement
+        let prevTime = performance.now();
+        const PI_2 = Math.PI / 2;
+        const euler = new THREE.Euler(0, 0, 0, 'YXZ');
+
+
+        // --- Initialization ---
+        function init() {
+            // Scene Setup
+            const container = document.getElementById('canvas-container');
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x1a1a1a);
+            
+            // Grid
+            const gridHelper = new THREE.GridHelper(20, 20, 0x444444, 0x222222);
+            scene.add(gridHelper);
+
+            // Lights
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+            
+            const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+            dirLight.position.set(5, 10, 7);
+            scene.add(dirLight);
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(5, 5, 10);
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            container.appendChild(renderer.domElement);
+
+            // Controls
+            orbit = new OrbitControls(camera, renderer.domElement);
+            orbit.enableDamping = true;
+            orbit.dampingFactor = 0.05;
+            orbit.zoomSpeed = 0.2; 
+
+            // Transform Controls (Gizmo)
+            transformControl = new TransformControls(camera, renderer.domElement);
+            setTransformMode('translate'); 
+            
+            transformControl.addEventListener('dragging-changed', function (event) {
+                orbit.enabled = !event.value && !isFirstPersonMode; 
+            });
+            transformControl.addEventListener('change', updateUIFromTransform);
+            scene.add(transformControl);
+
+            // Raycaster
+            raycaster = new THREE.Raycaster();
+            pointer = new THREE.Vector2();
+
+            // Event Listeners
+            window.addEventListener('resize', onWindowResize);
+            window.addEventListener('pointerdown', onPointerDown);
+            window.addEventListener('keydown', onKeyDown);
+            window.addEventListener('keyup', onKeyUp);
+            
+            // Pointer Lock
+            renderer.domElement.addEventListener('click', () => {
+                if (isFirstPersonMode) renderer.domElement.requestPointerLock();
+            });
+            document.addEventListener('pointerlockchange', onPointerlockChange, false);
+            
+            // Start Loop
+            animate();
+            
+            // --- Logic for Shared Links or Local Storage ---
+            const params = new URLSearchParams(window.location.search);
+            const sharedData = params.get('data');
+
+            if (sharedData) {
+                try {
+                    const decoded = atob(sharedData);
+                    const sceneData = JSON.parse(decoded);
+                    restoreScene(sceneData);
+                    showToast('Shared scene loaded successfully!', 'success');
+                    // Clean URL without reload
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                } catch (e) {
+                    console.error(e);
+                    showToast('Invalid share link.', 'error');
+                    addPrimitive('cube');
+                }
+            } else if (localStorage.getItem('threeStudioScene')) {
+                showToast('Found saved scene. Click "Restore" to load it.', 'info');
+                addPrimitive('cube');
+            } else {
+                addPrimitive('cube');
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            const time = performance.now();
+            const delta = clock.getDelta();
+            const moveDelta = (time - prevTime) / 1000;
+            
+            mixers.forEach(mixer => mixer.update(delta));
+            
+            if (isFirstPersonMode) {
+                velocity.x -= velocity.x * 10.0 * moveDelta;
+                velocity.z -= velocity.z * 10.0 * moveDelta;
+                
+                direction.z = Number(moveForward) - Number(moveBackward);
+                direction.x = Number(moveRight) - Number(moveLeft);
+                direction.normalize(); 
+
+                if (moveForward || moveBackward) velocity.z -= direction.z * speed * moveDelta;
+                if (moveLeft || moveRight) velocity.x -= direction.x * speed * moveDelta;
+                
+                camera.translateX(velocity.x * moveDelta);
+                camera.translateZ(velocity.z * moveDelta);
+                camera.position.y = Math.max(1.5, camera.position.y); 
+                
+            } else {
+                orbit.update();
+            }
+
+            prevTime = time;
+            renderer.render(scene, camera);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // --- Toast System ---
+        window.showToast = (message, type = 'success') => {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            let icon = 'fa-check-circle';
+            if (type === 'error') icon = 'fa-exclamation-circle';
+            if (type === 'info') icon = 'fa-info-circle';
+
+            toast.innerHTML = `<i class="fas ${icon}"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.add('show'));
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        };
+
+        // --- First Person Functions ---
+        function onPointerlockChange() {
+            if (document.pointerLockElement === renderer.domElement) {
+                document.addEventListener('mousemove', onMouseMove, false);
+            } else {
+                document.removeEventListener('mousemove', onMouseMove, false);
+                if (isFirstPersonMode) toggleFirstPersonMode();
+            }
+        }
+
+        function onMouseMove(event) {
+            if (!isFirstPersonMode) return;
+            const movementX = event.movementX || 0;
+            const movementY = event.movementY || 0;
+            euler.setFromQuaternion(camera.quaternion);
+            euler.y -= movementX * 0.002;
+            euler.x -= movementY * 0.002;
+            euler.x = Math.max(PI_2 - Math.PI, Math.min(PI_2, euler.x));
+            camera.quaternion.setFromEuler(euler);
+        }
+
+        window.toggleFirstPersonMode = () => {
+            isFirstPersonMode = !isFirstPersonMode;
+            const fpToggleButton = document.getElementById('fp-toggle-button');
+            const fpInfoText = document.getElementById('fp-info-text');
+            
+            if (isFirstPersonMode) {
+                deselectObject(); 
+                orbit.enabled = false;
+                transformControl.enabled = false;
+                fpToggleButton.innerHTML = '<i class="fas fa-mouse-pointer mr-2"></i> Exit First Person Mode (F)';
+                fpToggleButton.classList.remove('text-yellow-400', 'hover:bg-yellow-900/20', 'border-yellow-500/50');
+                fpToggleButton.classList.add('bg-yellow-600', 'hover:bg-yellow-700', 'text-white', 'border-transparent');
+                fpInfoText.classList.remove('hidden'); 
+                renderer.domElement.requestPointerLock();
+            } else {
+                orbit.enabled = true;
+                transformControl.enabled = true; 
+                fpToggleButton.innerHTML = '<i class="fas fa-street-view mr-2"></i> Enter First Person Mode (F)';
+                fpToggleButton.classList.add('text-yellow-400', 'hover:bg-yellow-900/20', 'border-yellow-500/50');
+                fpToggleButton.classList.remove('bg-yellow-600', 'hover:bg-yellow-700', 'text-white', 'border-transparent');
+                fpInfoText.classList.remove('hidden');
+                document.exitPointerLock();
+                moveForward = moveBackward = moveLeft = moveRight = false;
+                velocity.set(0, 0, 0);
+            }
+        };
+
+        // --- Interaction Logic ---
+        function onPointerDown(event) {
+            if (isFirstPersonMode || transformControl.dragging) return;
+            if (event.target.closest('.panel')) return;
+
+            pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+            pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(pointer, camera);
+            const intersects = raycaster.intersectObjects(objects, true);
+
+            if (intersects.length > 0) {
+                if (isPaintMode) {
+                     handlePaintClick(intersects[0]);
+                     return;
+                }
+                let target = intersects[0].object;
+                while(target.parent && !objects.includes(target) && target.parent !== scene) {
+                    target = target.parent;
+                }
+                selectObject(target);
+            } else {
+                if (!isPaintMode) deselectObject();
+            }
+        }
+
+        // --- Texture / Paint Logic ---
+        window.togglePaintMode = () => {
+            isPaintMode = !isPaintMode;
+            const btn = document.getElementById('btn-paint-mode');
+            const controls = document.getElementById('paint-controls');
+            
+            if (isPaintMode) {
+                document.body.classList.add('paint-mode-active');
+                btn.innerHTML = '<i class="fas fa-times-circle"></i> Exit Paint Mode';
+                btn.classList.add('bg-blue-600', 'text-white', 'border-transparent');
+                btn.classList.remove('border-gray-500', 'text-gray-300', 'hover:bg-gray-700');
+                controls.classList.remove('opacity-50', 'pointer-events-none');
+                transformControl.detach(); 
+                showToast("Paint Mode Active: Click any object face", "info");
+            } else {
+                document.body.classList.remove('paint-mode-active');
+                btn.innerHTML = '<i class="fas fa-fill-drip"></i> Enable Paint Mode';
+                btn.classList.remove('bg-blue-600', 'text-white', 'border-transparent');
+                btn.classList.add('border-gray-500', 'text-gray-300', 'hover:bg-gray-700');
+                controls.classList.add('opacity-50', 'pointer-events-none');
+                if(selectedObject) transformControl.attach(selectedObject);
+            }
+        };
+        
+        window.setPresetTexture = (url) => {
+            document.getElementById('texture-url').value = url;
+        };
+
+        function handlePaintClick(intersect) {
+            const url = document.getElementById('texture-url').value;
+            const preserveColor = document.getElementById('preserve-color-toggle').checked;
+
+            if (!url) {
+                showToast("Please enter an image URL first", "error");
+                return;
+            }
+
+            const object = intersect.object;
+            const normal = intersect.face.normal; 
+
+            textureLoader.load(url, (texture) => {
+                texture.colorSpace = THREE.SRGBColorSpace;
+                
+                // Helper to apply texture and handle color reset logic
+                const applyToMaterial = (mat) => {
+                    mat.map = texture;
+                    mat.needsUpdate = true;
+                    mat.userData.textureUrl = url;
+                    
+                    // NEW: Color Reset Logic
+                    if (!preserveColor) {
+                        mat.color.setHex(0xffffff); 
+                    }
+                };
+
+                // --- Case 1: BoxGeometry specific face painting ---
+                if (object.geometry.type === 'BoxGeometry') {
+                    // Determine which face (0:Right, 1:Left, 2:Top, 3:Bottom, 4:Front, 5:Back)
+                    let materialIndex = 0;
+                    if (normal.x > 0.5) materialIndex = 0;
+                    else if (normal.x < -0.5) materialIndex = 1;
+                    else if (normal.y > 0.5) materialIndex = 2;
+                    else if (normal.y < -0.5) materialIndex = 3;
+                    else if (normal.z > 0.5) materialIndex = 4;
+                    else if (normal.z < -0.5) materialIndex = 5;
+
+                    if (!Array.isArray(object.material)) {
+                        const oldMat = object.material;
+                        object.material = [
+                            oldMat.clone(), oldMat.clone(), oldMat.clone(), 
+                            oldMat.clone(), oldMat.clone(), oldMat.clone()
+                        ];
+                    }
+
+                    applyToMaterial(object.material[materialIndex]);
+                    showToast("Texture applied to Face!", "success");
+
+                } else {
+                    // --- Case 2: Apply to whole object (fallback) ---
+                    if (Array.isArray(object.material)) {
+                        object.material.forEach(m => applyToMaterial(m));
+                    } else {
+                        applyToMaterial(object.material);
+                    }
+                    showToast("Texture applied to Object", "success");
+                }
+
+                // If this object is currently selected, update the color picker UI to reflect the new color
+                if (selectedObject === object && !preserveColor) {
+                    document.getElementById('color-picker').value = '#ffffff';
+                    document.getElementById('color-hex').innerText = '#ffffff';
+                }
+
+            }, undefined, (err) => {
+                showToast("Failed to load image. Check URL/CORS.", "error");
+            });
+        }
+
+
+        function selectObject(object) {
+            selectedObject = object;
+            transformControl.attach(object);
+            
+            document.getElementById('no-selection').classList.add('hidden');
+            document.getElementById('selection-controls').classList.remove('hidden');
+            
+            if (!isPaintMode) {
+                 document.getElementById('paint-controls').classList.add('opacity-50', 'pointer-events-none');
+            }
+
+            selectedObject.traverse((child) => {
+                if(child.isMesh && child.material) {
+                     const mat = Array.isArray(child.material) ? child.material[0] : child.material;
+                     const hex = '#' + mat.color.getHexString();
+                     document.getElementById('color-picker').value = hex;
+                     document.getElementById('color-hex').innerText = hex;
+                     document.getElementById('wireframe-toggle').checked = mat.wireframe;
+                     const matType = mat.type;
+                     const selector = document.getElementById('material-select');
+                     selector.value = Array.from(selector.options).some(o => o.value === matType) ? matType : 'MeshStandardMaterial';
+                     return; 
+                }
+            });
+            
+            const animInfo = document.getElementById('animation-info');
+            const animClipsDiv = document.getElementById('animation-clips');
+            
+            if (selectedObject.userData.animations && selectedObject.userData.animations.length > 0) {
+                animInfo.classList.remove('hidden');
+                animClipsDiv.innerHTML = `<p class="text-sm font-semibold">${selectedObject.userData.animations.length} clip(s) loaded:</p>`;
+                selectedObject.userData.animations.forEach(name => {
+                    animClipsDiv.innerHTML += `<span class="inline-block bg-gray-600 px-2 py-1 rounded-full text-xs mr-2 mt-1">${name}</span>`;
+                });
+            } else {
+                animInfo.classList.add('hidden');
+                animClipsDiv.innerHTML = '';
+            }
+        }
+
+        function deselectObject() {
+            selectedObject = null;
+            transformControl.detach();
+            document.getElementById('no-selection').classList.remove('hidden');
+            document.getElementById('selection-controls').classList.add('hidden');
+        }
+        
+        function onKeyDown(event) {
+            if (event.key.toLowerCase() === 'f') {
+                event.preventDefault(); 
+                window.toggleFirstPersonMode();
+                return;
+            }
+
+            if (isFirstPersonMode) {
+                switch(event.key.toLowerCase()) {
+                    case 'w': moveForward = true; break;
+                    case 's': moveBackward = true; break;
+                    case 'a': moveLeft = true; break;
+                    case 'd': moveRight = true; break;
+                }
+                return; 
+            }
+
+            switch (event.key.toLowerCase()) {
+                case 't': window.setTransformMode('translate'); return;
+                case 'r': window.setTransformMode('rotate'); return;
+                case 's': window.setTransformMode('scale'); return;
+            }
+
+            if (!selectedObject) return;
+
+            let changeApplied = false;
+            const step = event.shiftKey ? 0.2 : 0.05;
+            const mode = transformControl.getMode();
+            const isControlKey = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' ', 'Delete', 'Backspace'].includes(event.key);
+            
+            if (isControlKey) event.preventDefault(); 
+
+            if (mode === 'translate') {
+                switch (event.key) {
+                    case 'ArrowUp': selectedObject.position.z -= step; changeApplied = true; break; 
+                    case 'ArrowDown': selectedObject.position.z += step; changeApplied = true; break;
+                    case 'ArrowLeft': selectedObject.position.x -= step; changeApplied = true; break;
+                    case 'ArrowRight': selectedObject.position.x += step; changeApplied = true; break;
+                }
+                if (event.key === ' ') {
+                    if (event.shiftKey) selectedObject.position.y -= step;
+                    else selectedObject.position.y += step;
+                    changeApplied = true;
+                }
+            } else if (mode === 'scale') {
+                 switch (event.key) {
+                    case 'ArrowUp': selectedObject.scale.y += step; changeApplied = true; break;
+                    case 'ArrowDown': selectedObject.scale.y -= step; changeApplied = true; break; 
+                    case 'ArrowLeft': selectedObject.scale.x -= step; changeApplied = true; break; 
+                    case 'ArrowRight': selectedObject.scale.x += step; changeApplied = true; break; 
+                 }
+                if (event.key === ' ') {
+                    if (event.shiftKey) selectedObject.scale.z -= step;
+                    else selectedObject.scale.z += step;
+                    changeApplied = true;
+                 }
+                 selectedObject.scale.x = Math.max(0.01, selectedObject.scale.x);
+                 selectedObject.scale.y = Math.max(0.01, selectedObject.scale.y);
+                 selectedObject.scale.z = Math.max(0.01, selectedObject.scale.z);
+            } else if (mode === 'rotate') {
+                 const rotationStep = step * (Math.PI / 180); 
+                 switch (event.key) {
+                    case 'ArrowUp': selectedObject.rotation.x -= rotationStep; changeApplied = true; break;
+                    case 'ArrowDown': selectedObject.rotation.x += rotationStep; changeApplied = true; break;
+                    case 'ArrowLeft': selectedObject.rotation.y += rotationStep; changeApplied = true; break;
+                    case 'ArrowRight': selectedObject.rotation.y -= rotationStep; changeApplied = true; break;
+                 }
+                 if (event.key === ' ') {
+                    if (event.shiftKey) selectedObject.rotation.z -= rotationStep;
+                    else selectedObject.rotation.z += rotationStep;
+                    changeApplied = true;
+                 }
+            }
+            
+            if (event.key === 'Delete' || event.key === 'Backspace') {
+                window.deleteSelected();
+                return;
+            }
+
+            if (changeApplied) {
+                selectedObject.updateMatrixWorld();
+                transformControl.updateMatrixWorld();
+                transformControl.dispatchEvent({ type: 'objectChange' }); 
+            }
+        }
+        
+        function onKeyUp(event) {
+            if (!isFirstPersonMode) return;
+            switch(event.key.toLowerCase()) {
+                case 'w': moveForward = false; break;
+                case 's': moveBackward = false; break;
+                case 'a': moveLeft = false; break;
+                case 'd': moveRight = false; break;
+            }
+        }
+
+        // --- Tool Functions (Exposed to Window) ---
+        window.addPrimitive = (type, params = null) => {
+            let geometry, material, mesh;
+            
+            const color = params ? params.color : Math.random() * 0xffffff;
+            const wireframe = params ? params.wireframe : false;
+            const matType = params ? params.materialType : 'MeshStandardMaterial';
+            const MaterialClass = THREE[matType] || THREE.MeshStandardMaterial;
+
+            material = new MaterialClass({ color: color, wireframe: wireframe });
+
+            switch(type) {
+                case 'cube': geometry = new THREE.BoxGeometry(1, 1, 1); break;
+                case 'sphere': geometry = new THREE.SphereGeometry(0.7, 32, 16); break;
+                case 'plane': geometry = new THREE.PlaneGeometry(2, 2); material.side = THREE.DoubleSide; break;
+                case 'torus': geometry = new THREE.TorusGeometry(0.6, 0.2, 16, 50); break;
+                case 'cylinder': geometry = new THREE.CylinderGeometry(0.5, 0.5, 1.5, 32); break;
+                case 'cone': geometry = new THREE.ConeGeometry(0.6, 1.5, 32); break;
+            }
+
+            mesh = new THREE.Mesh(geometry, material);
+            if(type === 'plane') mesh.rotation.x = -Math.PI / 2;
+            
+            if (params) {
+                mesh.position.fromArray(params.position);
+                mesh.rotation.fromArray(params.rotation);
+                mesh.scale.fromArray(params.scale);
+                
+                // Restore Textures
+                if (params.textureUrl) {
+                     textureLoader.load(params.textureUrl, (tex) => {
+                         tex.colorSpace = THREE.SRGBColorSpace;
+                         mesh.material.map = tex;
+                         mesh.material.userData.textureUrl = params.textureUrl;
+                         mesh.material.needsUpdate = true;
+                     });
+                } else if (params.textureUrls && Array.isArray(params.textureUrls)) {
+                    const matRef = mesh.material;
+                    mesh.material = [
+                        matRef.clone(), matRef.clone(), matRef.clone(),
+                        matRef.clone(), matRef.clone(), matRef.clone()
+                    ];
+                    params.textureUrls.forEach((url, idx) => {
+                        if (url) {
+                            textureLoader.load(url, (tex) => {
+                                tex.colorSpace = THREE.SRGBColorSpace;
+                                mesh.material[idx].map = tex;
+                                mesh.material[idx].userData.textureUrl = url;
+                                mesh.material[idx].needsUpdate = true;
+                            });
+                        }
+                        // Restore individual face colors if available in future
+                    });
+                }
+            } else {
+                mesh.position.y = (type === 'cube' || type === 'sphere' || type === 'torus') ? 0.5 : 0.75;
+            }
+            
+            mesh.userData.isPrimitive = true;
+            mesh.userData.type = type;
+
+            scene.add(mesh);
+            objects.push(mesh);
+            
+            if (!params) selectObject(mesh);
+        };
+
+        window.handleFileUpload = (input) => {
+            const file = input.files[0];
+            if (!file) return;
+            const url = URL.createObjectURL(file);
+            const loader = new GLTFLoader();
+            loader.load(url, (gltf) => {
+                const model = gltf.scene;
+                const animations = gltf.animations;
+                if (animations && animations.length > 0) {
+                    const mixer = new THREE.AnimationMixer(model);
+                    mixers.push(mixer);
+                    model.userData.animations = animations.map(clip => clip.name || `clip_${clip.uuid.substring(0, 4)}`);
+                    const action = mixer.clipAction(animations[0]);
+                    action.play();
+                } else {
+                    model.userData.animations = [];
+                }
+                const box = new THREE.Box3().setFromObject(model);
+                const size = box.getSize(new THREE.Vector3());
+                const center = box.getCenter(new THREE.Vector3());
+                const maxAxis = Math.max(size.x, size.y, size.z);
+                const scaleFactor = 2 / maxAxis; 
+                model.scale.setScalar(scaleFactor);
+                model.position.x = -center.x * scaleFactor;
+                model.position.y = (-center.y * scaleFactor) + 1; 
+                model.position.z = -center.z * scaleFactor;
+
+                scene.add(model);
+                objects.push(model);
+                model.userData.isImported = true;
+                model.userData.fileName = file.name;
+                selectObject(model);
+                URL.revokeObjectURL(url);
+                input.value = ''; 
+            }, undefined, (error) => {
+                console.error(error);
+                showToast('Error loading file. Check console.', 'error');
+            });
+        };
+
+        window.clearScene = () => {
+            deselectObject();
+            objects.forEach(obj => {
+                const index = mixers.findIndex(m => m.root === obj);
+                if (index > -1) mixers.splice(index, 1);
+                scene.remove(obj);
+                if (obj.geometry) obj.geometry.dispose();
+            });
+            objects.length = 0;
+            showToast('Scene cleared', 'info');
+        };
+
+        window.deleteSelected = () => {
+            if (selectedObject) {
+                const index = mixers.findIndex(m => m.root === selectedObject);
+                if (index > -1) mixers.splice(index, 1);
+                scene.remove(selectedObject);
+                const objIndex = objects.indexOf(selectedObject);
+                if (objIndex > -1) objects.splice(objIndex, 1);
+                deselectObject();
+                showToast('Object deleted', 'success');
+            }
+        };
+
+        // --- Save / Load / Persistence ---
+        function getSceneData() {
+             return objects
+                .filter(obj => obj.userData.isPrimitive) 
+                .map(obj => {
+                    let textureUrl = null;
+                    let textureUrls = null;
+
+                    if (Array.isArray(obj.material)) {
+                        textureUrls = obj.material.map(m => m.userData.textureUrl || null);
+                        if (textureUrls.every(u => u === null)) textureUrls = null;
+                    } else {
+                        textureUrl = obj.material.userData.textureUrl || null;
+                    }
+                    
+                    const matRef = Array.isArray(obj.material) ? obj.material[0] : obj.material;
+
+                    return {
+                        type: obj.userData.type,
+                        position: obj.position.toArray(),
+                        rotation: obj.rotation.toArray().slice(0, 3), 
+                        scale: obj.scale.toArray(),
+                        color: '#' + matRef.color.getHexString(),
+                        materialType: matRef.type,
+                        wireframe: matRef.wireframe,
+                        textureUrl: textureUrl,
+                        textureUrls: textureUrls
+                    };
+                });
+        }
+
+        // Shared function for restoring scene from JSON data
+        function restoreScene(sceneData) {
+            deselectObject();
+            objects.forEach(obj => scene.remove(obj));
+            objects.length = 0;
+            mixers.length = 0;
+
+            if (Array.isArray(sceneData)) {
+                sceneData.forEach(item => {
+                    addPrimitive(item.type, item);
+                });
+            }
+        }
+
+        window.saveToLocalStorage = () => {
+            try {
+                const sceneData = getSceneData();
+                const json = JSON.stringify(sceneData);
+                localStorage.setItem('threeStudioScene', json);
+                
+                const importsCount = objects.filter(o => o.userData.isImported).length;
+                if (importsCount > 0) {
+                    showToast(`Saved! (${importsCount} imported models skipped)`, 'info');
+                } else {
+                    showToast('Scene saved to Browser Storage!', 'success');
+                }
+            } catch (e) {
+                console.error(e);
+                showToast('Failed to save. Storage might be full.', 'error');
+            }
+        };
+
+        window.loadFromLocalStorage = () => {
+            const data = localStorage.getItem('threeStudioScene');
+            if (!data) {
+                showToast('No saved scene found in storage.', 'error');
+                return;
+            }
+            try {
+                const sceneData = JSON.parse(data);
+                restoreScene(sceneData);
+                showToast('Scene restored from storage!', 'success');
+            } catch (e) {
+                console.error(e);
+                showToast('Corrupt save data.', 'error');
+            }
+        };
+
+        // NEW: Share Link Generation
+        window.generateShareLink = () => {
+            const sceneData = getSceneData();
+            if (sceneData.length === 0) {
+                showToast('Scene is empty!', 'error');
+                return;
+            }
+            
+            // Note: This does not support imported models or extremely large scenes due to URL limits
+            const json = JSON.stringify(sceneData);
+            const encoded = btoa(json);
+            
+            // Construct URL
+            const url = new URL(window.location.href);
+            url.searchParams.set('data', encoded);
+            
+            // Copy to clipboard
+            const shareUrl = url.toString();
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                showToast('Link copied to clipboard!', 'success');
+            }).catch(err => {
+                console.error('Could not copy text: ', err);
+                showToast('Failed to copy link.', 'error');
+            });
+        };
+
+        window.downloadScene = () => {
+            const sceneData = getSceneData();
+            const json = JSON.stringify(sceneData, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'my-3d-scene.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Downloading Scene JSON...', 'success');
+        };
+
+        // --- Property Updates ---
+        window.setTransformMode = (mode) => {
+            if (transformControl) transformControl.setMode(mode);
+            ['translate', 'rotate', 'scale'].forEach(m => {
+                const btn = document.getElementById(`mode-${m}`);
+                if (m === mode) {
+                    btn.classList.add('bg-blue-600', 'text-white');
+                    btn.classList.remove('hover:bg-gray-600', 'text-gray-400');
+                } else {
+                    btn.classList.remove('bg-blue-600', 'text-white');
+                    btn.classList.add('hover:bg-gray-600', 'text-gray-400');
+                }
+            });
+        };
+
+        window.updateObjectColor = (hex) => {
+            if (selectedObject) {
+                document.getElementById('color-hex').innerText = hex;
+                selectedObject.traverse((child) => {
+                    if (child.isMesh) {
+                         if (Array.isArray(child.material)) {
+                             child.material.forEach(m => m.color.set(hex));
+                         } else {
+                             child.material.color.set(hex);
+                         }
+                    }
+                });
+            }
+        };
+
+        window.updateWireframe = (isWireframe) => {
+            if (selectedObject) {
+                selectedObject.traverse((child) => {
+                    if (child.isMesh) {
+                         if (Array.isArray(child.material)) {
+                             child.material.forEach(m => m.wireframe = isWireframe);
+                         } else {
+                             child.material.wireframe = isWireframe;
+                         }
+                    }
+                });
+            }
+        };
+
+        window.updateMaterialType = (typeStr) => {
+            if(!selectedObject) return;
+            const NewMatClass = THREE[typeStr];
+            if(!NewMatClass) return;
+            selectedObject.traverse((child) => {
+                if(child.isMesh) {
+                    const isArray = Array.isArray(child.material);
+                    const oldMats = isArray ? child.material : [child.material];
+                    const newMats = oldMats.map(oldMat => {
+                         const newMat = new NewMatClass();
+                         newMat.color.copy(oldMat.color);
+                         newMat.wireframe = oldMat.wireframe;
+                         if (oldMat.map) newMat.map = oldMat.map; 
+                         newMat.userData = { ...oldMat.userData };
+                         return newMat;
+                    });
+                    child.material = isArray ? newMats : newMats[0];
+                }
+            });
+        };
+
+        function updateUIFromTransform() {}
+
+        // --- UI Logic ---
+        window.switchTab = (tab) => {
+            document.getElementById('content-props').classList.add('hidden');
+            document.getElementById('content-code').classList.add('hidden');
+            document.getElementById('tab-props').classList.remove('bg-gray-700', 'text-white', 'border-b-2', 'border-blue-500');
+            document.getElementById('tab-props').classList.add('text-gray-400');
+            document.getElementById('tab-code').classList.remove('bg-gray-700', 'text-white', 'border-b-2', 'border-blue-500');
+            document.getElementById('tab-code').classList.add('text-gray-400');
+
+            if (tab === 'props') {
+                document.getElementById('content-props').classList.remove('hidden');
+                document.getElementById('tab-props').classList.add('bg-gray-700', 'text-white', 'border-b-2', 'border-blue-500');
+            } else {
+                document.getElementById('content-code').classList.remove('hidden');
+                document.getElementById('tab-code').classList.add('bg-gray-700', 'text-white', 'border-b-2', 'border-blue-500');
+                window.generateCode();
+            }
+        };
+
+        // --- Code Generation Engine ---
+        window.generateCode = () => {
+            const camPos = camera.position;
+            
+            let setupCode = `
+    // Set up Three.js Boilerplate
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x1a1a1a);
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+    
+    // Global animation variables
+    const clock = new THREE.Clock();
+    const mixers = [];
+    const textureLoader = new THREE.TextureLoader();
+
+    // Resize handler
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // Lights
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    scene.add(ambientLight);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+    dirLight.position.set(5, 10, 7);
+    scene.add(dirLight);
+
+    // Objects`;
+
+            objects.forEach((obj, index) => {
+                const p = obj.position;
+                const r = obj.rotation;
+                const s = obj.scale;
+                
+                if (obj.userData.isPrimitive) {
+                    let geomStr = '';
+                    switch(obj.userData.type) {
+                        case 'cube': geomStr = 'new THREE.BoxGeometry(1, 1, 1)'; break;
+                        case 'sphere': geomStr = 'new THREE.SphereGeometry(0.7, 32, 16)'; break;
+                        case 'plane': geomStr = 'new THREE.PlaneGeometry(2, 2)'; break;
+                        case 'torus': geomStr = 'new THREE.TorusGeometry(0.6, 0.2, 16, 50)'; break;
+                        case 'cylinder': geomStr = 'new THREE.CylinderGeometry(0.5, 0.5, 1.5, 32)'; break;
+                        case 'cone': geomStr = 'new THREE.ConeGeometry(0.6, 1.5, 32)'; break;
+                    }
+                    
+                    let matCode = '';
+                    if (Array.isArray(obj.material)) {
+                        const mats = obj.material.map(m => {
+                            const texStr = m.userData.textureUrl ? `map: textureLoader.load('${m.userData.textureUrl}'),` : '';
+                            return `new THREE.${m.type}({ color: 0x${m.color.getHexString()}, wireframe: ${m.wireframe}, ${texStr} })`;
+                        });
+                        matCode = `const material = [\n            ${mats.join(',\n            ')}\n        ];`;
+                    } else {
+                         const m = obj.material;
+                         const texStr = m.userData.textureUrl ? `map: textureLoader.load('${m.userData.textureUrl}'),` : '';
+                         const sideStr = obj.userData.type === 'plane' ? ', side: THREE.DoubleSide' : '';
+                         matCode = `const material = new THREE.${m.type}({ color: 0x${m.color.getHexString()}, wireframe: ${m.wireframe}, ${texStr}${sideStr} });`;
+                    }
+
+                    setupCode += `
+    // Object ${index + 1} (${obj.userData.type})
+    {
+        const geometry = ${geomStr};
+        ${matCode}
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.position.set(${p.x.toFixed(2)}, ${p.y.toFixed(2)}, ${p.z.toFixed(2)});
+        mesh.rotation.set(${r.x.toFixed(2)}, ${r.y.toFixed(2)}, ${r.z.toFixed(2)});
+        mesh.scale.set(${s.x.toFixed(2)}, ${s.y.toFixed(2)}, ${s.z.toFixed(2)});
+        scene.add(mesh);
+    }`;
+                } else if (obj.userData.isImported) {
+                    const animationNames = obj.userData.animations || [];
+                    const animationComment = animationNames.length > 0 
+                        ? `// Animations found: ${animationNames.join(', ')}. First one will play automatically.`
+                        : '// No animations found in this file.';
+
+                    setupCode += `
+    // Object ${index + 1} (Imported: ${obj.userData.fileName})
+    // NOTE: Ensure '${obj.userData.fileName}' is in your project folder
+    ${animationComment}
+    {
+        const loader = new GLTFLoader();
+        loader.load('${obj.userData.fileName}', (gltf) => {
+            const model = gltf.scene;
+            model.position.set(${p.x.toFixed(2)}, ${p.y.toFixed(2)}, ${p.z.toFixed(2)});
+            model.rotation.set(${r.x.toFixed(2)}, ${r.y.toFixed(2)}, ${r.z.toFixed(2)});
+            model.scale.set(${s.x.toFixed(2)}, ${s.y.toFixed(2)}, ${s.z.toFixed(2)});
+            
+            scene.add(model);
+
+            if (gltf.animations && gltf.animations.length) {
+                const mixer = new THREE.AnimationMixer(model);
+                mixers.push(mixer);
+                
+                const action = mixer.clipAction(gltf.animations[0]);
+                action.play();
+            }
+        });
+    }`;
+                }
+            });
+
+            setupCode += `
+    // Camera
+    camera.position.set(${camPos.x.toFixed(2)}, ${camPos.y.toFixed(2)}, ${camPos.z.toFixed(2)});
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+
+    function animate() {
+        requestAnimationFrame(animate);
+        const delta = clock.getDelta();
+        for (const mixer of mixers) {
+            mixer.update(delta);
+        }
+        controls.update();
+        renderer.render(scene, camera);
+    }
+    animate();`;
+
+            const fullHtml = `<!DOCTYPE html>
+<html>
+<head>
+    <title>My 3D Scene</title>
+    <style>body { margin: 0; overflow: hidden; }</style>
+    <script type="importmap">
+        { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }
+    <\/script>
+</head>
+<body>
+<script type="module">
+    import * as THREE from 'three';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    
+    // Note: If you encounter an error related to GLTFLoader, ensure the model file (e.g., '${objects.find(o => o.userData.isImported)?.userData.fileName || 'model.glb'}') is in the same directory as this HTML file.
+
+${setupCode}
+<\/script>
+</body>
+</html>`;
+
+            document.getElementById('code-output').value = fullHtml;
+        };
+
+        window.copyCode = () => {
+            const copyText = document.getElementById("code-output");
+            copyText.select();
+            document.execCommand("copy");
+            const btn = document.querySelector('button[onclick="copyCode()"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+            setTimeout(() => btn.innerHTML = originalText, 2000);
+        };
+
+        init();
+
+    </script>
+</body>
+</html>
