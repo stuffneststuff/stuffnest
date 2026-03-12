@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WINDOW WANDERER: INSIDE THE SYSTEM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            overflow: hidden;
+            background-color: #000;
+            font-family: 'Courier New', Courier, monospace;
+            color: #0f0;
+        }
+        #canvas-bg {
+            position: fixed;
+            top: 0; left: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .ui-overlay {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 10, 0, 0.95);
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 40px;
+            text-align: center;
+            z-index: 2000;
+            box-shadow: 0 0 40px rgba(0, 255, 0, 0.3);
+            backdrop-filter: blur(5px);
+            max-width: 500px;
+            width: 90%;
+        }
+        .btn {
+            background: transparent;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 12px 24px;
+            margin: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .btn:hover:not(:disabled) { background: #0f0; color: #000; box-shadow: 0 0 20px #0f0; }
+        .btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        
+        #goal {
+            position: absolute;
+            width: 80px; height: 80px;
+            border: 2px solid #0f0;
+            color: #0f0;
+            display: flex;
+            align-items: center; justify-content: center;
+            font-size: 12px; text-align: center;
+            z-index: 5;
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+            animation: pulse 2s infinite;
+            visibility: hidden;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.8; }
+        }
+
+        #desktop-warning {
+            display: none;
+            color: #f44;
+            font-size: 12px;
+            margin-top: 15px;
+            border: 1px solid #f44;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="canvas-bg"></canvas>
+    <div id="goal">EXIT_GATE</div>
+
+    <div id="launcher" class="ui-overlay">
+        <h1 class="text-3xl mb-4 font-black italic">SUB_WINDOW_INFILTRATION</h1>
+        <p id="level-desc" class="mb-4 text-sm opacity-80">Full-screen stabilization required.</p>
+        
+        <div id="puzzle-objective" class="text-xs text-blue-400 mb-8 border-l-2 border-blue-500 pl-4 text-left italic">
+            Requirement: Desktop Browser. Clicking below will enter full-screen and project popup platforms.
+        </div>
+
+        <div id="desktop-warning">
+            CRITICAL_ERROR: Mobile environment detected. Please switch to a full desktop site.
+        </div>
+
+        <button id="start-btn" class="btn" onclick="requestStart()">INITIALIZE FULL-SCREEN</button>
+    </div>
+
+    <div style="position:fixed; top:15px; left:15px; font-size:10px; color:#0f06; z-index:100; pointer-events:none;">
+        USR_STATUS: <span id="status-text" style="color:#0f0">AWAITING AUTH</span><br>
+        CONTROLS: WASD / ARROWS / SPACE | SYNC: FULL_SCREEN_LOCKED
+    </div>
+
+    <script>
+        const goalEl = document.getElementById('goal');
+        const launcher = document.getElementById('launcher');
+        const canvas = document.getElementById('canvas-bg');
+        const startBtn = document.getElementById('start-btn');
+        const warning = document.getElementById('desktop-warning');
+        const ctx = canvas.getContext('2d');
+        const syncChannel = new BroadcastChannel('window_wanderer_sync');
+
+        let player = { x: 0, y: 0, vx: 0, vy: 0, w: 24, h: 24, grounded: false };
+        let popups = [];
+        let keys = {};
+        let currentLevel = 1;
+        let gameActive = false;
+        
+        const gravity = 0.45;
+        const friction = 0.82;
+        const speed = 0.85;
+        const jump = -12;
+
+        // Desktop check
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        const isSmallScreen = window.innerWidth < 1024;
+        if (isTouchDevice || isSmallScreen) {
+            startBtn.disabled = true;
+            warning.style.display = 'block';
+        }
+
+        const levels = [
+            {
+                desc: "ARRAY 01: STATIC NODES",
+                playerOffset: { x: 40, y: 30 },
+                goalPos: { x: -150, y: -150 },
+                configs: [
+                    { x: 50, y: 150, w: 180, h: 140, t: "ENTRY_NODE" },
+                    { x: 300, y: 350, w: 220, h: 160, t: "NODE_01" },
+                    { x: 600, y: 220, w: 200, h: 140, t: "NODE_02" },
+                    { x: 880, y: 450, w: 250, h: 180, t: "EXIT_PLATFORM" }
+                ]
+            }
+        ];
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.onresize = resize;
+        resize();
+
+        async function requestStart() {
+            try {
+                if (document.documentElement.requestFullscreen) {
+                    await document.documentElement.requestFullscreen();
+                }
+                // Short delay to allow browser to finish full-screen transition
+                setTimeout(initLevel, 500);
+            } catch (err) {
+                console.warn("Fullscreen failed, starting anyway...");
+                initLevel();
+            }
+        }
+
+        function initLevel() {
+            const data = levels[currentLevel - 1];
+            launcher.style.display = 'none';
+            goalEl.style.visibility = 'visible';
+            document.getElementById('status-text').innerText = 'SYNCHRONIZING...';
+            
+            // Recalculate goal based on new full-screen dimensions
+            const gx = data.goalPos.x < 0 ? window.innerWidth + data.goalPos.x : data.goalPos.x;
+            const gy = data.goalPos.y < 0 ? window.innerHeight + data.goalPos.y : data.goalPos.y;
+            goalEl.style.left = gx + 'px';
+            goalEl.style.top = gy + 'px';
+
+            spawnPopups(data.configs);
+
+            setTimeout(() => {
+                const startWin = popups[0];
+                if (startWin && !startWin.window.closed) {
+                    const chromeHeight = Math.max(startWin.window.outerHeight - startWin.window.innerHeight, 0);
+                    player.x = (startWin.window.screenX - window.screenX) + data.playerOffset.x;
+                    player.y = (startWin.window.screenY - window.screenY + chromeHeight) + data.playerOffset.y;
+                }
+                player.vx = 0; player.vy = 0;
+                document.getElementById('status-text').innerText = 'USR_ONLINE';
+                if (!gameActive) {
+                    gameActive = true;
+                    update();
+                }
+            }, 1200);
+        }
+
+        function spawnPopups(configs) {
+            popups.forEach(p => { if(!p.window.closed) p.window.close(); });
+            popups = [];
+
+            configs.forEach((conf, index) => {
+                // Location=no, toolbar=no etc helps minimize chrome, but coordinates are key
+                const win = window.open('about:blank', `win_${index}_${Date.now()}`, `width=${conf.w},height=${conf.h},left=${window.screenX + conf.x},top=${window.screenY + conf.y},menubar=no,status=no,toolbar=no,location=no`);
+                
+                if (!win) return;
+
+                win.document.write(`
+                    <html>
+                    <head><style>
+                        body { background:#000; color:#0f0; font-family:monospace; margin:0; overflow:hidden; border:4px solid #0f0; height: 100vh; box-sizing: border-box; }
+                        #player-sprite { position:absolute; width:24px; height:24px; background:#0f0; box-shadow:0 0 20px #0f0; display:none; align-items:center; justify-content:center; color:#000; font-weight:bold; font-size:12px; z-index:100; pointer-events:none; border-radius: 4px; }
+                        #header { background:#0f0; color:#000; font-size:10px; padding:6px; text-align:center; font-weight:bold; text-transform:uppercase; letter-spacing:1px; }
+                        #status { display:flex; height: calc(100% - 30px); align-items:center; justify-content:center; text-align:center; font-size:14px; font-weight:bold; pointer-events:none; opacity: 0.1; }
+                    </style></head>
+                    <body>
+                        <div id="player-sprite">USR</div>
+                        <div id="header">${conf.t}</div>
+                        <div id="status">STABLE_PLATFORM</div>
+                        <script>
+                            const bc = new BroadcastChannel('window_wanderer_sync');
+                            window.addEventListener('keydown', e => bc.postMessage({type: 'keydown', code: e.code}));
+                            window.addEventListener('keyup', e => bc.postMessage({type: 'keyup', code: e.code}));
+                            
+                            bc.onmessage = (e) => {
+                                if(e.data.type === 'render_player' && e.data.id === ${index}) {
+                                    const p = document.getElementById('player-sprite');
+                                    p.style.display = 'flex';
+                                    p.style.left = Math.floor(e.data.x) + 'px';
+                                    p.style.top = Math.floor(e.data.y) + 'px';
+                                } else if(e.data.type === 'hide_player') {
+                                    document.getElementById('player-sprite').style.display = 'none';
+                                }
+                            };
+                        <\/script>
+                    </body>
+                    </html>
+                `);
+
+                popups.push({ 
+                    id: index, window: win, 
+                    w: conf.w, h: conf.h
+                });
+            });
+        }
+
+        function update() {
+            if (!gameActive) return;
+
+            // Player Physics & Input
+            if (keys['ArrowLeft'] || keys['KeyA']) player.vx -= speed;
+            if (keys['ArrowRight'] || keys['KeyD']) player.vx += speed;
+            if ((keys['ArrowUp'] || keys['Space'] || keys['KeyW']) && player.grounded) {
+                player.vy = jump;
+                player.grounded = false;
+            }
+
+            player.vy += gravity;
+            player.vx *= friction;
+            player.x += player.vx;
+            player.y += player.vy;
+
+            if (player.y > window.innerHeight + 500) resetPlayer();
+            
+            player.grounded = false;
+            syncChannel.postMessage({type: 'hide_player'});
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            popups.forEach(p => {
+                if (p.window.closed) return;
+                
+                try {
+                    const chromeHeight = Math.max(p.window.outerHeight - p.window.innerHeight, 0);
+                    
+                    const winX = p.window.screenX - window.screenX;
+                    const winY = (p.window.screenY - window.screenY) + chromeHeight;
+                    const winW = p.window.innerWidth;
+                    const winH = p.window.innerHeight;
+
+                    // Visualization helps during full-screen transitions
+                    ctx.strokeStyle = '#0f02';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(winX, winY, winW, winH);
+
+                    if (player.x + player.w > winX && player.x < winX + winW &&
+                        player.y + player.h > winY && player.y < winY + winH) {
+                        
+                        const overlapTop = (player.y + player.h) - winY;
+                        
+                        if (player.vy >= 0 && overlapTop < 20 && (player.y + player.h - player.vy <= winY + 5)) {
+                            player.y = winY - player.h;
+                            player.vy = 0;
+                            player.grounded = true;
+                        }
+
+                        syncChannel.postMessage({
+                            type: 'render_player', 
+                            id: p.id, 
+                            x: player.x - winX, 
+                            y: player.y - winY 
+                        });
+                    }
+                } catch(e) {}
+            });
+
+            const g = goalEl.getBoundingClientRect();
+            if (player.x < g.right && player.x + player.w > g.left &&
+                player.y < g.bottom && player.y + player.h > g.top) {
+                alert("ACCESS SECURED: SYSTEM BYPASSED.");
+                popups.forEach(p => { if(!p.window.closed) p.window.close() });
+                if (document.exitFullscreen) document.exitFullscreen();
+                location.reload();
+                return;
+            }
+
+            requestAnimationFrame(update);
+        }
+
+        function resetPlayer() {
+            const data = levels[currentLevel-1];
+            const startWin = popups[0];
+            if (startWin && !startWin.window.closed) {
+                const chromeHeight = Math.max(startWin.window.outerHeight - startWin.window.innerHeight, 0);
+                player.x = (startWin.window.screenX - window.screenX) + data.playerOffset.x;
+                player.y = (startWin.window.screenY - window.screenY + chromeHeight) + data.playerOffset.y;
+            } else {
+                location.reload();
+            }
+            player.vx = 0; player.vy = 0;
+        }
+
+        syncChannel.onmessage = (e) => {
+            if (e.data.type === 'keydown') keys[e.data.code] = true;
+            if (e.data.type === 'keyup') keys[e.data.code] = false;
+        };
+
+        window.onbeforeunload = () => popups.forEach(p => { if(p && p.window && !p.window.closed) p.window.close(); });
+    </script>
+</body>
+</html>
