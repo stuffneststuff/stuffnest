@@ -77,6 +77,21 @@
             border: 1px solid #f44;
             padding: 10px;
         }
+
+        /* Bright Red Popup Warning */
+        .popup-critical-warning {
+            background: #400;
+            color: #ff0000;
+            border: 3px solid #ff0000;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            text-transform: uppercase;
+            animation: blinker 1s linear infinite;
+        }
+        @keyframes blinker {
+            50% { opacity: 0.5; }
+        }
     </style>
 </head>
 <body>
@@ -85,6 +100,11 @@
     <div id="goal">EXIT_GATE</div>
 
     <div id="launcher" class="ui-overlay">
+        <div class="popup-critical-warning">
+            ⚠️ CRITICAL: YOU MUST ALLOW POP-UPS ⚠️<br>
+            Check your browser address bar after clicking!
+        </div>
+
         <h1 class="text-3xl mb-4 font-black italic">SUB_WINDOW_INFILTRATION</h1>
         <p id="level-desc" class="mb-4 text-sm opacity-80">Full-screen stabilization required.</p>
         
@@ -135,7 +155,8 @@
         const levels = [
             {
                 desc: "ARRAY 01: STATIC NODES",
-                playerOffset: { x: 40, y: 30 },
+                // Adjusted playerOffset to spawn below the 30px header
+                playerOffset: { x: 40, y: 50 }, 
                 goalPos: { x: -150, y: -150 },
                 configs: [
                     { x: 50, y: 150, w: 200, h: 160, t: "ENTRY_NODE" },
@@ -208,7 +229,7 @@
                     <head><style>
                         body { background:#000; color:#0f0; font-family:monospace; margin:0; padding: 0; overflow:hidden; border:4px solid #0f0; height: 100vh; box-sizing: border-box; }
                         #player-sprite { position:absolute; width:24px; height:24px; background:#0f0; box-shadow:0 0 20px #0f0; display:none; align-items:center; justify-content:center; color:#000; font-weight:bold; font-size:12px; z-index:100; pointer-events:none; border-radius: 4px; }
-                        #header { background:#0f0; color:#000; font-size:10px; padding:6px; text-align:center; font-weight:bold; text-transform:uppercase; letter-spacing:1px; }
+                        #header { background:#0f0; color:#000; font-size:10px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight:bold; text-transform:uppercase; letter-spacing:1px; }
                         #status { display:flex; height: calc(100% - 30px); align-items:center; justify-content:center; text-align:center; font-size:14px; font-weight:bold; pointer-events:none; opacity: 0.1; }
                     </style></head>
                     <body>
@@ -273,6 +294,7 @@
                     const winY = (p.window.screenY - window.screenY) + chromeHeight;
                     const winW = p.window.innerWidth;
                     const winH = p.window.innerHeight;
+                    const titleHeight = 30; // Matches CSS #header height
 
                     // Visualization
                     ctx.strokeStyle = '#0f02';
@@ -280,39 +302,33 @@
                     ctx.strokeRect(winX, winY, winW, winH);
 
                     // SOLID COLLISION LOGIC
-                    // Check if player is overlapping with this window volume
                     if (player.x + player.w > winX && player.x < winX + winW &&
                         player.y + player.h > winY && player.y < winY + winH) {
                         
-                        const fromTop = (player.y + player.h) - winY;
+                        const fromTop = (player.y + player.h) - (winY + titleHeight);
                         const fromBottom = (winY + winH) - player.y;
                         const fromLeft = (player.x + player.w) - winX;
                         const fromRight = (winX + winW) - player.x;
 
-                        // Identify the side of collision by finding the shallowest penetration
                         const min = Math.min(fromTop, fromBottom, fromLeft, fromRight);
 
                         if (min === fromTop && player.vy >= 0) {
-                            // Hit the top (floor)
-                            player.y = winY - player.h;
+                            // Land on the floor (below the title bar)
+                            player.y = (winY + titleHeight) - player.h;
                             player.vy = 0;
                             player.grounded = true;
                         } else if (min === fromBottom) {
-                            // Hit the bottom (ceiling)
                             player.y = winY + winH;
                             player.vy = Math.max(0, player.vy);
                         } else if (min === fromLeft) {
-                            // Hit the left side
                             player.x = winX - player.w;
                             player.vx = 0;
                         } else if (min === fromRight) {
-                            // Hit the right side
                             player.x = winX + winW;
                             player.vx = 0;
                         }
 
-                        // Send local relative coordinates for rendering
-                        // Clamp values to ensure USR sprite doesn't render outside the window border
+                        // Local relative coordinates (clamped to the window's inner bounds)
                         const localX = Math.max(0, Math.min(winW - player.w, player.x - winX));
                         const localY = Math.max(0, Math.min(winH - player.h, player.y - winY));
 
