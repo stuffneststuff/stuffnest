@@ -119,10 +119,10 @@
         let currentLevel = 1;
         let gameActive = false;
         
-        const gravity = 0.45;
+        const gravity = 0.5;
         const friction = 0.82;
-        const speed = 0.85;
-        const jump = -12;
+        const speed = 0.9;
+        const jump = -13;
 
         // Desktop check
         const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
@@ -138,10 +138,10 @@
                 playerOffset: { x: 40, y: 30 },
                 goalPos: { x: -150, y: -150 },
                 configs: [
-                    { x: 50, y: 150, w: 180, h: 140, t: "ENTRY_NODE" },
-                    { x: 300, y: 350, w: 220, h: 160, t: "NODE_01" },
-                    { x: 600, y: 220, w: 200, h: 140, t: "NODE_02" },
-                    { x: 880, y: 450, w: 250, h: 180, t: "EXIT_PLATFORM" }
+                    { x: 50, y: 150, w: 200, h: 160, t: "ENTRY_NODE" },
+                    { x: 300, y: 350, w: 240, h: 180, t: "NODE_01" },
+                    { x: 600, y: 220, w: 220, h: 160, t: "NODE_02" },
+                    { x: 880, y: 450, w: 280, h: 200, t: "EXIT_PLATFORM" }
                 ]
             }
         ];
@@ -158,7 +158,6 @@
                 if (document.documentElement.requestFullscreen) {
                     await document.documentElement.requestFullscreen();
                 }
-                // Short delay to allow browser to finish full-screen transition
                 setTimeout(initLevel, 500);
             } catch (err) {
                 console.warn("Fullscreen failed, starting anyway...");
@@ -172,7 +171,6 @@
             goalEl.style.visibility = 'visible';
             document.getElementById('status-text').innerText = 'SYNCHRONIZING...';
             
-            // Recalculate goal based on new full-screen dimensions
             const gx = data.goalPos.x < 0 ? window.innerWidth + data.goalPos.x : data.goalPos.x;
             const gy = data.goalPos.y < 0 ? window.innerHeight + data.goalPos.y : data.goalPos.y;
             goalEl.style.left = gx + 'px';
@@ -201,7 +199,6 @@
             popups = [];
 
             configs.forEach((conf, index) => {
-                // Location=no, toolbar=no etc helps minimize chrome, but coordinates are key
                 const win = window.open('about:blank', `win_${index}_${Date.now()}`, `width=${conf.w},height=${conf.h},left=${window.screenX + conf.x},top=${window.screenY + conf.y},menubar=no,status=no,toolbar=no,location=no`);
                 
                 if (!win) return;
@@ -209,7 +206,7 @@
                 win.document.write(`
                     <html>
                     <head><style>
-                        body { background:#000; color:#0f0; font-family:monospace; margin:0; overflow:hidden; border:4px solid #0f0; height: 100vh; box-sizing: border-box; }
+                        body { background:#000; color:#0f0; font-family:monospace; margin:0; padding: 0; overflow:hidden; border:4px solid #0f0; height: 100vh; box-sizing: border-box; }
                         #player-sprite { position:absolute; width:24px; height:24px; background:#0f0; box-shadow:0 0 20px #0f0; display:none; align-items:center; justify-content:center; color:#000; font-weight:bold; font-size:12px; z-index:100; pointer-events:none; border-radius: 4px; }
                         #header { background:#0f0; color:#000; font-size:10px; padding:6px; text-align:center; font-weight:bold; text-transform:uppercase; letter-spacing:1px; }
                         #status { display:flex; height: calc(100% - 30px); align-items:center; justify-content:center; text-align:center; font-size:14px; font-weight:bold; pointer-events:none; opacity: 0.1; }
@@ -217,7 +214,7 @@
                     <body>
                         <div id="player-sprite">USR</div>
                         <div id="header">${conf.t}</div>
-                        <div id="status">STABLE_PLATFORM</div>
+                        <div id="status">SOLID_NODE</div>
                         <script>
                             const bc = new BroadcastChannel('window_wanderer_sync');
                             window.addEventListener('keydown', e => bc.postMessage({type: 'keydown', code: e.code}));
@@ -248,7 +245,6 @@
         function update() {
             if (!gameActive) return;
 
-            // Player Physics & Input
             if (keys['ArrowLeft'] || keys['KeyA']) player.vx -= speed;
             if (keys['ArrowRight'] || keys['KeyD']) player.vx += speed;
             if ((keys['ArrowUp'] || keys['Space'] || keys['KeyW']) && player.grounded) {
@@ -261,7 +257,7 @@
             player.x += player.vx;
             player.y += player.vy;
 
-            if (player.y > window.innerHeight + 500) resetPlayer();
+            if (player.y > window.innerHeight + 1000) resetPlayer();
             
             player.grounded = false;
             syncChannel.postMessage({type: 'hide_player'});
@@ -273,33 +269,58 @@
                 
                 try {
                     const chromeHeight = Math.max(p.window.outerHeight - p.window.innerHeight, 0);
-                    
                     const winX = p.window.screenX - window.screenX;
                     const winY = (p.window.screenY - window.screenY) + chromeHeight;
                     const winW = p.window.innerWidth;
                     const winH = p.window.innerHeight;
 
-                    // Visualization helps during full-screen transitions
+                    // Visualization
                     ctx.strokeStyle = '#0f02';
                     ctx.lineWidth = 1;
                     ctx.strokeRect(winX, winY, winW, winH);
 
+                    // SOLID COLLISION LOGIC
+                    // Check if player is overlapping with this window volume
                     if (player.x + player.w > winX && player.x < winX + winW &&
                         player.y + player.h > winY && player.y < winY + winH) {
                         
-                        const overlapTop = (player.y + player.h) - winY;
-                        
-                        if (player.vy >= 0 && overlapTop < 20 && (player.y + player.h - player.vy <= winY + 5)) {
+                        const fromTop = (player.y + player.h) - winY;
+                        const fromBottom = (winY + winH) - player.y;
+                        const fromLeft = (player.x + player.w) - winX;
+                        const fromRight = (winX + winW) - player.x;
+
+                        // Identify the side of collision by finding the shallowest penetration
+                        const min = Math.min(fromTop, fromBottom, fromLeft, fromRight);
+
+                        if (min === fromTop && player.vy >= 0) {
+                            // Hit the top (floor)
                             player.y = winY - player.h;
                             player.vy = 0;
                             player.grounded = true;
+                        } else if (min === fromBottom) {
+                            // Hit the bottom (ceiling)
+                            player.y = winY + winH;
+                            player.vy = Math.max(0, player.vy);
+                        } else if (min === fromLeft) {
+                            // Hit the left side
+                            player.x = winX - player.w;
+                            player.vx = 0;
+                        } else if (min === fromRight) {
+                            // Hit the right side
+                            player.x = winX + winW;
+                            player.vx = 0;
                         }
+
+                        // Send local relative coordinates for rendering
+                        // Clamp values to ensure USR sprite doesn't render outside the window border
+                        const localX = Math.max(0, Math.min(winW - player.w, player.x - winX));
+                        const localY = Math.max(0, Math.min(winH - player.h, player.y - winY));
 
                         syncChannel.postMessage({
                             type: 'render_player', 
                             id: p.id, 
-                            x: player.x - winX, 
-                            y: player.y - winY 
+                            x: localX, 
+                            y: localY 
                         });
                     }
                 } catch(e) {}
