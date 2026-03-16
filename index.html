@@ -238,66 +238,64 @@
             transition: transform 0.1s ease-out; /* Smooth scaling */
         }
         /* Main container with the new Slate/Charcoal background */
-announcement-line .news-container {
-  width: 100%;
-  overflow: hidden;
-  background: #1f2937; /* Your requested Slate Gray */
-  color: #f9fafb;     /* Off-white text for better readability */
-  padding: 14px 0;
-  border-radius: 6px;
-  position: relative;
-  display: flex;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  border: 1px solid #374151; /* Subtle border to define the edge */
-}
-
-/* The scrolling animation logic */
-announcement-line .news-scroll {
-  display: inline-block;
-  white-space: nowrap;
-  padding-left: 100%;
-  animation: scroll-left 18s linear infinite; /* Slightly slower for readability */
-}
-
-/* Pause when user interacts */
-announcement-line .news-container:hover .news-scroll {
-  animation-play-state: paused;
-}
-
-@keyframes scroll-left {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-100%); }
-}
-
-/* The Badge: Using a bright blue to contrast the dark background */
-announcement-line .badge {
-  background: #3b82f6; 
-  color: white;
-  padding: 2px 10px;
-  border-radius: 99px; /* Pill shape */
-  margin-right: 12px;
-  font-weight: 700;
-  font-size: 0.75rem;
-  letter-spacing: 0.05em;
-}
-
-/* The Link: High-contrast blue */
-announcement-line .news-link {
-  color: #60a5fa;
-  margin-left: 18px;
-  text-decoration: none;
-  font-weight: 600;
-  border-bottom: 1px solid transparent;
-  transition: border-color 0.2s;
-}
-
-announcement-line .news-link:hover {
-  border-bottom: 1px solid #60a5fa;
-}
-    </style>
-<script>
-
-</script>    
+/* Main container with the new Slate/Charcoal background */
+        announcement-line .news-container {
+          width: 100%;
+          overflow: hidden;
+          background: #1f2937; /* Your requested Slate Gray */
+          color: #f9fafb;     /* Off-white text for better readability */
+          padding: 14px 0;
+          border-radius: 6px;
+          position: relative;
+          display: flex;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          border: 1px solid #374151; /* Subtle border to define the edge */
+        }
+        
+        /* The scrolling animation logic */
+        announcement-line .news-scroll {
+          display: inline-block;
+          white-space: nowrap;
+          padding-left: 100%;
+          animation: scroll-left 18s linear infinite; /* Slightly slower for readability */
+        }
+        
+        /* Pause when user interacts */
+        announcement-line .news-container:hover .news-scroll {
+          animation-play-state: paused;
+        }
+        
+        @keyframes scroll-left {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-100%); }
+        }
+        
+        /* The Badge: Using a bright blue to contrast the dark background */
+        announcement-line .badge {
+          background: #3b82f6; 
+          color: white;
+          padding: 2px 10px;
+          border-radius: 99px; /* Pill shape */
+          margin-right: 12px;
+          font-weight: 700;
+          font-size: 0.75rem;
+          letter-spacing: 0.05em;
+        }
+        
+        /* The Link: High-contrast blue */
+        announcement-line .news-link {
+          color: #60a5fa;
+          margin-left: 18px;
+          text-decoration: none;
+          font-weight: 600;
+          border-bottom: 1px solid transparent;
+          transition: border-color 0.2s;
+        }
+        
+        announcement-line .news-link:hover {
+          border-bottom: 1px solid #60a5fa;
+        }
+ 
 </head>
 <body class="bg-gray-900 text-white leading-relaxed">
   <style>
@@ -306,25 +304,27 @@ announcement-line .news-link:hover {
     cursor: url('https://cdn-icons-png.flaticon.com/512/32/32195.png') 0 0, auto;
   }
 </style>
-<script>
-  class AnnouncementLine extends HTMLElement {
-    connectedCallback() {
-      const message = this.getAttribute('message') || "Welcome!";
-      const link = this.getAttribute('link') || "#";
-      
-      this.innerHTML = `
-        <div class="news-container">
-          <div class="news-scroll">
-            <span class="badge">NEW</span>
-            <span class="message-text">${message}</span>
-            <a href="${link}" class="news-link">Check it out →</a>
-          </div>
-        </div>
-      `;
-    }
-  }
-  customElements.define('announcement-line', AnnouncementLine);
-</script>
+    <script>
+      class AnnouncementLine extends HTMLElement {
+        connectedCallback() {
+          // Get attributes or set defaults
+          const message = this.getAttribute('message') || "Welcome to the site!";
+          const link = this.getAttribute('link') || "#";
+          const speed = this.getAttribute('speed') || "15s"; // Default speed
+          
+          this.innerHTML = `
+            <div class="news-container">
+              <div class="news-scroll" style="animation-duration: ${speed};">
+                <span class="badge">NEW</span>
+                <span class="message-text">${message}</span>
+                <a href="${link}" class="news-link">Learn More →</a>
+              </div>
+            </div>
+          `;
+        }
+      }
+      customElements.define('announcement-line', AnnouncementLine);
+    </script>
     
     <!-- Developer Console Overlay -->
     <div id="dev-console" class="hidden">
@@ -456,10 +456,7 @@ announcement-line .news-link:hover {
                 <a href="#" class="block text-gray-300 hover:text-white transition-colors duration-300">Contact</a>
             </div>
         </div>
-        <announcement-line 
-      message="Check out our brand new summer collection!" 
-      link="/shop">
-    </announcement-line>
+         <announcement-line speed="30s" message="This is a very long announcement that needs more time to be read properly by your visitors..." link="/news"></announcement-line>
     </header>
 
     <main>
