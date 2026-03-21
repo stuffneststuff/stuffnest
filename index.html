@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>𝕾𝖙𝖚𝖋𝖋𝖓𝖊𝖘𝖙</title>
-    <link id="dynamic-favicon" rel="icon" type="https://i.imgur.com/JIBqKBw.png">  
+    <link id="dynamic-favicon" rel="icon" type="image/png" href="https://lh3.googleusercontent.com/sitesv/AAzXCkdooyvQa4VchjEeV9bKMfWOGoUOq8ys0wkiNq4nmFiIW6DszHG8cRIH5ZEPPFk2wMcw5-WwSZmnrQi0_iFYbcAxeNvJlgOQAtKrfYzwK0x1noX5ToMTj_yXASRnHCpnhgoVLzr2tI9EJDjF9wFQx3wMKNrM45NbTU1UqMc-2YuuzcNotekvd4g98i8=w16383">  
 
     <!-- Tailwind CSS CDN for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -237,9 +237,8 @@
             transform: scale(0.1); /* Start very small */
             transition: transform 0.1s ease-out; /* Smooth scaling */
         }
-        /* Main container with the new Slate/Charcoal background */
-/* Main container with the new Slate/Charcoal background */
-
+    </style>
+    
 </head>
 <body class="bg-gray-900 text-white leading-relaxed">
   <style>
@@ -248,92 +247,8 @@
     cursor: url('https://cdn-icons-png.flaticon.com/512/32/32195.png') 0 0, auto;
   }
 </style>
-        <script>
-          class AnnouncementLine extends HTMLElement {
-            connectedCallback() {
-              // Get attributes from the tag
-              const message = this.getAttribute('message') || "Welcome to our site!";
-              const link = this.getAttribute('link') || "#";
-              const speed = this.getAttribute('speed') || "15s"; 
-        
-              // Inject the HTML directly into the tag
-              this.innerHTML = `
-                <div class="news-container">
-                  <div class="news-scroll" style="animation-duration: ${speed};">
-                    <span class="badge">NEW</span>
-                    <span class="message-text">${message}</span>
-                    <a href="${link}" class="news-link">Check it out →</a>
-                  </div>
-                </div>
-              `;
-            }
-          }
-          // Register the tag so the browser recognizes <announcement-line>
-          customElements.define('announcement-line', AnnouncementLine);
-        </script>
-        
-        <style>
-          /* IMPORTANT: Custom elements are inline by default. We must make it a block. */
-          announcement-line {
-            display: block;
-            width: 100%;
-            margin: 10px 0;
-          }
-        
-          announcement-line .news-container {
-            width: 100%;
-            overflow: hidden;
-            background: #1f2937; /* Your Slate Gray */
-            color: #f9fafb;
-            padding: 12px 0;
-            border-radius: 6px;
-            position: relative;
-            display: flex;
-            font-family: sans-serif;
-            border: 1px solid #374151;
-          }
-        
-          announcement-line .news-scroll {
-            display: inline-block;
-            white-space: nowrap;
-            padding-left: 100%;
-            animation: scroll-left linear infinite;
-          }
-        
-          /* Stops the scroll when the user hovers */
-          announcement-line .news-container:hover .news-scroll {
-            animation-play-state: paused;
-          }
-        
-          @keyframes scroll-left {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-100%); }
-          }
-        
-          announcement-line .badge {
-            background: #3b82f6; 
-            color: white;
-            padding: 2px 10px;
-            border-radius: 99px;
-            margin-right: 12px;
-            font-weight: bold;
-            font-size: 0.75rem;
-          }
-        
-          announcement-line .news-link {
-            color: #60a5fa;
-            margin-left: 15px;
-            text-decoration: none;
-            font-weight: 600;
-          }
-        
-          announcement-line .news-link:hover {
-            text-decoration: underline;
-          }
-        </style>
 
 
-    
     <!-- Developer Console Overlay -->
     <div id="dev-console" class="hidden">
         <div id="dev-console-content">
@@ -437,7 +352,7 @@
 
             <!-- Navigation Links -->
             <div class="hidden md:flex space-x-6 text-lg order-2 md:order-3">
-                <a href="#" class="text-gray-300 hover:text-white hover:underline transition-colors duration-300">Home</a>
+                <a href="https://stuffneststuff.github.io/stuffnest/" class="text-gray-300 hover:text-white hover:underline transition-colors duration-300">other site</a>
                 <a href="#" class="text-gray-300 hover:text-white hover:underline transition-colors duration-300">Games</a>
                 <a href="#" id="about-link" class="text-gray-300 hover:text-white hover:underline transition-colors duration-300">About</a>
                 <a href="#" id="contact-link" class="text-gray-300 hover:text-white hover:underline transition-colors duration-300">Contact</a>
@@ -464,7 +379,9 @@
                 <a href="#" class="block text-gray-300 hover:text-white transition-colors duration-300">Contact</a>
             </div>
         </div>
-         
+    </header>
+
+    <main>
         <!-- Full-screen fireworks canvas -->
         <canvas id="fireworks-canvas"></canvas>
 
@@ -477,7 +394,7 @@
                     Stuffnest
                 </h1>
                 <p class="text-xl md:text-2xl text-gray-300 mb-8 max-w-2xl mx-auto">
-                    HI
+                    Discover and play thousands of free online games instantly. No downloads, just pure fun!
                 </p>
                 <a href="#" id="explore-games-btn" class="bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300">
                     Explore Games
@@ -508,13 +425,21 @@
             <div class="container mx-auto px-4">
                 <h2 class="text-4xl font-bold text-center mb-12">Featured Games</h2>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <!-- Game Card 1 () - This is the one with the click secret -->
+                    <!-- Game Card 1 (CFT) - This is the one with the click secret -->
                     <div id="game-card-1" class="bg-gray-900 rounded-xl shadow-xl overflow-hidden transform hover:scale-105 transition-transform duration-300 group">
                         <img id="game-card-1-img" src="https://i.imgur.com/6a2yBz1.png" alt="Arcade Rush Thumbnail" class="w-full h-48 object-cover">
                         <div class="p-6">
-                            <h3 class="text-2xl font-semibold mb-2"></h3>
+                            <h3 class="text-2xl font-semibold mb-2">CFT</h3>
                             <p class="text-gray-400 mb-4">Capture The Flag</p>
-                            <a href="./games/cft.html?redirect=https://stuffneststuff.github.io/stuffnest/" class="inline-block bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-full transition-colors duration-300">Play Now</a>
+                            <a href="./cft.html" class="inline-block bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-full transition-colors duration-300">Play Now</a>
+                        </div>
+                    </div>
+                    <div id="game-card-1" class="bg-gray-900 rounded-xl shadow-xl overflow-hidden transform hover:scale-105 transition-transform duration-300 group">
+                        <img id="game-card-1-img" src="https://i.imgur.com/m6pGE2V.png" alt="snake" class="w-full h-48 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-2xl font-semibold mb-2">Snake</h3>
+                            <p class="text-gray-400 mb-4">Play Snake</p>
+                            <a href="./games/snake.html" class="inline-block bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-full transition-colors duration-300">Play Now</a>
                         </div>
                     </div>
                     <!-- Game Card 2 () - The hover secret is here -->
@@ -535,6 +460,14 @@
                             <a href="https://sites.google.com/view/play-fun-games-io/flight" class="inline-block bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-full transition-colors duration-300">Play Now</a>
                         </div>
                     </div>
+                    <div id="game-card-3" class="bg-gray-900 rounded-xl shadow-xl overflow-hidden transform hover:scale-105 transition-transform duration-300 group">
+                        <img id="game-card-3-img" src="https://i.imgur.com/6dHUJUd.png" alt="Space Explorer Thumbnail" class="w-full h-48 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-2xl font-semibold mb-2">Chat</h3>
+                            <p class="text-gray-400 mb-4">Lets Chat</p>
+                            <a href="./games/chat.html" class="inline-block bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-full transition-colors duration-300">Play Now</a>
+                        </div>
+                    </div>
                     
                 </div>
             </div>
@@ -551,6 +484,24 @@
             <div class="container mx-auto px-4">
                 <h2 class="text-4xl font-bold text-center mb-12">Trending Games</h2>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                        
+                    <div id="game-card-1" class="bg-gray-900 rounded-xl shadow-xl overflow-hidden transform hover:scale-105 transition-transform duration-300 group">
+                        <img id="game-card-1-img" src="https://i.imgur.com/m6pGE2V.png" alt="snake" class="w-full h-48 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-2xl font-semibold mb-2">Snake</h3>
+                            <p class="text-gray-400 mb-4">Play Snake</p>
+                            <a href="./games/snake.html" class="inline-block bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-full transition-colors duration-300">Play Now</a>
+                        </div>
+                    </div>
+                    
+                    <div id="game-card-3" class="bg-gray-900 rounded-xl shadow-xl overflow-hidden transform hover:scale-105 transition-transform duration-300 group">
+                        <img id="game-card-3-img" src="https://i.imgur.com/6dHUJUd.png" alt="Space Explorer Thumbnail" class="w-full h-48 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-2xl font-semibold mb-2">Chat</h3>
+                             <p class="text-gray-400 mb-4">Lets Chat</p>
+                            <a href="./games/chat.html" class="inline-block bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-full transition-colors duration-300">Play Now</a>
+                        </div>
+                  </div>    
                     <!-- Trending Game Card 1 -->
                       <div id="game-card-1" class="bg-gray-900 rounded-xl shadow-xl overflow-hidden transform hover:scale-105 transition-transform duration-300 group">
                         <img id="game-card-1-img" src="https://i.imgur.com/6a2yBz1.png" alt="Arcade Rush Thumbnail" class="w-full h-48 object-cover">
@@ -558,15 +509,6 @@
                             <h3 class="text-2xl font-semibold mb-2">CFT</h3>
                             <p class="text-gray-400 mb-4">Capture The Flag</p>
                             <a href="./games/cft.html" class="inline-block bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-full transition-colors duration-300">Play Now</a>
-                        </div>
-                    </div>
-
-                    <div id="game-card-1" class="bg-gray-900 rounded-xl shadow-xl overflow-hidden transform hover:scale-105 transition-transform duration-300 group">
-                        <img id="game-card-1-img" src="https://i.imgur.com/6a2yBz1.png" alt="Arcade Rush Thumbnail" class="w-full h-48 object-cover">
-                        <div class="p-6">
-                            <h3 class="text-2xl font-semibold mb-2">Snake</h3>
-                            <p class="text-gray-400 mb-4">Snake</p>
-                            <a href="./games/snake.html" class="inline-block bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-full transition-colors duration-300">Play Now</a>
                         </div>
                     </div>
 
@@ -585,15 +527,7 @@
                         <div class="p-6">
                             <h3 class="text-2xl font-semibold mb-2">Chess</h3>
                             <p class="text-gray-400 mb-4">Chess is comming to town fully relesed on 12/20/25</p>
-                            <a href="./games/chess.html?redirect=https://stuffneststuff.github.io/stuffnest/" class="inline-block bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-full transition-colors duration-300">Try Now</a>
-                        </div>
-                    </div>
-                <div class="game-card bg-gray-900 rounded-xl shadow-xl overflow-hidden transform hover:scale-105 transition-transform duration-300 group">
-                        <img src="https://placehold.co/600x400/3498db/ecf0f1?text=Comming+Soon" alt="Flappy Bird thumbnail" class="w-full h-48 object-cover">
-                        <div class="p-6">
-                            <h3 class="text-2xl font-semibold mb-2">Chat</h3>
-                            <p class="text-gray-400 mb-4">More Chat</p>
-                            <a href="./games/chat.html" class="inline-block bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-full transition-colors duration-300">Try Now</a>
+                            <a href="./chess.html" class="inline-block bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-full transition-colors duration-300">Try Now</a>
                         </div>
                     </div>
                 
@@ -793,7 +727,7 @@ updateHeaderClock();
             // A simple PCM-like audio data for a simple beep tone.
             // This is a minimal example of a base64-encoded WAV file.
             // It's a 440 Hz sine wave for 1 second.
-            const base64AudioData = "https://embed.screenapp.io/app/v/tcOrB9-f8k?embed=true";
+            const base64AudioData = "https://files.catbox.moe/0i9lwf.mp3";
             
             audio.src = base64AudioData;
             audio.loop = true; // Loop the audio
@@ -1739,7 +1673,7 @@ updateHeaderClock();
       return;
     }
     // Default favicon if no match
-    favicon.href = "https://i.imgur.com/JIBqKBw.png";
+    favicon.href = "https://lh3.googleusercontent.com/sitesv/AAzXCkdooyvQa4VchjEeV9bKMfWOGoUOq8ys0wkiNq4nmFiIW6DszHG8cRIH5ZEPPFk2wMcw5-WwSZmnrQi0_iFYbcAxeNvJlgOQAtKrfYzwK0x1noX5ToMTj_yXASRnHCpnhgoVLzr2tI9EJDjF9wFQx3wMKNrM45NbTU1UqMc-2YuuzcNotekvd4g98i8=w16383";
   }
 
   document.addEventListener('DOMContentLoaded', () => {
