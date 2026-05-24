@@ -24,7 +24,7 @@
 
         /* Toast Notification */
         #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; pointer-events: none; }
-        .toast { background: rgba(40, 40, 40, 0.95); border-left: 4px solid #3b82f6; padding: 12px 24px; border-radius: 4px; color: white; margin-bottom: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); opacity: 0; transition: opacity 0.3s ease-in-out; pointer-events: auto; display: flex; align-items: center; gap: 10px; font-size: 0.9rem; }
+        .toast { background: rgba(40, 40, 40, 0.95); border-left: 4px solid #3b82f6; padding: 12px 24px; border-radius: 4px; color: white; margin-bottom: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); opacity: 0; transition: opacity 0.3s; }
         .toast.show { opacity: 1; }
         .toast.success { border-left-color: #22c55e; }
         .toast.error { border-left-color: #ef4444; }
@@ -94,7 +94,7 @@
                         <button onclick="addPrimitive('icosahedron')" class="btn bg-gray-700 hover:bg-gray-600 p-2 rounded flex flex-col items-center gap-1 text-xs border border-gray-600 text-center">
                             <i class="fas fa-gem text-cyan-400 text-sm"></i> Icosa
                         </button>
-                        <button onclick="addPrimitive('roundedCube')" class="btn bg-gray-700 hover:bg-gray-600 p-2 rounded flex flex-col items-center gap-1 text-xs border border-gray-600 text-center" title="Rounded Box">
+                        <button onclick="addPrimitive('roundedCube')" class="btn bg-gray-700 hover:bg-gray-600 p-2 rounded flex flex-col items-center gap-1 text-xs border border-gray-600 text-center">
                             <i class="fas fa-box text-blue-300 text-sm"></i> R-Cube
                         </button>
                         <button onclick="addPrimitive('capsule')" class="btn bg-gray-700 hover:bg-gray-600 p-2 rounded flex flex-col items-center gap-1 text-xs border border-gray-600 text-center">
@@ -199,19 +199,19 @@
                         <label class="text-xs text-blue-400 uppercase font-bold mb-2 block"><i class="fas fa-paint-brush mr-1"></i> Texture Tool</label>
                         
                         <!-- Toggle Paint Mode -->
-                        <button id="btn-paint-mode" onclick="togglePaintMode()" class="btn w-full py-2 mb-3 rounded border text-sm flex items-center justify-center gap-2 border-gray-500 text-gray-300 hover:bg-gray-700">
+                        <button id="btn-paint-mode" onclick="togglePaintMode()" class="btn w-full py-2 mb-3 rounded border text-sm flex items-center justify-center gap-2 border-gray-500 text-gray-300">
                             <i class="fas fa-fill-drip"></i> Enable Paint Mode
                         </button>
                         
                         <div id="paint-controls" class="opacity-50 pointer-events-none transition-opacity duration-200">
-                            <input type="text" id="texture-url" placeholder="Paste Image URL here..." class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-xs text-white mb-2 focus:border-blue-500 focus:outline-none">
+                            <input type="text" id="texture-url" placeholder="Paste Image URL here..." class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-xs text-white mb-2 focus:border-blue-500">
                             
                             <p class="text-[10px] text-gray-500 mb-2">Or pick a preset:</p>
                             <div class="grid grid-cols-4 gap-1 mb-2">
-                                <button onclick="setPresetTexture('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/brick_diffuse.jpg')" class="h-8 bg-cover rounded hover:opacity-80 border border-gray-600" style="background-image: url('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/brick_diffuse.jpg')" title="Brick"></button>
-                                <button onclick="setPresetTexture('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/crate.gif')" class="h-8 bg-cover rounded hover:opacity-80 border border-gray-600" style="background-image: url('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/crate.gif')" title="Crate"></button>
-                                <button onclick="setPresetTexture('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/hardwood2_diffuse.jpg')" class="h-8 bg-cover rounded hover:opacity-80 border border-gray-600" style="background-image: url('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/hardwood2_diffuse.jpg')" title="Wood"></button>
-                                <button onclick="setPresetTexture('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/uv_grid_opengl.jpg')" class="h-8 bg-cover rounded hover:opacity-80 border border-gray-600" style="background-image: url('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/uv_grid_opengl.jpg')" title="Grid"></button>
+                                <button onclick="setPresetTexture('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/brick_diffuse.jpg')" class="h-8 bg-cover rounded hover:opacity-80" style="background-image: url('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/brick_diffuse.jpg')"></button>
+                                <button onclick="setPresetTexture('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/crate.gif')" class="h-8 bg-cover rounded hover:opacity-80" style="background-image: url('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/crate.gif')"></button>
+                                <button onclick="setPresetTexture('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/hardwood2_diffuse.jpg')" class="h-8 bg-cover rounded hover:opacity-80" style="background-image: url('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/hardwood2_diffuse.jpg')"></button>
+                                <button onclick="setPresetTexture('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/uv_grid_opengl.jpg')" class="h-8 bg-cover rounded hover:opacity-80" style="background-image: url('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/uv_grid_opengl.jpg')"></button>
                             </div>
                             
                             <!-- Preserve Color Toggle -->
@@ -279,10 +279,23 @@
                          </select>
                     </div>
 
-                     <!-- Wireframe Toggle -->
-                     <div class="flex items-center justify-between">
+                      <!-- Wireframe Toggle -->
+                      <div class="flex items-center justify-between">
                         <label class="text-xs text-gray-400 uppercase font-bold">Wireframe</label>
                         <input type="checkbox" id="wireframe-toggle" onchange="updateWireframe(this.checked)" class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 bg-gray-700 border-gray-600">
+                    </div>
+
+                    <!-- Edge Radius / Curvature -->
+                    <div id="edge-radius-control" class="hidden bg-gray-800 rounded p-3 border border-gray-600">
+                        <label class="text-xs text-gray-400 uppercase font-bold mb-3 block"><i class="fas fa-rounded-corners mr-1"></i> Edge Radius</label>
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs text-gray-400">Sharp</span>
+                                <input type="range" id="edge-radius-slider" min="0" max="0.5" step="0.01" value="0" oninput="updateEdgeRadius(this.value)" class="flex-1 mx-3 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500">
+                                <span class="text-xs text-gray-400">Smooth</span>
+                            </div>
+                            <div class="text-center text-sm font-mono text-blue-300" id="edge-radius-value">0.00</div>
+                        </div>
                     </div>
                     
                     <!-- Animation List (for imported models) -->
@@ -655,6 +668,60 @@
             }, undefined, () => showToast("Failed to load image (CORS or Invalid URL).", "error"));
         }
 
+        // --- Tab Switching ---
+        window.switchTab = (tabName) => {
+            document.getElementById('content-scene').classList.toggle('hidden', tabName !== 'scene');
+            document.getElementById('content-props').classList.toggle('hidden', tabName !== 'props');
+            document.getElementById('content-code').classList.toggle('hidden', tabName !== 'code');
+            
+            document.getElementById('tab-scene').classList.toggle('bg-gray-700 text-white border-b-2 border-blue-500', tabName === 'scene');
+            document.getElementById('tab-props').classList.toggle('bg-gray-700 text-white border-b-2 border-blue-500', tabName === 'props');
+            document.getElementById('tab-code').classList.toggle('bg-gray-700 text-white border-b-2 border-blue-500', tabName === 'code');
+            
+            if (tabName === 'code') generateCode();
+        };
+
+        window.updateUIFromTransform = () => {
+            if (!selectedObject) return;
+            document.getElementById('pos-x').value = selectedObject.position.x.toFixed(2);
+            document.getElementById('pos-y').value = selectedObject.position.y.toFixed(2);
+            document.getElementById('pos-z').value = selectedObject.position.z.toFixed(2);
+            
+            const eulerRotation = new THREE.Euler().setFromQuaternion(selectedObject.quaternion);
+            document.getElementById('rot-x').value = (eulerRotation.x * 180 / Math.PI).toFixed(0);
+            document.getElementById('rot-y').value = (eulerRotation.y * 180 / Math.PI).toFixed(0);
+            document.getElementById('rot-z').value = (eulerRotation.z * 180 / Math.PI).toFixed(0);
+            
+            document.getElementById('scl-x').value = selectedObject.scale.x.toFixed(2);
+            document.getElementById('scl-y').value = selectedObject.scale.y.toFixed(2);
+            document.getElementById('scl-z').value = selectedObject.scale.z.toFixed(2);
+        };
+
+        window.applyTransformFromUI = () => {
+            if (!selectedObject) return;
+            selectedObject.position.set(
+                parseFloat(document.getElementById('pos-x').value) || 0,
+                parseFloat(document.getElementById('pos-y').value) || 0,
+                parseFloat(document.getElementById('pos-z').value) || 0
+            );
+            
+            const euler = new THREE.Euler(
+                (parseFloat(document.getElementById('rot-x').value) || 0) * Math.PI / 180,
+                (parseFloat(document.getElementById('rot-y').value) || 0) * Math.PI / 180,
+                (parseFloat(document.getElementById('rot-z').value) || 0) * Math.PI / 180
+            );
+            selectedObject.quaternion.setFromEuler(euler);
+            
+            selectedObject.scale.set(
+                parseFloat(document.getElementById('scl-x').value) || 1,
+                parseFloat(document.getElementById('scl-y').value) || 1,
+                parseFloat(document.getElementById('scl-z').value) || 1
+            );
+            
+            selectedObject.updateMatrixWorld();
+            transformControl.detach();
+            transformControl.attach(selectedObject);
+        };
 
         window.selectObject = (object) => {
             selectedObject = object;
@@ -679,6 +746,17 @@
                      return; 
                 }
             });
+            
+            // Show edge radius control for box geometries
+            const edgeControl = document.getElementById('edge-radius-control');
+            if (object.geometry && (object.geometry.type === 'BoxGeometry' || object.geometry.parameters)) {
+                edgeControl.classList.remove('hidden');
+                const radius = object.userData.edgeRadius || 0;
+                document.getElementById('edge-radius-slider').value = radius;
+                document.getElementById('edge-radius-value').innerText = radius.toFixed(2);
+            } else {
+                edgeControl.classList.add('hidden');
+            }
             
             const animInfo = document.getElementById('animation-info');
             const animClipsDiv = document.getElementById('animation-clips');
@@ -710,6 +788,50 @@
             document.getElementById('selection-controls').classList.add('hidden');
             renderOutliner();
         }
+
+        // --- Edge Radius Control ---
+        window.updateEdgeRadius = (value) => {
+            if (!selectedObject) return;
+            const radius = parseFloat(value);
+            selectedObject.userData.edgeRadius = radius;
+            document.getElementById('edge-radius-value').innerText = radius.toFixed(2);
+            
+            // Recreate geometry with new radius
+            const type = selectedObject.userData.type;
+            const oldGeometry = selectedObject.geometry;
+            let newGeometry;
+
+            if (type === 'cube') {
+                newGeometry = new RoundedBoxGeometry(1, 1, 1, 8, radius);
+            } else if (type === 'roundedCube') {
+                newGeometry = new RoundedBoxGeometry(1, 1, 1, 8, radius);
+            } else if (type === 'cylinder') {
+                newGeometry = new THREE.CylinderGeometry(0.5, 0.5, 1.5, Math.max(8, Math.round(32 * (1 - radius))), 1);
+                if (radius > 0) {
+                    // Apply vertex displacement for rounding
+                    const posAttr = newGeometry.getAttribute('position');
+                    const pos = posAttr.array;
+                    for (let i = 0; i < pos.length; i += 3) {
+                        const x = pos[i], y = pos[i+1], z = pos[i+2];
+                        const dist = Math.sqrt(x*x + z*z);
+                        if (dist > 0.4) {
+                            const scale = (0.5 - radius * 0.1) / dist;
+                            pos[i] *= scale;
+                            pos[i+2] *= scale;
+                        }
+                    }
+                    posAttr.needsUpdate = true;
+                    newGeometry.computeVertexNormals();
+                }
+            } else {
+                // For other shapes, apply smooth shading
+                newGeometry = oldGeometry.clone();
+                newGeometry.computeVertexNormals();
+            }
+
+            selectedObject.geometry = newGeometry;
+            oldGeometry.dispose();
+        };
         
         function onKeyDown(event) {
             if (event.key.toLowerCase() === 'f') { event.preventDefault(); window.toggleFirstPersonMode(); return; }
@@ -832,6 +954,10 @@
                 mesh.scale.fromArray(params.scale);
                 mesh.name = params.name || mesh.name;
                 
+                if (params.edgeRadius) {
+                    mesh.userData.edgeRadius = params.edgeRadius;
+                }
+                
                 if (params.textureUrl) {
                      textureLoader.load(params.textureUrl, (tex) => {
                          tex.colorSpace = THREE.SRGBColorSpace; mesh.material.map = tex;
@@ -840,6 +966,7 @@
                 }
             } else {
                 mesh.position.y = (type === 'plane') ? 0 : 0.5;
+                mesh.userData.edgeRadius = 0;
             }
             
             mesh.userData.isPrimitive = true;
@@ -938,7 +1065,8 @@
                         color: '#' + matRef.color.getHexString(),
                         materialType: matRef.type,
                         wireframe: matRef.wireframe,
-                        textureUrl: matRef.userData.textureUrl || null
+                        textureUrl: matRef.userData.textureUrl || null,
+                        edgeRadius: obj.userData.edgeRadius || 0
                     };
                 });
         }
@@ -1002,174 +1130,48 @@
             }
         };
 
-        window.updateWireframe = (isWireframe) => {
+        window.updateMaterialType = (type) => {
             if (selectedObject) {
                 selectedObject.traverse((child) => {
                     if (child.isMesh && child.material) {
-                         Array.isArray(child.material) ? child.material.forEach(m => m.wireframe = isWireframe) : child.material.wireframe = isWireframe;
+                        const oldMat = Array.isArray(child.material) ? child.material[0] : child.material;
+                        const MaterialClass = THREE[type];
+                        if (MaterialClass) {
+                            const newMat = new MaterialClass({ color: oldMat.color, wireframe: oldMat.wireframe });
+                            if (Array.isArray(child.material)) {
+                                child.material = child.material.map(() => newMat.clone());
+                            } else {
+                                child.material = newMat;
+                            }
+                        }
                     }
                 });
             }
         };
 
-        window.updateMaterialType = (typeStr) => {
-            if(!selectedObject) return;
-            const NewMatClass = THREE[typeStr];
-            if(!NewMatClass) return;
-            selectedObject.traverse((child) => {
-                if(child.isMesh && child.material) {
-                    const isArray = Array.isArray(child.material);
-                    const oldMats = isArray ? child.material : [child.material];
-                    const newMats = oldMats.map(oldMat => {
-                         const newMat = new NewMatClass();
-                         newMat.color.copy(oldMat.color); newMat.wireframe = oldMat.wireframe;
-                         if (oldMat.map) newMat.map = oldMat.map; 
-                         newMat.userData = { ...oldMat.userData };
-                         return newMat;
-                    });
-                    child.material = isArray ? newMats : newMats[0];
-                }
-            });
-        };
-
-        window.updateUIFromTransform = () => {
-            if (!selectedObject) return;
-            document.getElementById('pos-x').value = selectedObject.position.x.toFixed(2);
-            document.getElementById('pos-y').value = selectedObject.position.y.toFixed(2);
-            document.getElementById('pos-z').value = selectedObject.position.z.toFixed(2);
-            
-            document.getElementById('rot-x').value = THREE.MathUtils.radToDeg(selectedObject.rotation.x).toFixed(1);
-            document.getElementById('rot-y').value = THREE.MathUtils.radToDeg(selectedObject.rotation.y).toFixed(1);
-            document.getElementById('rot-z').value = THREE.MathUtils.radToDeg(selectedObject.rotation.z).toFixed(1);
-
-            document.getElementById('scl-x').value = selectedObject.scale.x.toFixed(2);
-            document.getElementById('scl-y').value = selectedObject.scale.y.toFixed(2);
-            document.getElementById('scl-z').value = selectedObject.scale.z.toFixed(2);
-        };
-
-        window.applyTransformFromUI = () => {
-            if (!selectedObject) return;
-            
-            const px = parseFloat(document.getElementById('pos-x').value) || 0;
-            const py = parseFloat(document.getElementById('pos-y').value) || 0;
-            const pz = parseFloat(document.getElementById('pos-z').value) || 0;
-            selectedObject.position.set(px, py, pz);
-
-            const rx = THREE.MathUtils.degToRad(parseFloat(document.getElementById('rot-x').value) || 0);
-            const ry = THREE.MathUtils.degToRad(parseFloat(document.getElementById('rot-y').value) || 0);
-            const rz = THREE.MathUtils.degToRad(parseFloat(document.getElementById('rot-z').value) || 0);
-            selectedObject.rotation.set(rx, ry, rz);
-
-            const sx = parseFloat(document.getElementById('scl-x').value) || 1;
-            const sy = parseFloat(document.getElementById('scl-y').value) || 1;
-            const sz = parseFloat(document.getElementById('scl-z').value) || 1;
-            selectedObject.scale.set(sx, sy, sz);
-
-            transformControl.dispatchEvent({ type: 'objectChange' });
-        };
-
-        window.switchTab = (tab) => {
-            ['scene', 'props', 'code'].forEach(t => {
-                const el = document.getElementById(`content-${t}`);
-                const btn = document.getElementById(`tab-${t}`);
-                if (t === tab) {
-                    el.classList.remove('hidden');
-                    btn.classList.add('bg-gray-700', 'text-white', 'border-b-2', 'border-blue-500');
-                    btn.classList.remove('text-gray-400', 'border-transparent');
-                } else {
-                    el.classList.add('hidden');
-                    btn.classList.remove('bg-gray-700', 'text-white', 'border-b-2', 'border-blue-500');
-                    btn.classList.add('text-gray-400', 'border-transparent');
-                }
-            });
-            if (tab === 'code') window.generateCode();
-        };
-
-        // --- Code Gen ---
-        window.generateCode = () => {
-            let setupCode = `
-    const scene = new THREE.Scene(); scene.background = new THREE.Color(0x1a1a1a);
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setPixelRatio(window.devicePixelRatio); renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
-    
-    const clock = new THREE.Clock(); const mixers = []; const textureLoader = new THREE.TextureLoader();
-    window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
-
-    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1); dirLight.position.set(5, 10, 7); scene.add(dirLight);
-`;
-
-            objects.forEach((obj, i) => {
-                const p = obj.position, r = obj.rotation, s = obj.scale;
-                
-                if (obj.userData.isPrimitive) {
-                    let geomStr = '';
-                    switch(obj.userData.type) {
-                        case 'cube': geomStr = 'new THREE.BoxGeometry(1, 1, 1)'; break;
-                        case 'sphere': geomStr = 'new THREE.SphereGeometry(0.7, 32, 16)'; break;
-                        case 'plane': geomStr = 'new THREE.PlaneGeometry(2, 2)'; break;
-                        case 'torus': geomStr = 'new THREE.TorusGeometry(0.6, 0.2, 16, 50)'; break;
-                        case 'cylinder': geomStr = 'new THREE.CylinderGeometry(0.5, 0.5, 1.5, 32)'; break;
-                        case 'cone': geomStr = 'new THREE.ConeGeometry(0.6, 1.5, 32)'; break;
-                        case 'knot': geomStr = 'new THREE.TorusKnotGeometry(0.5, 0.15, 100, 16)'; break;
-                        case 'tetrahedron': geomStr = 'new THREE.TetrahedronGeometry(0.7)'; break;
-                        case 'icosahedron': geomStr = 'new THREE.IcosahedronGeometry(0.7)'; break;
-                        case 'roundedCube': geomStr = 'new RoundedBoxGeometry(1, 1, 1, 4, 0.15)'; break;
-                        case 'capsule': geomStr = 'new THREE.CapsuleGeometry(0.4, 1, 4, 16)'; break;
-                        case 'ring': geomStr = 'new THREE.RingGeometry(0.3, 0.7, 32)'; break;
-                        case 'curve': geomStr = `new THREE.TubeGeometry(new THREE.CatmullRomCurve3([new THREE.Vector3(-1,0,1), new THREE.Vector3(-0.5,1,0), new THREE.Vector3(0,0,-1), new THREE.Vector3(0.5,-1,0), new THREE.Vector3(1,0,1)]), 64, 0.1, 8, false)`; break;
+        window.updateWireframe = (checked) => {
+            if (selectedObject) {
+                selectedObject.traverse((child) => {
+                    if (child.isMesh && child.material) {
+                         Array.isArray(child.material) ? child.material.forEach(m => m.wireframe = checked) : child.material.wireframe = checked;
                     }
-                    
-                    let m = Array.isArray(obj.material) ? obj.material[0] : obj.material;
-                    const texStr = m.userData.textureUrl ? `map: textureLoader.load('${m.userData.textureUrl}'),` : '';
-                    const sideStr = obj.userData.type === 'plane' ? ', side: THREE.DoubleSide' : '';
-                    let matCode = `const material = new THREE.${m.type}({ color: 0x${m.color.getHexString()}, wireframe: ${m.wireframe}, ${texStr}${sideStr} });`;
+                });
+            }
+        };
 
-                    setupCode += `
-    { // ${obj.name}
-        const geometry = ${geomStr};
-        ${matCode}
-        const mesh = new THREE.Mesh(geometry, material);
-        mesh.position.set(${p.x.toFixed(2)}, ${p.y.toFixed(2)}, ${p.z.toFixed(2)});
-        mesh.rotation.set(${r.x.toFixed(2)}, ${r.y.toFixed(2)}, ${r.z.toFixed(2)});
-        mesh.scale.set(${s.x.toFixed(2)}, ${s.y.toFixed(2)}, ${s.z.toFixed(2)});
-        scene.add(mesh);
-    }`;
-                } else if (obj.userData.isImported) {
-                    setupCode += `
-    { // Imported: ${obj.userData.fileName}
-        new GLTFLoader().load('${obj.userData.fileName}', (gltf) => {
-            const model = gltf.scene;
-            model.position.set(${p.x.toFixed(2)}, ${p.y.toFixed(2)}, ${p.z.toFixed(2)});
-            model.rotation.set(${r.x.toFixed(2)}, ${r.y.toFixed(2)}, ${r.z.toFixed(2)});
-            model.scale.set(${s.x.toFixed(2)}, ${s.y.toFixed(2)}, ${s.z.toFixed(2)});
-            scene.add(model);
-            if (gltf.animations?.length) { const mixer = new THREE.AnimationMixer(model); mixers.push(mixer); mixer.clipAction(gltf.animations[0]).play(); }
-        });
-    }`;
-                }
-            });
-
-            setupCode += `
-    camera.position.set(${camera.position.x.toFixed(2)}, ${camera.position.y.toFixed(2)}, ${camera.position.z.toFixed(2)});
-    const controls = new OrbitControls(camera, renderer.domElement); controls.enableDamping = true;
-    function animate() { requestAnimationFrame(animate); mixers.forEach(m => m.update(clock.getDelta())); controls.update(); renderer.render(scene, camera); }
-    animate();`;
-
-            document.getElementById('code-output').value = `<!DOCTYPE html><html><head><title>My Scene</title><style>body{margin:0;overflow:hidden;}</style><script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}<\/script></head><body><script type="module">import * as THREE from 'three'; import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'; import { OrbitControls } from 'three/addons/controls/OrbitControls.js'; import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';\n${setupCode}\n<\/script></body></html>`;
+        window.generateCode = () => {
+            // Placeholder for code generation
+            document.getElementById('code-output').value = '// Export feature coming soon...';
         };
 
         window.copyCode = () => {
-            const copyText = document.getElementById("code-output");
-            copyText.select(); document.execCommand("copy");
-            const btn = document.querySelector('button[onclick="copyCode()"]');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
-            setTimeout(() => btn.innerHTML = originalText, 2000);
+            const textarea = document.getElementById('code-output');
+            textarea.select();
+            document.execCommand('copy');
+            showToast('Code copied to clipboard!', 'success');
         };
 
+        // Initialize app
         init();
     </script>
 </body>
