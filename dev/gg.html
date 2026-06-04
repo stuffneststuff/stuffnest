@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Interactive VR World</title>
+    <!-- Load the A-Frame VR Library -->
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    
+    <script>
+      // 1. CUSTOM SCRIPT: Make the scroll wheel move the camera forward/backward
+      AFRAME.registerComponent('scroll-move', {
+        init: function () {
+          window.addEventListener('wheel', (e) => {
+            // Get current position
+            let pos = this.el.getAttribute('position');
+            // Get the direction the camera is looking
+            let dir = new THREE.Vector3();
+            this.el.sceneEl.camera.getWorldDirection(dir);
+            
+            // Adjust speed based on scroll amount
+            let speed = e.deltaY * 0.005; 
+            
+            // Move position along the direction vector
+            pos.x += dir.x * speed;
+            pos.z += dir.z * speed;
+            
+            this.el.setAttribute('position', pos);
+          });
+        }
+      });
+
+      // 2. CUSTOM SCRIPT: Change object color when clicked
+      AFRAME.registerComponent('click-interact', {
+        init: function () {
+          const colors = ['#FF5733', '#33FF57', '#3357FF', '#F3FF33', '#FF33F3'];
+          let colorIndex = 0;
+          
+          // Listen for a 'click' event (works with mouse, touch, or VR Cardboard button)
+          this.el.addEventListener('click', () => {
+            colorIndex = (colorIndex + 1) % colors.length;
+            this.el.setAttribute('color', colors[colorIndex]);
+          });
+        }
+      });
+
+      // 3. CUSTOM SCRIPT: Sketchfab-style Teleport Movement
+      AFRAME.registerComponent('teleport-movement', {
+        init: function () {
+          const marker = document.querySelector('#teleport-marker');
+          const rig = document.querySelector('#rig');
+          let targetPosition = null;
+
+          // When you look at the ground, show the teleport ring
+          this.el.addEventListener('raycaster-intersection', (evt) => {
+            // Find if we are looking at the ground
+            const hit = evt.detail.intersections.find(i => i.object.el.classList.contains('ground'));
+            if (hit) {
+              targetPosition = hit.point;
+              marker.setAttribute('visible', 'true');
+              // Place marker slightly above the ground so it doesn't glitch
+              marker.setAttribute('position', `${targetPosition.x} 0.05 ${targetPosition.z}`);
+            }
+          });
+
+          // When you look away from the ground, hide the ring
+          this.el.addEventListener('raycaster-intersection-cleared', () => {
+            targetPosition = null;
+            marker.setAttribute('visible', 'false');
+          });
+
+          // When you press the Cardboard button, teleport to the ring!
+          this.el.addEventListener('click', () => {
+            if (targetPosition) {
+              // Smoothly glide the rig to the new location
+              rig.setAttribute('animation__teleport', `property: position; to: ${targetPosition.x} 0 ${targetPosition.z}; dur: 400; easing: easeInOutQuad`);
+            }
+          });
+        }
+      });
+
+      // 4. CUSTOM SCRIPT: iPhone Gyroscope Permission & Auto-VR Split Screen
+      function startIphoneVR() {
+        // Request Gyroscope permission for iOS 13+
+        if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+          DeviceOrientationEvent.requestPermission()
+            .then(permissionState => {
+              if (permissionState === 'granted') {
+                launchVR();
+              } else {
+                alert("Please allow Motion & Orientation access to use VR.");
+              }
+            })
+            .catch(console.error);
+        } else {
+          // Android, desktop, or older devices
+          launchVR();
+        }
+      }
+
+      function launchVR() {
+        // Hide the start menu
+        document.getElementById('vr-start-menu').style.display = 'none';
+        
+        // Tell A-Frame to immediately switch into Cardboard Split-Screen VR mode
+        const scene = document.querySelector('a-scene');
+        if (scene.hasLoaded) {
+          scene.enterVR();
+        } else {
+          scene.addEventListener('loaded', () => scene.enterVR());
+        }
+      }
+    </script>
+
+    <!-- Style for our custom Fullscreen Button -->
+    <style>
+      #vr-start-menu {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.95);
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        text-align: center;
+        padding: 20px;
+      }
+      #vr-start-menu h1 {
+        margin-bottom: 10px;
+        font-size: 28px;
+      }
+      #vr-start-menu p {
+        margin-bottom: 30px;
+        font-size: 16px;
+        color: #ccc;
+      }
+      #vr-start-menu button {
+        padding: 15px 30px;
+        font-size: 20px;
+        font-weight: bold;
+        background-color: #007AFF; /* iOS Blue */
+        color: white;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(0, 122, 255, 0.5);
+        transition: transform 0.1s;
+      }
+      #vr-start-menu button:active {
+        transform: scale(0.95);
+      }
+    </style>
+  </head>
+  <body>
+    
+    <div id="vr-start-menu">
+      <h1>📱 iPhone VR Ready</h1>
+      <p>Tap below to allow sensor access and jump straight into split-screen Cardboard VR.</p>
+      <button onclick="startIphoneVR()">ENTER CARDBOARD VR</button>
+    </div>
+
+    <a-scene>
+      
+      <!-- 
+        THE CAMERA (Your Head / Eyes)
+      -->
+      <a-entity id="rig" position="0 0 0" scroll-move>
+        <!-- The camera is raised to eye-level (1.6m) inside the rig -->
+        <a-camera position="0 1.6 0" look-controls wasd-controls="acceleration: 100">
+          <!-- A cursor with our teleport-movement script and raycaster restricted to specific objects -->
+          <a-entity cursor="fuse: false; rayOrigin: entity;"
+                    teleport-movement
+                    raycaster="objects: .clickable, .ground"
+                    position="0 0 -1"
+                    geometry="primitive: ring; radiusInner: 0.02; radiusOuter: 0.03"
+                    material="color: white; shader: flat"
+                    animation__click="property: scale; startEvents: click; easing: easeInCubic; dur: 150; from: 0.1 0.1 0.1; to: 1 1 1"
+                    animation__fusing="property: scale; startEvents: fusing; easing: easeInCubic; dur: 1500; from: 1 1 1; to: 0.1 0.1 0.1">
+          </a-entity>
+        </a-camera>
+      </a-entity>
+
+      <!-- TELEPORT MARKER (Shows where you will land) -->
+      <a-ring id="teleport-marker" radius-inner="0.3" radius-outer="0.4" color="#00ff00" rotation="-90 0 0" position="0 0.01 0" visible="false" material="shader: flat; opacity: 0.8; transparent: true"></a-ring>
+      
+      <!-- INTERACTIVE 3D OBJECT (Class 'clickable' added for the raycaster) -->
+      <a-box class="clickable" position="0 1 -4" rotation="0 45 0" color="#FF5733" scale="1.5 1.5 1.5"
+             click-interact
+             animation__click="property: rotation; to: 0 405 0; startEvents: click; dur: 1000"
+             animation__enter="property: scale; to: 1.8 1.8 1.8; startEvents: mouseenter; dur: 200"
+             animation__leave="property: scale; to: 1.5 1.5 1.5; startEvents: mouseleave; dur: 200">
+      </a-box>
+      
+      <!-- A huge ground to walk on (Class 'ground' added for teleporting) -->
+      <a-plane class="ground" position="0 0 0" rotation="-90 0 0" width="100" height="100" color="#5a7a5a"></a-plane>
+
+      <!-- A sky background -->
+      <a-sky color="#87CEEB"></a-sky>
+
+      <!-- Adding some simple lighting -->
+      <a-light type="ambient" color="#ccc"></a-light>
+      <a-light type="directional" position="-1 2 1" intensity="0.8"></a-light>
+      
+    </a-scene>
+  </body>
+</html>
