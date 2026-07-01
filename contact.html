@@ -3,64 +3,402 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contact Us | StuffNest</title>
+    <title>Contact Us | Stuffnest</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        /* Fade-in animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4f46e5;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-900 min-h-screen">
+<body class="text-slate-800 min-h-screen flex flex-col justify-between">
 
-    <header class="py-12 px-6 text-center">
-        <h1 class="text-4xl font-bold text-gray-900 mb-2">Get in Touch</h1>
-        <p class="text-gray-600 max-w-lg mx-auto">We'd love to hear from you! Reach out via email or fill out the form below.</p>
+    <!-- Top Navigation Header -->
+    <header class="w-full max-w-3xl mx-auto px-6 py-8 flex flex-col items-center justify-center border-b border-slate-200 mb-8">
+        <div class="flex items-center gap-3 mb-2">
+            <div class="bg-indigo-600 text-white p-2 rounded-lg shadow-sm">
+                <i class="fa-solid fa-feather-pointed text-xl"></i>
+            </div>
+            <span class="text-2xl font-bold tracking-tight text-slate-900">StuffNest</span>
+        </div>
+        <p class="text-slate-500 text-sm font-medium">Secure Communication Portal</p>
     </header>
 
-    <main class="max-w-3xl mx-auto px-6 pb-16">
+    <main class="flex-grow max-w-2xl w-full mx-auto px-6 pb-12">
         
-        <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-8">
-            <h2 class="text-xl font-semibold mb-4">Send us an email</h2>
-            <div class="flex items-center gap-4">
-                <div class="bg-blue-100 p-3 rounded-full text-blue-600">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
+        <!-- Hidden Iframe to prevent redirect on form submission -->
+        <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
+
+        <!-- Admin Configuration Instructions (Collapsible) -->
+        <div class="mb-8" id="admin-notice">
+            <details class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-800 cursor-pointer shadow-sm">
+                <summary class="font-bold focus:outline-none flex justify-between items-center text-sm">
+                    <span><i class="fa-solid fa-gears mr-2"></i> Admin Setup Instructions (Required)</span>
+                    <i class="fa-solid fa-chevron-down opacity-60"></i>
+                </summary>
+                <div class="mt-3 space-y-2 pl-6 list-decimal leading-relaxed">
+                    <p><strong>1. Google Form:</strong> Create a form with 3 fields: <em>Tracking ID</em>, <em>Message</em>, and <em>More Details</em>. Update the form action URL and entry IDs in the code below.</p>
+                    <p><strong>2. Google Sheet:</strong> Open the Form's response sheet. Ensure Column A is <em>Timestamp</em> (automatic). Add a column at the far right (Column E) named <em>Employee Response</em>. The columns MUST be: A: Timestamp, B: ID, C: Message, D: Details, E: Employee Response.</p>
+                    <p><strong>3. Publish Sheet:</strong> In Google Sheets, go to <em>File > Share > Publish to web</em>. Select "Form Responses 1" (or your sheet name) and "Comma-separated values (.csv)". Click Publish.</p>
+                    <p><strong>4. Link Data:</strong> Copy that CSV link and paste it into the <code>CONFIG.SHEET_CSV_URL</code> variable at the bottom of this file's code.</p>
                 </div>
-                <a href="mailto:stuffnest@pinmx.net" class="text-lg font-medium text-blue-600 hover:underline">
-                    stuffnest@pinmx.net
-                </a>
-            </div>
-        </section>
+            </details>
+        </div>
 
-        <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-            <h2 class="text-xl font-semibold mb-6">Contact Form</h2>
+        <!-- PANEL 1: Composer Form -->
+        <div id="panel-write" class="bg-white rounded-2xl p-8 shadow-sm border border-slate-200 animate-fade-in">
+            <h2 class="text-xl font-bold text-slate-900 mb-6">Send a Message</h2>
             
-            <!-- Instructions for the user -->
-            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
-                <p class="text-sm text-yellow-700">
-                    <strong>Note: This dosn't fully work yet</strong>
-                </p>
+            <!-- Replace action URL below -->
+            <form id="contactForm" 
+                  action="https://docs.google.com/forms/u/0/d/e/1FAIpQLSe3SWOT80p2rPV78bcBR5j0_u92ZJ0h4N4-8eGU_sDiGTQb0w/formResponse" 
+                  method="POST" 
+                  target="hidden_iframe"
+                  onsubmit="handleFormSubmit(event)" 
+                  class="space-y-5">
+                
+                <!-- Secret Random ID Area (Hidden until complete) -->
+                <input type="hidden" name="entry.300271299" id="hidden-id-field">
+
+                <!-- Message Box -->
+                <div>
+                    <label for="form-message" class="block text-sm font-semibold text-slate-700 mb-2">Message</label>
+                    <textarea 
+                        id="form-message" 
+                        name="entry.627681748" 
+                        required 
+                        rows="3" 
+                        placeholder="What would you like to ask or tell us?" 
+                        class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition resize-none"
+                    ></textarea>
+                </div>
+
+                <!-- More Detail Box -->
+                <div>
+                    <label for="form-details" class="block text-sm font-semibold text-slate-700 mb-2">More Details</label>
+                    <textarea 
+                        id="form-details" 
+                        name="entry.1511737360" 
+                        required 
+                        rows="4" 
+                        placeholder="Add secondary information, context, or instructions..." 
+                        class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition resize-none"
+                    ></textarea>
+                </div>
+
+                <button type="submit" class="w-full bg-indigo-600 text-white font-semibold py-3.5 rounded-xl hover:bg-indigo-700 transition duration-200 shadow-sm mt-4">
+                    Submit to Stuffnest
+                </button>
+            </form>
+        </div>
+
+        <!-- PANEL 2: Loading Status -->
+        <div id="panel-loading" class="hidden bg-white rounded-2xl p-12 text-center shadow-sm border border-slate-200 animate-fade-in flex flex-col items-center justify-center">
+            <div class="loader mb-4"></div>
+            <h2 class="text-lg font-bold text-slate-900">Processing Request...</h2>
+            <p class="text-slate-500 text-sm mt-2">Checking database and generating a unique secure ID.</p>
+        </div>
+
+        <!-- PANEL 3: Success & Link Generation -->
+        <div id="panel-success" class="hidden bg-white rounded-2xl p-8 text-center shadow-sm border border-slate-200 animate-fade-in">
+            <div class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-5">
+                <i class="fa-solid fa-check text-3xl"></i>
+            </div>
+            
+            <h2 class="text-2xl font-bold text-slate-900 mb-2">Message Sent Safely</h2>
+            <p class="text-slate-600 mb-8 text-sm max-w-sm mx-auto">
+                We've securely logged your message. Save your unique tracking link below to check for employee responses later.
+            </p>
+
+            <div class="bg-slate-50 rounded-xl p-5 border border-slate-200 text-left mb-2">
+                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Your Tracking Link</label>
+                <div class="flex items-center gap-2 bg-white border border-slate-300 rounded-lg px-3 py-2">
+                    <input id="share-link-input" readonly type="text" class="w-full bg-transparent text-sm font-mono text-slate-700 outline-none select-all">
+                    <button onclick="copyTrackingLink()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap">
+                        <i id="copy-icon" class="fa-solid fa-copy"></i>
+                        <span id="copy-btn-text">Copy Link</span>
+                    </button>
+                </div>
+            </div>
+            <p class="text-xs text-amber-600 font-medium mt-3"><i class="fa-solid fa-triangle-exclamation"></i> Save this link now. You will not be able to retrieve it later.</p>
+        </div>
+
+        <!-- PANEL 4: Tracking / Response Viewer -->
+        <div id="panel-track" class="hidden space-y-6 animate-fade-in">
+            
+            <!-- Status Header -->
+            <div class="bg-white border border-slate-200 shadow-sm rounded-2xl px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Ticket ID</h3>
+                    <span id="view-ticket-id" class="font-mono font-bold text-indigo-600 text-lg">Loading...</span>
+                </div>
+                <div id="status-badge-container">
+                    <span class="px-4 py-1.5 text-sm font-bold rounded-full border border-slate-200 bg-slate-50 text-slate-500 flex items-center gap-2">
+                        <div class="loader" style="width: 14px; height: 14px; border-width: 2px;"></div> Fetching Status...
+                    </span>
+                </div>
             </div>
 
-            <!-- Responsive Google Form -->
-            <div class="aspect-video w-full">
-                <iframe 
-                    src="https://docs.google.com/forms/d/e/1FAIpQLSe3SWOT80p2rPV78bcBR5j0_u92ZJ0h4N4-8eGU_sDiGTQb0w/viewform?usp=publish-editor" 
-                    width="100%" 
-                    height="100%" 
-                    frameborder="0" 
-                    marginheight="0" 
-                    marginwidth="0"
-                    class="rounded-lg shadow-inner bg-gray-100"
-                >Loading…</iframe>
+            <!-- Original Data View -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 space-y-5">
+                <div>
+                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Original Message</h4>
+                    <p id="view-message" class="text-slate-800 whitespace-pre-wrap bg-slate-50 p-4 rounded-xl text-sm border border-slate-100">...</p>
+                </div>
+                <div>
+                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Additional Details</h4>
+                    <p id="view-details" class="text-slate-800 whitespace-pre-wrap bg-slate-50 p-4 rounded-xl text-sm border border-slate-100">...</p>
+                </div>
             </div>
-        </section>
+
+            <!-- Employee Response Box -->
+            <div class="bg-indigo-50 rounded-2xl p-6 shadow-sm border border-indigo-100">
+                <h4 class="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-user-tie"></i> Employee Response
+                </h4>
+                <div id="view-response" class="text-indigo-900 text-sm whitespace-pre-wrap font-medium">
+                    Please wait. Checking database...
+                </div>
+            </div>
+
+            <div class="text-center pt-4">
+                <button onclick="window.location.href=window.location.pathname" class="text-sm font-semibold text-slate-500 hover:text-indigo-600 transition">
+                    &larr; Return to Composer
+                </button>
+            </div>
+        </div>
+
     </main>
 
-    <footer class="text-center py-8 text-gray-500 text-sm">
-        &copy; 2026 Stuffnest
+    <footer class="text-center py-6 text-slate-400 text-xs border-t border-slate-200 bg-white">
+        <p>&copy; 2026 Stuffnest</p>
     </footer>
 
+    <!-- Scripting Magic -->
+    <script>
+
+        const CONFIG = {
+    
+            SHEET_CSV_URL: "https://docs.google.com/spreadsheets/d/16rK3wPv8WZY9QPJ12L3uAq_Nh9GouEbetQaLG-zqPoY/export?format=csv" 
+        };
+
+        // Initialize on page load
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const trackingId = urlParams.get('id');
+            
+            if (trackingId) {
+                // If they have an ID in the URL, go straight to tracking view!
+                document.getElementById('admin-notice').style.display = 'none';
+                showPanel('track');
+                loadTicketData(trackingId);
+            } else {
+                // Otherwise show the form
+                showPanel('write');
+            }
+        };
+
+        // Panel router
+        function showPanel(panelName) {
+            document.getElementById('panel-write').classList.add('hidden');
+            document.getElementById('panel-loading').classList.add('hidden');
+            document.getElementById('panel-success').classList.add('hidden');
+            document.getElementById('panel-track').classList.add('hidden');
+
+            document.getElementById('panel-' + panelName).classList.remove('hidden');
+        }
+
+        // CSV Parser utility
+        function parseCSV(str) {
+            const arr = [];
+            let quote = false;
+            let row = [], col = "";
+            for (let c = 0; c < str.length; c++) {
+                let cc = str[c], nc = str[c+1];
+                if (cc == '"' && quote && nc == '"') { col += cc; ++c; continue; }
+                if (cc == '"') { quote = !quote; continue; }
+                if (cc == ',' && !quote) { row.push(col); col = ""; continue; }
+                if (cc == '\r' && nc == '\n' && !quote) { row.push(col); col = ""; arr.push(row); row = []; ++c; continue; }
+                if (cc == '\n' && !quote) { row.push(col); col = ""; arr.push(row); row = []; continue; }
+                if (cc == '\r' && !quote) { row.push(col); col = ""; arr.push(row); row = []; continue; }
+                col += cc;
+            }
+            if (col.length > 0 || str[str.length-1] == ',') row.push(col);
+            if (row.length > 0) arr.push(row);
+            return arr;
+        }
+
+        // Fetch entire spreadsheet data
+        async function fetchSheetData() {
+            try {
+                if (CONFIG.SHEET_CSV_URL === "YOUR_PUBLISHED_CSV_LINK_HERE") {
+                    console.warn("CSV Link not configured. Bypassing check.");
+                    return []; // Return empty array if not configured
+                }
+                const response = await fetch(CONFIG.SHEET_CSV_URL);
+                if (!response.ok) throw new Error("Failed to fetch");
+                const csvText = await response.text();
+                return parseCSV(csvText);
+            } catch (err) {
+                console.error("Database read error:", err);
+                return [];
+            }
+        }
+
+        // Check if ID exists in sheet (Column B / Index 1 is the ID column)
+        async function isIdInSheet(id, sheetRows) {
+            for (let i = 1; i < sheetRows.length; i++) {
+                if (sheetRows[i] && sheetRows[i][1] === id) {
+                    return true; 
+                }
+            }
+            return false;
+        }
+
+        // Submit Pipeline
+        async function handleFormSubmit(event) {
+            // Stop the browser from submitting the form immediately (preventing duplicates)
+            event.preventDefault();
+
+            // 1. Show loading state immediately
+            showPanel('loading');
+            document.getElementById('admin-notice').style.display = 'none';
+
+            // 2. Fetch current DB to prevent duplicates
+            const sheetRows = await fetchSheetData();
+            
+            // 3. Generate a confirmed unique ID
+            let uniqueId = null;
+            let isUnique = false;
+            
+            while (!isUnique) {
+                const randomNum = Math.floor(10000 + Math.random() * 90000); // 5 digit number
+                uniqueId = `SN-${randomNum}`;
+                isUnique = !(await isIdInSheet(uniqueId, sheetRows));
+            }
+
+            // 4. Inject ID into the form
+            document.getElementById('hidden-id-field').value = uniqueId;
+
+            // 5. Allow form to submit to hidden iframe
+            setTimeout(() => {
+                const form = document.getElementById('contactForm');
+                form.submit();
+                
+                // 6. Generate Share Link & Show Success
+                const currentUrl = window.location.origin + window.location.pathname;
+                document.getElementById('share-link-input').value = `${currentUrl}?id=${uniqueId}`;
+                showPanel('success');
+            }, 800); // Slight delay for UX
+        }
+
+        // Read Pipeline (for users visiting with an ?id= parameter)
+        async function loadTicketData(id) {
+            document.getElementById('view-ticket-id').innerText = id;
+            
+            const sheetRows = await fetchSheetData();
+            
+            if (sheetRows.length === 0) {
+                setErrorState("Database not connected. Administrator must configure CSV link.");
+                return;
+            }
+
+            let foundRow = null;
+            
+            // Search rows for the ID in Column B (Index 1)
+            for (let i = 1; i < sheetRows.length; i++) { // Skip header row
+                if (sheetRows[i] && sheetRows[i][1] === id) {
+                    foundRow = sheetRows[i];
+                    break;
+                }
+            }
+
+            if (foundRow) {
+                // Column indices mapped with Timestamp at index 0:
+                // Index 0: Timestamp (automatically inserted by Google Form)
+                // Index 1: ID
+                // Index 2: Message
+                // Index 3: Details
+                // Index 4: Employee Response
+                const message = foundRow[2] || "No message data.";
+                const details = foundRow[3] || "No details provided.";
+                const employeeResponse = foundRow[4] || ""; // Blank if no response
+
+                document.getElementById('view-message').innerText = message;
+                document.getElementById('view-details').innerText = details;
+
+                const statusBadge = document.getElementById('status-badge-container');
+                const responseBox = document.getElementById('view-response');
+
+                if (employeeResponse.trim() === "") {
+                    // Waiting for employee
+                    statusBadge.innerHTML = `<span class="px-4 py-1.5 text-sm font-bold rounded-full border border-amber-200 bg-amber-50 text-amber-600"><i class="fa-regular fa-clock mr-1"></i> Pending Employee Review...</span>`;
+                    responseBox.innerHTML = `<span class="text-indigo-400 italic">No response has been logged yet. Please check back later.</span>`;
+                } else {
+                    // Employee has answered
+                    statusBadge.innerHTML = `<span class="px-4 py-1.5 text-sm font-bold rounded-full border border-green-200 bg-green-50 text-green-700"><i class="fa-solid fa-check mr-1"></i> Responded</span>`;
+                    responseBox.innerText = employeeResponse;
+                }
+
+            } else {
+                setErrorState("Ticket ID not found in the database. Please check your link.");
+            }
+        }
+
+        function setErrorState(msg) {
+            document.getElementById('status-badge-container').innerHTML = `<span class="px-4 py-1.5 text-sm font-bold rounded-full border border-red-200 bg-red-50 text-red-600"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Error</span>`;
+            document.getElementById('view-message').innerText = "N/A";
+            document.getElementById('view-details').innerText = "N/A";
+            document.getElementById('view-response').innerText = msg;
+            document.getElementById('view-response').className = "text-red-500 text-sm font-medium";
+        }
+
+        // Copy Tracking Link Tool
+        function copyTrackingLink() {
+            const input = document.getElementById('share-link-input');
+            input.select();
+            input.setSelectionRange(0, 99999);
+
+            try {
+                document.execCommand('copy');
+                const copyBtnText = document.getElementById('copy-btn-text');
+                const copyIcon = document.getElementById('copy-icon');
+                
+                copyBtnText.innerText = 'Copied!';
+                copyIcon.className = "fa-solid fa-check";
+                
+                setTimeout(() => {
+                    copyBtnText.innerText = 'Copy Link';
+                    copyIcon.className = "fa-solid fa-copy";
+                }, 3000);
+            } catch (err) {
+                console.warn('Failed to copy');
+            }
+        }
+    </script>
 </body>
 </html>
