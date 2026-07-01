@@ -41,11 +41,11 @@
     <header class="w-full max-w-3xl mx-auto px-6 py-8 flex flex-col items-center justify-center border-b border-slate-200 mb-8">
         <div class="flex items-center gap-3 mb-2">
             <div class="bg-indigo-600 text-white p-2 rounded-lg shadow-sm">
-                <i class="fa-solid fa-feather-pointed text-xl"></i>
+                
             </div>
             <span class="text-2xl font-bold tracking-tight text-slate-900">StuffNest</span>
         </div>
-        <p class="text-slate-500 text-sm font-medium">Secure Communication Portal</p>
+        <p class="text-slate-500 text-sm font-medium">Contact Portal</p>
     </header>
 
     <main class="flex-grow max-w-2xl w-full mx-auto px-6 pb-12">
@@ -53,21 +53,6 @@
         <!-- Hidden Iframe to prevent redirect on form submission -->
         <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
 
-        <!-- Admin Configuration Instructions (Collapsible) -->
-        <div class="mb-8" id="admin-notice">
-            <details class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-800 cursor-pointer shadow-sm">
-                <summary class="font-bold focus:outline-none flex justify-between items-center text-sm">
-                    <span><i class="fa-solid fa-gears mr-2"></i> Admin Setup Instructions (Required)</span>
-                    <i class="fa-solid fa-chevron-down opacity-60"></i>
-                </summary>
-                <div class="mt-3 space-y-2 pl-6 list-decimal leading-relaxed">
-                    <p><strong>1. Google Form:</strong> Create a form with 3 fields: <em>Tracking ID</em>, <em>Message</em>, and <em>More Details</em>. Update the form action URL and entry IDs in the code below.</p>
-                    <p><strong>2. Google Sheet:</strong> Open the Form's response sheet. Ensure Column A is <em>Timestamp</em> (automatic). Add a column at the far right (Column E) named <em>Employee Response</em>. The columns MUST be: A: Timestamp, B: ID, C: Message, D: Details, E: Employee Response.</p>
-                    <p><strong>3. Publish Sheet:</strong> In Google Sheets, go to <em>File > Share > Publish to web</em>. Select "Form Responses 1" (or your sheet name) and "Comma-separated values (.csv)". Click Publish.</p>
-                    <p><strong>4. Link Data:</strong> Copy that CSV link and paste it into the <code>CONFIG.SHEET_CSV_URL</code> variable at the bottom of this file's code.</p>
-                </div>
-            </details>
-        </div>
 
         <!-- PANEL 1: Composer Form -->
         <div id="panel-write" class="bg-white rounded-2xl p-8 shadow-sm border border-slate-200 animate-fade-in">
@@ -131,7 +116,7 @@
             
             <h2 class="text-2xl font-bold text-slate-900 mb-2">Message Sent Safely</h2>
             <p class="text-slate-600 mb-8 text-sm max-w-sm mx-auto">
-                We've securely logged your message. Save your unique tracking link below to check for employee responses later.
+                We've securely logged your message. Save your unique tracking link below to check for a response in about 48 hours.
             </p>
 
             <div class="bg-slate-50 rounded-xl p-5 border border-slate-200 text-left mb-2">
@@ -178,10 +163,10 @@
             <!-- Employee Response Box -->
             <div class="bg-indigo-50 rounded-2xl p-6 shadow-sm border border-indigo-100">
                 <h4 class="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                    <i class="fa-solid fa-user-tie"></i> Employee Response
+                     Response
                 </h4>
                 <div id="view-response" class="text-indigo-900 text-sm whitespace-pre-wrap font-medium">
-                    Please wait. Checking database...
+                    Please wait
                 </div>
             </div>
 
