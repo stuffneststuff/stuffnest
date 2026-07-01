@@ -1,1 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us | StuffNest</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 min-h-screen">
 
+    <header class="py-12 px-6 text-center">
+        <h1 class="text-4xl font-bold text-gray-900 mb-2">Get in Touch</h1>
+        <p class="text-gray-600 max-w-lg mx-auto">We'd love to hear from you! Reach out via email or fill out the form below.</p>
+    </header>
+
+    <main class="max-w-3xl mx-auto px-6 pb-16">
+        
+        <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-8">
+            <h2 class="text-xl font-semibold mb-4">Send us an email</h2>
+            <div class="flex items-center gap-4">
+                <div class="bg-blue-100 p-3 rounded-full text-blue-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                </div>
+                <a href="mailto:stuffnest@pinmx.net" class="text-lg font-medium text-blue-600 hover:underline">
+                    stuffnest@pinmx.net
+                </a>
+            </div>
+        </section>
+
+        <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+            <h2 class="text-xl font-semibold mb-6">Contact Form</h2>
+            
+            <!-- Instructions for the user -->
+            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+                <p class="text-sm text-yellow-700">
+                    <strong>Note:</strong> To use your Google Form, click "Send" in your Google Form, select the "Embed HTML" tab, copy the <code>&lt;iframe&gt;</code> code, and replace the placeholder iframe below with your own code.
+                </p>
+            </div>
+
+            <!-- Responsive Google Form Placeholder -->
+            <div class="aspect-video w-full">
+                <iframe 
+                    src="https://docs.google.com/forms/d/e/1FAIpQLSe3SWOT80p2rPV78bcBR5j0_u92ZJ0h4N4-8eGU_sDiGTQb0w/viewform?usp=publish-editor" 
+                    width="100%" 
+                    height="100%" 
+                    frameborder="0" 
+                    marginheight="0" 
+                    marginwidth="0"
+                    class="rounded-lg shadow-inner bg-gray-100"
+                >Loading…</iframe>
+            </div>
+        </section>
+    </main>
+
+    <footer class="text-center py-8 text-gray-500 text-sm">
+        &copy; 2026 Stuffnest. All rights reserved.
+    </footer>
+
+</body>
+</html>
