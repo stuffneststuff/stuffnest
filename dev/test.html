@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ASCII Art Converter</title>
+  <style>
+    :root {
+      --bg: #121212;
+      --panel: #1e1e1e;
+      --accent: #00ff66;
+      --text: #e0e0e0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1000px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Drag & Drop Zone */
+    .drop-zone {
+      border: 2px dashed #444;
+      border-radius: 12px;
+      padding: 40px;
+      text-align: center;
+      background: var(--panel);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: var(--accent);
+      background: #252525;
+    }
+
+    .drop-zone input[type="file"] {
+      display: none;
+    }
+
+    /* Control Panel */
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      background: var(--panel);
+      padding: 15px 20px;
+      border-radius: 12px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    label {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    input[type="range"] {
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    button {
+      background: #333;
+      color: var(--text);
+      border: 1px solid #555;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    button:hover {
+      background: var(--accent);
+      color: #000;
+      border-color: var(--accent);
+    }
+
+    /* ASCII Output */
+    .output-container {
+      background: #000;
+      border-radius: 12px;
+      padding: 20px;
+      overflow: auto;
+      min-height: 300px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border: 1px solid #333;
+    }
+
+    pre {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 7px;
+      line-height: 0.7px;
+      letter-spacing: 0;
+      color: var(--accent);
+      margin: 0;
+      white-space: pre;
+    }
+
+    /* Hidden canvas used for pixel processing */
+    #canvas {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>Image to ASCII Converter</h2>
+
+    <div class="drop-zone" id="drop-zone">
+      <p>Drag & drop an image here, or <strong>click to browse</strong></p>
+      <input type="file" id="file-input" accept="image/*">
+    </div>
+
+    <div class="controls">
+      <div class="control-group">
+        <label for="resolution">Resolution (Width): <span id="res-val">100</span> chars</label>
+        <input type="range" id="resolution" min="30" max="250" value="100">
+      </div>
+
+      <div class="control-group">
+        <input type="checkbox" id="invert">
+        <label for="invert">Invert Colors</label>
+      </div>
+
+      <div class="control-group">
+        <button id="copy-btn">Copy ASCII</button>
+        <button id="download-btn">Download .txt</button>
+      </div>
+    </div>
+
+    <div class="output-container">
+      <pre id="ascii-output">Upload an image to generate ASCII art...</pre>
+    </div>
+  </div>
+
+  <canvas id="canvas"></canvas>
+
+  <script>
+    // Standard ASCII brightness character density strings (darkest to brightest)
+    const ASCII_CHARS = " @#W$9876543210?!abc;:+=-,._ ".split("");
+    
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const resolutionSlider = document.getElementById('resolution');
+    const resValDisplay = document.getElementById('res-val');
+    const invertCheckbox = document.getElementById('invert');
+    const asciiOutput = document.getElementById('ascii-output');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+    let currentImage = null;
+
+    // --- Event Listeners ---
+
+    // Click to upload
+    dropZone.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+
+    // Drag and Drop
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('dragover');
+    });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      if (e.dataTransfer.files.length) {
+        handleFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    // Control changes
+    resolutionSlider.addEventListener('input', (e) => {
+      resValDisplay.textContent = e.target.value;
+      if (currentImage) generateAscii();
+    });
+
+    invertCheckbox.addEventListener('change', () => {
+      if (currentImage) generateAscii();
+    });
+
+    // Copy to clipboard
+    document.getElementById('copy-btn').addEventListener('click', () => {
+      const text = asciiOutput.textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy ASCII', 2000);
+      });
+    });
+
+    // Download text file
+    document.getElementById('download-btn').addEventListener('click', () => {
+      const text = asciiOutput.textContent;
+      const blob = new Blob([text], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'ascii-art.txt';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    // --- Core Logic ---
+
+    function handleFile(file) {
+      if (!file || !file.type.startsWith('image/')) return;
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          currentImage = img;
+          generateAscii();
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function generateAscii() {
+      if (!currentImage) return;
+
+      const width = parseInt(resolutionSlider.value, 10);
+      
+      // Monospace fonts are roughly twice as tall as they are wide. 
+      // We multiply by 0.55 to compensate for character aspect ratio distortion.
+      const aspectRatio = currentImage.height / currentImage.width;
+      const height = Math.floor(width * aspectRatio * 0.55);
+
+      canvas.width = width;
+      canvas.height = height;
+
+      // Draw the scaled-down image onto the hidden canvas
+      ctx.drawImage(currentImage, 0, 0, width, height);
+
+      // Extract raw pixel data (RGBA values)
+      const imageData = ctx.getImageData(0, 0, width, height);
+      const pixels = imageData.data;
+
+      let asciiStr = '';
+      const chars = invertCheckbox.checked ? [...ASCII_CHARS].reverse() : ASCII_CHARS;
+      const charLen = chars.length;
+
+      // Loop through every pixel
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const offset = (y * width + x) * 4;
+          const r = pixels[offset];
+          const g = pixels[offset + 1];
+          const b = pixels[offset + 2];
+          const a = pixels[offset + 3];
+
+          // Treat transparent pixels as white (background)
+          if (a === 0) {
+            asciiStr += chars[charLen - 1];
+            continue;
+          }
+
+          // Calculate human-perceived luminance
+          const brightness = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+          
+          // Map brightness (0-255) to our character array index
+          const charIndex = Math.floor((brightness / 255) * (charLen - 1));
+          asciiStr += chars[charIndex];
+        }
+        asciiStr += '\n';
+      }
+
+      // Adjust CSS line-height dynamically based on resolution so it scales nicely
+      const fontSize = Math.max(4, Math.floor(600 / width));
+      asciiOutput.style.fontSize = `${fontSize}px`;
+      asciiOutput.style.lineHeight = `${fontSize * 0.8}px`;
+
+      asciiOutput.textContent = asciiStr;
+    }
+  </script>
+</body>
+</html>
