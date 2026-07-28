@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>3D Space VR Explorer</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/DeviceOrientationControls.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { margin: 0; padding: 0; background-color: #000; overflow: hidden; font-family: 'Orbitron', sans-serif; touch-action: none; }
+        canvas { display: block; width: 100vw; height: 100vh; }
+        
+        #start-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, rgba(0,20,30,0.9) 0%, rgba(0,0,0,1) 100%);
+            z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; transition: opacity 0.5s ease;
+        }
+        
+        h1 { color: #0ff; text-transform: uppercase; letter-spacing: 5px; text-shadow: 0 0 20px rgba(0, 255, 255, 0.8); margin: 0 0 20px 0; font-size: 2.5rem; }
+        .btn-container { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+        .action-btn { background: rgba(0, 20, 30, 0.5); border: 2px solid #0ff; color: #0ff; padding: 15px 30px; font-size: 16px; cursor: pointer; border-radius: 5px; transition: all 0.3s; }
+        .action-btn:hover { background: rgba(0, 255, 255, 0.2); }
+        .vr-mode { border-color: #f0f; color: #f0f; }
+    </style>
+</head>
+<body>
+
+    <div id="start-overlay">
+        <h1>Starship OS</h1>
+        <div class="btn-container">
+            <button id="btn-360" class="action-btn">360 View</button>
+            <button id="btn-vr" class="action-btn vr-mode">Cardboard VR</button>
+        </div>
+    </div>
+    
+    <script>
+        let scene, camera, renderer, stereoCamera, cameraRig, crosshair;
+        let deviceControls = null;
+        let isSplitScreen = false;
+        let clock = new THREE.Clock();
+        let targets = [];
+        let raycaster = new THREE.Raycaster();
+        let mouse = new THREE.Vector2(0, 0);
+        let isWarping = false;
+        let warpTargetPos = new THREE.Vector3();
+        let warpStartPos = new THREE.Vector3();
+        let warpStartTime = 0;
+
+        function init() {
+            try {
+                scene = new THREE.Scene();
+                scene.background = new THREE.Color(0x010103);
+
+                camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+                stereoCamera = new THREE.StereoCamera();
+                stereoCamera.eyeSep = 0.064;
+
+                cameraRig = new THREE.Group();
+                cameraRig.position.set(0, 0, 100);
+                scene.add(cameraRig);
+                cameraRig.add(camera);
+
+                renderer = new THREE.WebGLRenderer({ antialias: true });
+                renderer.setPixelRatio(window.devicePixelRatio);
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                document.body.appendChild(renderer.domElement);
+
+                // Add minimal light
+                scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+                const sun = new THREE.Mesh(new THREE.SphereGeometry(10, 32, 32), new THREE.MeshBasicMaterial({color: 0xffaa00}));
+                scene.add(sun); // Simple fallback sun
+
+                window.addEventListener('resize', () => {
+                    camera.aspect = window.innerWidth / window.innerHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                });
+
+                document.getElementById('btn-360').addEventListener('click', () => startExperience(false));
+                document.getElementById('btn-vr').addEventListener('click', () => startExperience(true));
+
+            } catch (e) {
+                console.error("Initialization failed:", e);
+                alert("Error initializing 3D scene.");
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if (!renderer) return;
+
+            if (deviceControls) deviceControls.update();
+
+            if (isSplitScreen) {
+                renderStereo();
+            } else {
+                renderer.render(scene, camera);
+            }
+        }
+
+        function renderStereo() {
+            stereoCamera.update(camera);
+            const size = new THREE.Vector2();
+            renderer.getSize(size);
+            
+            renderer.setScissorTest(true);
+            renderer.setScissor(0, 0, size.width / 2, size.height);
+            renderer.setViewport(0, 0, size.width / 2, size.height);
+            renderer.render(scene, stereoCamera.cameraL);
+            
+            renderer.setScissor(size.width / 2, 0, size.width / 2, size.height);
+            renderer.setViewport(size.width / 2, 0, size.width / 2, size.height);
+            renderer.render(scene, stereoCamera.cameraR);
+            renderer.setScissorTest(false);
+        }
+
+        function startExperience(split) {
+            isSplitScreen = split;
+            document.getElementById('start-overlay').style.display = 'none';
+
+            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                DeviceOrientationEvent.requestPermission().then(res => {
+                    if (res === 'granted') initDeviceControls();
+                });
+            } else {
+                initDeviceControls();
+            }
+        }
+
+        function initDeviceControls() {
+            if (typeof THREE.DeviceOrientationControls !== 'undefined') {
+                deviceControls = new THREE.DeviceOrientationControls(camera);
+            }
+        }
+
+        // Start everything
+        init();
+        animate();
+    </script>
+</body>
+</html>
