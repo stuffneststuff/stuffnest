@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>App Installer Hub</title>
+    
+    <!-- PWA / Home Screen Meta Tags (Dynamic defaults, will be overwritten by JS) -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta id="meta-app-title" name="apple-mobile-web-app-title" content="App Hub">
+    
+    <link id="apple-touch-icon" rel="apple-touch-icon" href="https://i.imgur.com/5JyEp5I.png">
+    <link id="favicon" rel="icon" type="image/png" href="https://i.imgur.com/5JyEp5I.png">
+
+    <script>
+        // ==============================================================================
+        // CONFIGURATION: Define all your available apps here.
+        // ID: Used in the URL hash (e.g., #myapp, #notes)
+        // ==============================================================================
+        const APP_CATALOG = {
+            'myapp': { 
+                name: "My App", 
+                description: "The main portal application.",
+                icon: "https://i.imgur.com/5JyEp5I.png", 
+                target: "https://www.google.com", 
+                themeColor: "indigo" // Tailwind color name for styling
+            },
+            'notes': { 
+                name: "Quick Notes", 
+                description: "A fast, simple note-taking tool.",
+                icon: "https://placehold.co/512x512/fcd34d/b45309?text=Notes", 
+                target: "https://keep.google.com", 
+                themeColor: "amber"
+            },
+            'games': { 
+                name: "Arcade Games", 
+                description: "Play classic arcade games instantly.",
+                icon: "https://placehold.co/512x512/ec4899/831843?text=Arcade", 
+                target: "https://poki.com", 
+                themeColor: "pink"
+            },
+            'dashboard': {
+                name: "Analytics",
+                description: "View your site statistics.",
+                icon: "https://placehold.co/512x512/0ea5e9/082f49?text=Stats",
+                target: "https://analytics.google.com",
+                themeColor: "sky"
+            }
+        };
+
+        // Check standalone mode instantly to prevent UI flash
+        const isStandalone = (window.navigator.standalone === true) || window.matchMedia('(display-mode: standalone)').matches;
+        
+        if (isStandalone) {
+            // Find which app was installed by checking the hash
+            const currentHash = window.location.hash.substring(1);
+            const activeApp = APP_CATALOG[currentHash] || APP_CATALOG['myapp']; // Default fallback
+            
+            // Redirect to the actual app link
+            window.location.replace(activeApp.target);
+        }
+    </script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'slide-up': 'slideUp 0.5s ease-out forwards',
+                        'fade-in': 'fadeIn 0.3s ease-out forwards',
+                        'pulse-slow': 'pulseSlow 3s infinite',
+                    },
+                    keyframes: {
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        pulseSlow: {
+                            '0%, 100%': { transform: 'scale(1)', boxShadow: '0 0 15px rgba(0,0,0,0.1)' },
+                            '50%': { transform: 'scale(1.02)', boxShadow: '0 0 25px rgba(0,0,0,0.2)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .instruction-block { display: none; }
+        /* Smooth transitions for view swapping */
+        #view-selector, #view-install { transition: opacity 0.3s ease-in-out; }
+    </style>
+</head>
+
+<body class="bg-slate-100 min-h-screen flex items-center justify-center p-4 font-sans text-slate-800 antialiased transition-colors duration-500" id="body-bg">
+
+    <!-- VIEW 1: App Selector Grid (Shows if no specific hash is provided) -->
+    <main id="view-selector" class="w-full max-w-4xl mx-auto hidden animate-fade-in">
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-extrabold text-slate-900 mb-4 tracking-tight">App Directory</h1>
+            <p class="text-lg text-slate-600">Select an application to install to your device.</p>
+        </div>
+        
+        <div id="app-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- App cards will be injected here by JavaScript -->
+        </div>
+    </main>
+
+    <!-- VIEW 2: Install Instructions (Shows when a hash like #myapp is present) -->
+    <main id="view-install" class="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-sm w-full overflow-hidden hidden animate-slide-up relative">
+        
+        <!-- Back Button -->
+        <button onclick="clearSelection()" class="absolute top-4 left-4 z-20 bg-white/80 backdrop-blur p-2 rounded-full shadow-sm hover:bg-slate-50 transition-colors text-slate-600">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+        </button>
+
+        <!-- Dynamic Header -->
+        <div id="install-header" class="pt-12 pb-8 px-6 flex flex-col items-center text-center border-b border-slate-50 relative overflow-hidden transition-colors duration-500">
+            <div class="absolute inset-0 opacity-20 bg-gradient-to-b from-white/50 to-transparent"></div>
+            
+            <img id="install-icon" src="" alt="App Icon" class="w-28 h-28 rounded-2xl shadow-xl border-4 border-white mb-5 animate-pulse-slow relative z-10 bg-white object-cover">
+            
+            <h1 id="install-title" class="text-2xl font-bold text-slate-900 mb-2 relative z-10 drop-shadow-sm">Install App</h1>
+            <p id="install-desc" class="text-sm text-slate-700 relative z-10 font-medium">Add to your home screen.</p>
+            
+            <!-- Native PWA Install Button (Hidden by default, shown if supported) -->
+            <button id="pwa-install-btn" class="hidden mt-4 bg-slate-900 text-white px-6 py-2 rounded-full font-semibold shadow-lg hover:scale-105 transition-transform z-10 relative">
+                Install Native App
+            </button>
+        </div>
+
+        <div class="p-6 bg-slate-50">
+            
+            <div id="ios-instructions" class="instruction-block">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="bg-blue-100 p-2 rounded-lg text-blue-600">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.486 2 2 6.486 2 12c0 5.515 4.486 10 10 10s10-4.485 10-10c0-5.514-4.486-10-10-10zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z"/><path d="M11 6.5v8.278l-2.639-2.639-1.414 1.414L12 18.604l5.053-5.051-1.414-1.414L13 14.778V6.5z"/></svg>
+                    </div>
+                    <h2 class="font-semibold text-slate-800">iOS Instructions</h2>
+                </div>
+                <ul class="space-y-4 text-sm text-slate-600">
+                    <li class="flex items-start gap-3">
+                        <span class="flex-shrink-0 w-6 h-6 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs">1</span>
+                        <p>Tap the <strong>Share</strong> button <br>
+                        <span class="inline-flex items-center justify-center mt-1 text-blue-600 bg-white border border-slate-200 px-2 py-1 rounded shadow-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                        </span>
+                        </p>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="flex-shrink-0 w-6 h-6 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs">2</span>
+                        <p>Scroll down and tap <strong>Add to Home Screen</strong> <span class="inline-block text-lg align-middle leading-none font-light ml-1 border border-slate-200 rounded px-1">+</span></p>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="flex-shrink-0 w-6 h-6 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs">3</span>
+                        <p>Confirm by tapping <strong>Add</strong> in the top right.</p>
+                    </li>
+                </ul>
+            </div>
+
+            <div id="android-instructions" class="instruction-block">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="bg-green-100 p-2 rounded-lg text-green-600">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.573 1.848a2.983 2.983 0 0 0-4.143-.804L2.302 8.441a2.985 2.985 0 0 0-.805 4.142l11.127 15.11a2.984 2.984 0 0 0 4.143.805l11.128-7.397a2.984 2.984 0 0 0 .805-4.143L17.573 1.848zm-1.077 19.98-11.127-15.11 7.397-5.446 11.128 15.11-7.398 5.446z"/><path d="m14.939 12.067-2.915-3.959-1.611 1.186 2.914 3.959z"/></svg>
+                    </div>
+                    <h2 class="font-semibold text-slate-800">Android Instructions</h2>
+                </div>
+                <ul class="space-y-4 text-sm text-slate-600">
+                    <li class="flex items-start gap-3">
+                        <span class="flex-shrink-0 w-6 h-6 rounded-full bg-green-50 text-green-600 flex items-center justify-center font-bold text-xs">1</span>
+                        <p>Tap the <strong>Menu</strong> icon in the top right <br>
+                        <span class="inline-flex items-center justify-center mt-1 text-slate-600 bg-white border border-slate-200 px-2 py-1 rounded shadow-sm">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 12c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                        </span>
+                        </p>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="flex-shrink-0 w-6 h-6 rounded-full bg-green-50 text-green-600 flex items-center justify-center font-bold text-xs">2</span>
+                        <p>Tap <strong>Add to Home screen</strong>.</p>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="flex-shrink-0 w-6 h-6 rounded-full bg-green-50 text-green-600 flex items-center justify-center font-bold text-xs">3</span>
+                        <p>Tap <strong>Add</strong> or <strong>Install</strong> to confirm.</p>
+                    </li>
+                </ul>
+            </div>
+
+            <div id="chromeos-instructions" class="instruction-block">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="bg-yellow-100 p-2 rounded-lg text-yellow-600">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+                    </div>
+                    <h2 class="font-semibold text-slate-800">Chrome OS Instructions</h2>
+                </div>
+                <ul class="space-y-4 text-sm text-slate-600">
+                    <li class="flex items-start gap-3">
+                        <span class="flex-shrink-0 w-6 h-6 rounded-full bg-yellow-50 text-yellow-600 flex items-center justify-center font-bold text-xs">1</span>
+                        <p>Look at the right side of your address bar at the top of the screen.</p>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="flex-shrink-0 w-6 h-6 rounded-full bg-yellow-50 text-yellow-600 flex items-center justify-center font-bold text-xs">2</span>
+                        <p>Click the <strong>Install</strong> icon <br>
+                        <span class="inline-flex items-center justify-center mt-1 text-slate-600 bg-white border border-slate-200 px-2 py-1 rounded shadow-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        </span>
+                        </p>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="flex-shrink-0 w-6 h-6 rounded-full bg-yellow-50 text-yellow-600 flex items-center justify-center font-bold text-xs">3</span>
+                        <p>Click <strong>Install</strong> to confirm.</p>
+                    </li>
+                </ul>
+            </div>
+
+            <div id="desktop-instructions" class="instruction-block text-center py-4">
+                <div class="inline-block bg-slate-200 p-3 rounded-full text-slate-600 mb-4">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                </div>
+                <h2 class="font-semibold text-slate-800 mb-2">Scan on Mobile</h2>
+                <p class="text-sm text-slate-600">To install this specific app, open this exact link on your mobile device.</p>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        let deferredPrompt; // Used for native install prompt (Android/ChromeOS)
+
+        // Helper: Convert Tailwind color names to Hex for the manifest file
+        const colorMap = {
+            'indigo': '#4f46e5',
+            'amber': '#f59e0b',
+            'pink': '#ec4899',
+            'sky': '#0ea5e9',
+            'default': '#ffffff'
+        };
+
+        // 1. Render the Grid of Apps
+        function renderAppSelector() {
+            const grid = document.getElementById('app-grid');
+            grid.innerHTML = '';
+            
+            Object.keys(APP_CATALOG).forEach(appId => {
+                const app = APP_CATALOG[appId];
+                const card = document.createElement('a');
+                card.href = `#${appId}`;
+                card.className = `bg-white rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-slate-100 flex flex-col items-center text-center cursor-pointer`;
+                card.innerHTML = `
+                    <div class="w-20 h-20 rounded-xl overflow-hidden mb-4 shadow-md">
+                        <img src="${app.icon}" alt="${app.name}" class="w-full h-full object-cover">
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800">${app.name}</h3>
+                    <p class="text-sm text-slate-500 mt-1">${app.description}</p>
+                    <span class="mt-4 bg-${app.themeColor}-100 text-${app.themeColor}-700 py-1.5 px-4 rounded-full text-sm font-semibold hover:bg-${app.themeColor}-200 transition-colors">Install</span>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // 2. Dynamically build a manifest.json on the fly
+        function generateDynamicManifest(appId, appData) {
+            // Remove old manifest if exists
+            const oldManifest = document.getElementById('dynamic-manifest');
+            if (oldManifest) oldManifest.remove();
+
+            // Create manifest object. 
+            // Crucial: start_url includes the hash so the installed app knows which one it is!
+            const manifest = {
+                "name": appData.name,
+                "short_name": appData.name,
+                "start_url": window.location.pathname + "#" + appId,
+                "display": "standalone",
+                "background_color": "#ffffff",
+                "theme_color": colorMap[appData.themeColor] || colorMap['indigo'],
+                "icons": [
+                    {
+                        "src": appData.icon,
+                        "sizes": "192x192 512x512",
+                        "type": "image/png",
+                        "purpose": "any maskable"
+                    }
+                ]
+            };
+
+            // Convert to a Blob (file) and inject into head
+            const blob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+            const manifestURL = URL.createObjectURL(blob);
+            
+            const manifestLink = document.createElement('link');
+            manifestLink.id = 'dynamic-manifest';
+            manifestLink.rel = 'manifest';
+            manifestLink.href = manifestURL;
+            document.head.appendChild(manifestLink);
+        }
+
+        // 3. Load the specific app's installation page
+        function loadInstallView(appId) {
+            const app = APP_CATALOG[appId];
+            if (!app) { clearSelection(); return; } // Invalid hash fallback
+
+            // Update UI
+            document.title = `Install ${app.name}`;
+            document.getElementById('install-icon').src = app.icon;
+            document.getElementById('install-title').textContent = app.name;
+            
+            // Update Meta Tags
+            document.getElementById('apple-touch-icon').href = app.icon;
+            document.getElementById('favicon').href = app.icon;
+            document.getElementById('meta-app-title').content = app.name;
+
+            // Generate Manifest for Native Prompt support
+            generateDynamicManifest(appId, app);
+
+            // Update background aesthetics based on theme color
+            const header = document.getElementById('install-header');
+            header.className = `pt-12 pb-8 px-6 flex flex-col items-center text-center border-b border-slate-50 relative overflow-hidden transition-colors duration-500 bg-${app.themeColor}-100`;
+            
+            const bodyBg = document.getElementById('body-bg');
+            bodyBg.className = `min-h-screen flex items-center justify-center p-4 font-sans text-slate-800 antialiased transition-colors duration-700 bg-gradient-to-br from-slate-100 to-${app.themeColor}-50`;
+
+            // Detect Device for Instructions
+            detectDeviceAndShowInstructions();
+
+            // Toggle Views
+            document.getElementById('view-selector').classList.add('hidden');
+            document.getElementById('view-install').classList.remove('hidden');
+        }
+
+        function clearSelection() {
+            window.location.hash = ''; // Triggers router
+        }
+
+        // 4. Device Detection Logic
+        function detectDeviceAndShowInstructions() {
+            // Hide all first
+            document.querySelectorAll('.instruction-block').forEach(el => el.style.display = 'none');
+            
+            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            const isChrome = /Chrome/.test(userAgent) && /Google Inc/.test(navigator.vendor);
+            
+            // If the native prompt is available, we don't necessarily need manual instructions, 
+            // but we show them as backup. Native prompt logic is handled by 'beforeinstallprompt'
+            
+            if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+                document.getElementById('ios-instructions').style.display = 'block';
+            } 
+            else if (/android/i.test(userAgent)) {
+                document.getElementById('android-instructions').style.display = 'block';
+            } 
+            else if (/CrOS/.test(userAgent)) {
+                document.getElementById('chromeos-instructions').style.display = 'block';
+            }
+            else {
+                document.getElementById('desktop-instructions').style.display = 'block';
+            }
+        }
+
+        // 5. Hash Router Logic
+        function handleRouteChange() {
+            const hash = window.location.hash.substring(1);
+            if (hash && APP_CATALOG[hash]) {
+                loadInstallView(hash);
+            } else {
+                // No hash or invalid hash -> show selector
+                document.title = "App Hub";
+                document.getElementById('body-bg').className = "min-h-screen flex items-center justify-center p-4 font-sans text-slate-800 antialiased transition-colors duration-700 bg-slate-100";
+                document.getElementById('view-selector').classList.remove('hidden');
+                document.getElementById('view-install').classList.add('hidden');
+            }
+        }
+
+        // 6. Native "Install Prompt" Support (ChromeOS & Android Chrome)
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevent the mini-infobar from appearing on mobile
+            e.preventDefault();
+            // Stash the event so it can be triggered later.
+            deferredPrompt = e;
+            
+            // Show the custom install button if we are currently looking at an app
+            const hash = window.location.hash.substring(1);
+            if (hash && APP_CATALOG[hash]) {
+                const btn = document.getElementById('pwa-install-btn');
+                btn.classList.remove('hidden');
+                
+                btn.onclick = async () => {
+                    // Show the native install prompt
+                    deferredPrompt.prompt();
+                    // Wait for the user to respond to the prompt
+                    const { outcome } = await deferredPrompt.userChoice;
+                    // We've used the prompt, and can't use it again, throw it away
+                    deferredPrompt = null;
+                    btn.classList.add('hidden');
+                };
+            }
+        });
+
+        // Initialize on load
+        window.addEventListener('hashchange', handleRouteChange);
+        document.addEventListener('DOMContentLoaded', () => {
+            renderAppSelector();
+            handleRouteChange();
+        });
+    </script>
+</body>
+</html>
