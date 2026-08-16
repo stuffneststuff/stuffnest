@@ -3,119 +3,293 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Stuffnest App Hub</title>
-    
-    <!-- PWA Manifest & iOS Icons -->
-    <link rel="manifest" href="./manifest.json">
-    <link rel="apple-touch-icon" href="https://i.imgur.com/5JyEp5I.png">
-    <meta name="theme-color" content="#4f46e5">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-    <!-- Tailwind CSS for styling -->
+    <title>App Hub & Downloader</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body {
-            -webkit-tap-highlight-color: transparent;
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        body, html {
+            margin: 0; padding: 0; height: 100%;
+            font-family: 'Inter', sans-serif;
+            background: #090a0f;
+            color: #f8fafc;
+            -webkit-font-smoothing: antialiased;
         }
-        .instruction-box {
-            display: none;
-            animation: fadeIn 0.3s ease-in-out;
+
+        /* Flat, clean card styling */
+        .flat-card {
+            background: #12141c;
+            border: 1px solid #1e2230;
+            transition: border-color 0.2s ease;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .flat-card:hover {
+            border-color: #3b82f6;
+        }
+
+        /* Custom Toast Notification */
+        #custom-toast {
+            animation: slideUp 0.3s ease forwards;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 0.95; }
         }
     </style>
+    <link id="dynamic-manifest" rel="manifest" href="">
 </head>
-<body class="bg-gray-50 text-gray-800 flex flex-col items-center justify-center min-h-screen p-4 font-sans">
+<body class="min-h-screen flex flex-col justify-between p-6 max-w-xl mx-auto">
 
-    <div class="bg-white p-8 rounded-2xl shadow-lg max-w-md w-full text-center">
-        <img src="https://i.imgur.com/5JyEp5I.png" alt="App Icon" class="w-24 h-24 mx-auto mb-4 rounded-2xl shadow-sm">
-        
-        <h1 id="app-title" class="text-2xl font-bold mb-2">Stuffnest Hub</h1>
-        <p class="text-gray-500 mb-6 text-sm">Install this application to your home screen for a seamless, full-screen native experience.</p>
-        
-        <button id="install-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-xl transition duration-200 shadow-md">
-            Install Application
-        </button>
+    <header class="w-full flex items-center justify-between py-4 border-b border-gray-800/60 mb-6">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center font-bold text-white text-sm">H</div>
+            <span class="font-bold text-base tracking-tight">App Hub</span>
+        </div>
+        <div id="os-indicator" class="text-xs px-2.5 py-1 rounded-md bg-gray-900 border border-gray-800 text-gray-400 font-medium">
+            Detecting OS...
+        </div>
+    </header>
 
-        <!-- iOS Instructions (Hidden by default) -->
-        <div id="ios-instructions" class="instruction-box mt-6 bg-blue-50 border border-blue-200 p-4 rounded-xl text-left">
-            <h3 class="font-bold text-blue-800 mb-2">📱 Apple iOS Instructions</h3>
-            <ol class="list-decimal list-inside text-sm text-blue-900 space-y-2">
-                <li>Tap the <strong>Share</strong> icon <span class="bg-white border px-1 rounded">⍐</span> at the bottom.</li>
-                <li>Scroll down and tap <strong>Add to Home Screen</strong> <span class="bg-white border px-1 rounded">+</span>.</li>
-                <li>Tap <strong>Add</strong> in the top right.</li>
-            </ol>
+    <main class="w-full my-auto space-y-4">
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold tracking-tight mb-1">Available Apps</h1>
+            <p class="text-gray-400 text-xs">Select an application below to download and install it to your device.</p>
+        </div>
+
+        <!-- App 1 Card -->
+        <div class="flat-card rounded-2xl p-5 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <img src="https://cdn-icons-png.flaticon.com/512/3177/3177440.png" alt="Nova Icon" class="w-14 h-14 rounded-xl object-cover bg-gray-800 p-1" onerror="this.src='https://placehold.co/60x60/1e2230/ffffff?text=App'">
+                <div>
+                    <h2 class="font-bold text-base mb-0.5">Nova Analytics</h2>
+                    <p class="text-gray-400 text-xs">High-performance real-time telemetry suite.</p>
+                </div>
+            </div>
+            <button onclick="openDownloader('app1')" class="bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs px-5 py-2.5 rounded-xl transition-all shrink-0">
+                Download
+            </button>
+        </div>
+
+        <!-- App 2 Card -->
+        <div class="flat-card rounded-2xl p-5 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <img src="https://cdn-icons-png.flaticon.com/512/281/281764.png" alt="Nexus Icon" class="w-14 h-14 rounded-xl object-cover bg-gray-800 p-1" onerror="this.src='https://placehold.co/60x60/1e2230/ffffff?text=App'">
+                <div>
+                    <h2 class="font-bold text-base mb-0.5">Nexus Cloud</h2>
+                    <p class="text-gray-400 text-xs">Multi-platform adaptive workspace.</p>
+                </div>
+            </div>
+            <button onclick="openDownloader('app2')" class="bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs px-5 py-2.5 rounded-xl transition-all shrink-0">
+                Download
+            </button>
+        </div>
+    </main>
+
+    <div id="modal-downloader" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-[#12141c] border border-gray-800 w-full max-w-md rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+            
+            <!-- Modal Header -->
+            <div class="p-4 border-b border-gray-800 flex items-center justify-between">
+                <div>
+                    <h3 id="modal-app-name" class="font-bold text-sm">Download App</h3>
+                    <p id="modal-os-target" class="text-[11px] text-gray-400">Step-by-step video guide</p>
+                </div>
+                <button onclick="closeDownloader()" class="w-7 h-7 rounded-lg bg-gray-800 flex items-center justify-center hover:bg-gray-700 text-gray-400 text-xs">
+                    ✕
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="p-5 overflow-y-auto space-y-4">
+                
+                <!-- Actual Video Element -->
+                <div class="relative rounded-xl overflow-hidden bg-black aspect-video border border-gray-800">
+                    <video id="instruction-video" class="w-full h-full object-cover" autoplay muted loop playsinline>
+                        <source id="video-source" src="" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+
+                <!-- Text Instructions Panel -->
+                <div class="bg-gray-900/50 rounded-xl p-4 border border-gray-800/80">
+                    <h4 class="text-[11px] font-semibold uppercase tracking-wider text-blue-400 mb-2">Instructions</h4>
+                    <ol id="instruction-steps" class="space-y-2 text-xs text-gray-300 list-decimal pl-4">
+                        <!-- Populated dynamically -->
+                    </ol>
+                </div>
+
+                <!-- Native Install Trigger Button -->
+                <button id="btn-native-prompt" onclick="triggerNativeInstall()" class="w-full py-3 px-4 rounded-xl font-semibold bg-blue-600 hover:bg-blue-500 text-white text-xs transition-all">
+                    Trigger One-Click Install
+                </button>
+            </div>
         </div>
     </div>
 
+    <footer class="w-full text-center text-[11px] text-gray-500 py-2 mt-6">
+        App Hub • Secure PWA Downloader
+    </footer>
+
     <script>
-        // 1. Service Worker Registration
+        // 1. OS Detection
+        function detectOS() {
+            const ua = window.navigator.userAgent;
+            if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) return 'iOS';
+            if (/Mac OS X/.test(ua)) return 'macOS';
+            if (/android/i.test(ua)) return 'Android';
+            if (/Win/.test(ua)) return 'Windows';
+            if (/CrOS/.test(ua)) return 'ChromeOS';
+            return 'Web';
+        }
+
+        const currentOS = detectOS();
+        document.getElementById('os-indicator').innerText = `OS: ${currentOS}`;
+
+        // 2. Service Worker Registration
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('Service Worker Registered!', reg.scope))
-                    .catch(err => console.error('Service Worker Failed:', err));
+            const swCode = `
+                self.addEventListener('install', e => self.skipWaiting());
+                self.addEventListener('activate', e => e.clients.claim());
+                self.addEventListener('fetch', e => {
+                    e.respondWith(fetch(e.request).catch(() => new Response('Offline mode')));
+                });
+            `;
+            const blob = new Blob([swCode], { type: 'application/javascript' });
+            navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(() => {});
+        }
+
+        // 3. App Configurations
+        const appData = {
+            'app1': {
+                name: "Nova Analytics",
+                shortName: "Nova",
+                themeColor: "#2563eb"
+            },
+            'app2': {
+                name: "Nexus Cloud",
+                shortName: "Nexus",
+                // App 2 behavior: depending on OS, assigns specific manifest profile
+                themeColor: (currentOS === 'iOS' || currentOS === 'macOS') ? "#000000" : "#4f46e5",
+                osVariant: (currentOS === 'iOS' || currentOS === 'macOS') ? 'Apple Silicon Profile' : 'Universal Profile'
+            }
+        };
+
+        // 4. Toast Notification
+        function showToast(msg) {
+            const existing = document.getElementById('custom-toast');
+            if(existing) existing.remove();
+
+            const toast = document.createElement('div');
+            toast.id = 'custom-toast';
+            toast.className = 'fixed bottom-5 right-5 z-50 bg-gray-900 border border-gray-700 text-white px-4 py-3 rounded-xl shadow-xl text-xs font-medium';
+            toast.innerText = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3500);
+        }
+
+        // 5. Video & Text Walkthrough Guide Data
+        const guideData = {
+            'iOS': {
+                video: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+                steps: [
+                    "Tap the <strong>Share</strong> button at the bottom toolbar of Safari.",
+                    "Scroll down through the menu and select <strong>Add to Home Screen</strong>.",
+                    "Tap <strong>Add</strong> in the top right corner to finish."
+                ]
+            },
+            'Android': {
+                video: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+                steps: [
+                    "Tap the <strong>menu icon</strong> (three dots) in the top right of Chrome.",
+                    "Select <strong>Install app</strong> or <strong>Add to Home screen</strong>.",
+                    "Tap <strong>Install</strong> on the confirmation prompt."
+                ]
+            },
+            'macOS': {
+                video: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
+                steps: [
+                    "Click the <strong>Share</strong> icon or browser install button in your address bar.",
+                    "Select <strong>Add to Dock</strong> or <strong>Install Application</strong>.",
+                    "Confirm the shortcut creation."
+                ]
+            },
+            'Windows': {
+                video: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+                steps: [
+                    "Click the <strong>Install</strong> icon on the right side of your browser address bar.",
+                    "Click <strong>Install</strong> in the pop-up confirmation dialog.",
+                    "The app will be pinned to your Taskbar."
+                ]
+            },
+            'Web': {
+                video: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
+                steps: [
+                    "Locate the install icon inside your browser's address bar.",
+                    "Follow the prompt to add the app to your device."
+                ]
+            }
+        };
+
+        function openDownloader(appId) {
+            const app = appData[appId];
+            document.getElementById('modal-app-name').innerText = `Download ${app.name}`;
+            document.getElementById('modal-os-target').innerText = `Guide for ${currentOS}`;
+
+            // Inject Dynamic Manifest
+            const manifest = {
+                name: app.name,
+                short_name: app.shortName,
+                start_url: window.location.href,
+                display: "standalone",
+                background_color: "#090a0f",
+                theme_color: app.themeColor,
+                icons: [{ src: "https://cdn-icons-png.flaticon.com/512/3177/3177440.png", sizes: "192x192", type: "image/png" }]
+            };
+            const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+            document.getElementById('dynamic-manifest').href = URL.createObjectURL(blob);
+
+            // Populate Video and Steps
+            const guide = guideData[currentOS] || guideData['Web'];
+            document.getElementById('video-source').src = guide.video;
+            const videoEl = document.getElementById('instruction-video');
+            videoEl.load();
+            videoEl.play().catch(()=>{});
+
+            const stepsContainer = document.getElementById('instruction-steps');
+            stepsContainer.innerHTML = '';
+            guide.steps.forEach(step => {
+                const li = document.createElement('li');
+                li.innerHTML = step;
+                stepsContainer.appendChild(li);
             });
+
+            document.getElementById('modal-downloader').classList.remove('hidden');
         }
 
-        // 2. Hash Routing & App Naming
-        const appTitle = document.getElementById('app-title');
-        const hash = window.location.hash.replace('#', '');
-        if (hash) {
-            appTitle.textContent = hash.charAt(0).toUpperCase() + hash.slice(1);
+        function closeDownloader() {
+            document.getElementById('modal-downloader').classList.add('hidden');
+            const videoEl = document.getElementById('instruction-video');
+            videoEl.pause();
         }
 
-        // 3. Installation Logic & Device Detection
-        let deferredPrompt;
-        const installBtn = document.getElementById('install-btn');
-        const iosBox = document.getElementById('ios-instructions');
-        
-        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-        const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
-        const isChromeOS = /\bCrOS\b/.test(userAgent);
-
-        // Capture the native install prompt
+        // 6. Native Install Prompt Trigger
+        let deferredPrompt = null;
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
         });
 
-        installBtn.addEventListener('click', async () => {
-            // iOS doesn't support programmatic install, show manual instructions
-            if (isIOS) {
-                installBtn.style.display = 'none';
-                iosBox.style.display = 'block';
-                return;
-            }
-
-            // The specific Chrome OS alert you requested
-            if (isChromeOS) {
-                alert("To install this app on Chrome OS, click the install icon in your address bar or open the Chrome menu (⋮) and select 'Install App'.");
-                return;
-            }
-
-            // Android/Desktop Native Install Prompt
+        async function triggerNativeInstall() {
             if (deferredPrompt) {
                 deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') {
-                    console.log('App installed successfully');
+                const result = await deferredPrompt.userChoice;
+                if (result.outcome === 'accepted') {
+                    showToast('App successfully added to your device!');
+                    closeDownloader();
                 }
                 deferredPrompt = null;
             } else {
-                // Fallback for browsers that block the prompt
-                alert("To install, please check your browser address bar for an install icon, or use your browser's menu to 'Add to Home Screen'.");
+                showToast(`Review the video walkthrough above to finish adding to your ${currentOS} home screen!`);
             }
-        });
-
-        // Standalone Mode Redirect
-        if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
-            // Redirect to a specific link if opened as an installed app
-            // window.location.href = "https://your-target-link.com";
-            console.log("Running in standalone mode");
         }
     </script>
 </body>
