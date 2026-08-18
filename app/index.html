@@ -35,6 +35,10 @@
             to { transform: translateY(0); opacity: 0.95; }
         }
     </style>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta id="apple-title" name="apple-mobile-web-app-title" content="App Hub">
+    <link id="apple-icon" rel="apple-touch-icon" href="">
     <link id="dynamic-manifest" rel="manifest" href="">
 </head>
 <body class="min-h-screen flex flex-col justify-between p-6 max-w-xl mx-auto">
@@ -58,10 +62,10 @@
         <!-- App 1 Card -->
         <div class="flat-card rounded-2xl p-5 flex items-center justify-between gap-4">
             <div class="flex items-center gap-4">
-                <img src="https://cdn-icons-png.flaticon.com/512/3177/3177440.png" alt="Nova Icon" class="w-14 h-14 rounded-xl object-cover bg-gray-800 p-1" onerror="this.src='https://placehold.co/60x60/1e2230/ffffff?text=App'">
+                <img src="" alt="Stuffnest Icon" class="w-14 h-14 rounded-xl object-cover bg-gray-800 p-1" onerror="this.src='https://stuffnest.org/images/icon/stuffnest/stuffnest.png'">
                 <div>
-                    <h2 class="font-bold text-base mb-0.5">Nova Analytics</h2>
-                    <p class="text-gray-400 text-xs">High-performance real-time telemetry suite.</p>
+                    <h2 class="font-bold text-base mb-0.5">StuffChat</h2>
+                    <p class="text-gray-400 text-xs">Stuffnest Chat</p>
                 </div>
             </div>
             <button onclick="openDownloader('app1')" class="bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs px-5 py-2.5 rounded-xl transition-all shrink-0">
@@ -72,10 +76,10 @@
         <!-- App 2 Card -->
         <div class="flat-card rounded-2xl p-5 flex items-center justify-between gap-4">
             <div class="flex items-center gap-4">
-                <img src="https://cdn-icons-png.flaticon.com/512/281/281764.png" alt="Nexus Icon" class="w-14 h-14 rounded-xl object-cover bg-gray-800 p-1" onerror="this.src='https://placehold.co/60x60/1e2230/ffffff?text=App'">
+                <img src="https://stuffnest.org/images/icon/stuffnest/stuffnest.png" alt="Nexus Icon" class="w-14 h-14 rounded-xl object-cover bg-gray-800 p-1" onerror="this.src='https://placehold.co/60x60/1e2230/ffffff?text=App'">
                 <div>
-                    <h2 class="font-bold text-base mb-0.5">Nexus Cloud</h2>
-                    <p class="text-gray-400 text-xs">Multi-platform adaptive workspace.</p>
+                    <h2 class="font-bold text-base mb-0.5">Stuffnest</h2>
+                    <p class="text-gray-400 text-xs">Stuffnest</p>
                 </div>
             </div>
             <button onclick="openDownloader('app2')" class="bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs px-5 py-2.5 rounded-xl transition-all shrink-0">
@@ -160,16 +164,20 @@
         // 3. App Configurations
         const appData = {
             'app1': {
-                name: "Nova Analytics",
-                shortName: "Nova",
-                themeColor: "#2563eb"
+                name: "Stuffnest Chat",
+                shortName: "StuffChat",
+                themeColor: "#2563eb",
+                icon: "https://cdn-icons-png.flaticon.com/512/3177/3177440.png",
+                url: "https://stuffnest.org/pw/chat"
             },
             'app2': {
-                name: "Nexus Cloud",
-                shortName: "Nexus",
+                name: "Stuffnest",
+                shortName: "Stuffnest",
                 // App 2 behavior: depending on OS, assigns specific manifest profile
                 themeColor: (currentOS === 'iOS' || currentOS === 'macOS') ? "#000000" : "#4f46e5",
-                osVariant: (currentOS === 'iOS' || currentOS === 'macOS') ? 'Apple Silicon Profile' : 'Universal Profile'
+                osVariant: (currentOS === 'iOS' || currentOS === 'macOS') ? 'Apple Silicon Profile' : 'Universal Profile',
+                icon: "https://stuffnest.org/images/icon/stuffnest/stuffnest.png'",
+                url: "stuffnest.org"
             }
         };
 
@@ -234,18 +242,27 @@
             document.getElementById('modal-app-name').innerText = `Download ${app.name}`;
             document.getElementById('modal-os-target').innerText = `Guide for ${currentOS}`;
 
+            const startUrl = `${app.url}?os=${currentOS}&appId=${appId}&installed=true`;
+
             // Inject Dynamic Manifest
             const manifest = {
                 name: app.name,
                 short_name: app.shortName,
-                start_url: window.location.href,
-                display: "standalone",
+                start_url: startUrl,
+                display: "standalone", // Forces app to open like a native app (no browser UI)
                 background_color: "#090a0f",
                 theme_color: app.themeColor,
-                icons: [{ src: "https://cdn-icons-png.flaticon.com/512/3177/3177440.png", sizes: "192x192", type: "image/png" }]
+                icons: [
+                    { src: app.icon, sizes: "192x192", type: "image/png" },
+                    { src: app.icon, sizes: "512x512", type: "image/png" }
+                ]
             };
             const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
             document.getElementById('dynamic-manifest').href = URL.createObjectURL(blob);
+
+            // Dynamically set iOS specific PWA Tags for the exact app
+            document.getElementById('apple-title').content = app.shortName;
+            document.getElementById('apple-icon').href = app.icon;
 
             // Populate Video and Steps
             const guide = guideData[currentOS] || guideData['Web'];
