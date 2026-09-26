@@ -1,632 +1,1356 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Stuffchat</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-  <style>
-    :root {
-      --accent: #4f46e5; --accent-hover: #4338ca;
-      --bg: #0f172a; --panel: rgba(30, 41, 59, 0.7);
-      --panel-hover: rgba(51, 65, 85, 0.85);
-      --border: rgba(255, 255, 255, 0.08);
-      --text: #f8fafc; --text-muted: #94a3b8;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Stuffchat</title>
+<meta name="theme-color" content="#0b0e17">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Stuffchat">
+<link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAAAHmElEQVR4nO3dyXMUZRjH8bfHcTsJwomrenRfiq1UmGSCQsjEkiVB2fy7ZKtiJmCViTkRCBdlK3dLywUQ8eJR8OC+jIdhwmQySy/v20+/7/P9VL1V1pj0vNX9e/pdpjNEpmDe2tdsSvcB7rx9Moqk+9BJtDOHp/8j7DBH6iWxHOb+xoQeg+RdDLm9GcFHEnkVgvM3OTz9L8FHakfq9zjNqLODE3zY5KoQrB/00BTBhztHG3YLoWTzYIQfrtnOmJVqOjT1D8FH7o42ypnzm3kEIPyQYiN7mQqA8ENa1gymHkIO7f2b8KMwjs7cmyrLqX7pIOFHAR1LUQSJp0CEH0WVJpuJCoDwo+iSZjT2kHFw71+EH944NnNfrGzHGgEIP3wTN7NDq+TgHsIPfx07NXgkKA87AOlHyAZWx4E9f5J/eO/4qfv75rzvGoDwIxSDsmz1aVDANz2HhgO7/+Duj+AcP/3AirwzAkC1FRWxn7s/AnaiaxRgBIBqy6ph/+7fufsjeCdOP7iUe0YAqLZUCft3cfeHHifeaY0CHY9CkH/os1QAxB8alYwx5s1dv5F/qNLOPItgqNaaAvFvUkApRgCoRgFAteiN139l/gO1ymyAQjOmQFCtzAAAzZgCQTWmQFCtzP0fmjECQLUyj0FAM0YAqEYBQDW2QaEau0BQjSkQVONRCKjGGgCqDf0XYkJ18t2HpLtQKPte+0W6CyKi6cnbaoYAQh+floKIpgIvgDqhz2Q68EKIpmq3giyA+uwq6S4EZXrytnQXnAhyG5Tw21efXRXkeQ2uAEK8SEUS2vmNpmo/BzEFqs+ulu6CKtOTt6S7YEUQIwDhz18o57zUNK2PwnxtoVwIH9VnV4tf/6ytJN6DrA2iGrOr5TOQoZXEe5ChNea4+xdB6zrI5yFN83YN0Jh7WLoL6ODr9fCyAHw92SgeT6dAKKLWjUk6GwmnQM2mMT61xtwaN1cPVjTm1ohnJEnzcgoE2EIBQDWv1gAz7zH98UHrOsnnJU5jBIBq/FE83PAkV948CzQzv9bVOYADM/NrxTMTp/GtEHCo+NliDQDVKACoxhQIDhU/W+wCwR0PssW3Q8MZH7LFGgCqsQaAQ8XPFiMAVGMRDHc8yBZTIDhU/GyxCxRDbeynFa/NLayzekzbx7NxzKx8yBZrgCF6BWvQ63GO1+t3+70e95hJXsddFMAAwwKUNGBxft72MSmCwVgDwKHiZ8ufr0bMWdw7p+2fk35vq6QzE6MxBYJq7ALBGR+yxRoADhU/W0yB+oi7h27756TfWxsehYA7HmTLoy/Gyt+wO2fSO2ucn7d9TNm7v3RmhjemQEP0C1DaYM0trOv5u/1ej3vMJK/jLnaBYnARJNvHLGLYfcgWIwBUYxsUDhU/W+wCwR0PssUUCKoxBYJDxc8Wu0BwxodsMQWCaiyC4Y4H2WINAIeKny2mQFCNAoBq7ALBGR+y5c3j0JPbfnR2EmBf63rJ52ZYYxcIbniSK9YAUI1tUDjiR668GgEmx25KdwEx+HSd2AWCdT5lyp+vRrzTatWbbs4ErKhVb4pnJEljDQDL/MqTV2uAtlr1B+kuoAcfr4uXBQDY4s0nwd2tVr3h5IQgndb1kM9F0laS70L6NkERFMJE9YZ4FtI273aButvEKEUgaWL0hngGsrQg1gAUgYwQzru3a4DuNjH6vfWTg/5a51v+umdtQYwAbRRBPkI6z0EVgDFhXZwiCu38RuOV603pTrgyv/iIdBeCsXMkrOC3ReOVa8EWgDHGzC8+Kt0Fr+0cuS7dBaeCL4BOFEN8oQe/TVUBdKIYltMS+G7ReOWqygLoNL/4mLVj7Ry5Zu1YcI8/ireN8+kV/iLMovEKd3/fBPc5gBTC7yf+IsyC8cpV6S4gJUaAjAi/3yiADAi//8qmyRQojfGt30l3ARawC5TCDsIfDKZAUI0CSIi7f1jYBk1gx9ZvpbsAy3gUIqYdWwh/iJgCxUD4w8Uu0BDbCX/QWAMMsH3LN9JdgGNMgfog/DpQAFCNRyF62P7y19JdQE4YAboQfl3YBerwKuFXhxHgDsKvU/TKS18xCEAtHoWAakyBoBqfBEO1yBhjtr34JVUAdc68/3jEFAiqUQBQrWyMMTwOAa0YAaBayRhjznzwRCTdESBP7cyX2y8wCYJG5bv/SQlAn2VTn7HNX1AFCN7ChSeXcs8iGKqtWPyObf6cUQDBWrjw1LLMMwJAtZ7bn1VGAQTobNfd3xhGACjX9wOw6qbPGAUQjLMXn+6ZdUYAqNa3APpVDOCbQVkeGvLqpk+ZCsFbZy8+MzDj5UH/0xgekEDYYk1zRjcyCsA/5y4NvvsbE3MRHOdAQJHEzWyiYI9u/ISRAIV37tKzsXOdaBs0yYEBCUkzmvhzAIoARZUmm6nDPMJ0CAWymPLGnOluPrLhY4oA4hYvP5c6x5kehcjyxoANWTOY+VkgigBSbGTPanhHNnzElAjOLV5+3lpurT4NarNjQC+2M+YssJX1jAaw5/wVNzdX53dsCgFZuAp+W25Tlsr6DykExHb+ygu5ZDP3OTuFgEHyCn6b6KKVYoAx+Ye+U+F2bSiKsEmGvZf/AdJjkKRENfXrAAAAAElFTkSuQmCC">
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+<style>
+:root{
+  --accent:#4f46e5; --accent-hover:#4338ca; --accent-soft:rgba(79,70,229,.16);
+  --surface-0:#0b0e17; --surface-1:#12151f; --surface-2:#161a26; --surface-3:#1a1e2b; --surface-raised:#20242f;
+  --border:rgba(255,255,255,.07); --border-strong:rgba(255,255,255,.14);
+  --text:#f3f4f8; --text-muted:#8b93a7; --text-faint:#5a6178;
+  --success:#22c17a; --danger:#ef4757; --danger-hover:#d63d4c;
+  --radius-sm:8px; --radius-md:12px; --radius-lg:18px;
+  --shadow-1:0 8px 24px rgba(0,0,0,.35); --shadow-2:0 16px 48px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Inter',system-ui,-apple-system,sans-serif;}
+html,body{height:100%;}
+body{
+  background:
+    radial-gradient(1200px 800px at 15% -10%, rgba(79,70,229,.16), transparent 60%),
+    radial-gradient(900px 700px at 110% 10%, rgba(99,102,241,.10), transparent 55%),
+    var(--surface-0);
+  color:var(--text); overflow:hidden; -webkit-font-smoothing:antialiased;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.22);}
+.hidden{display:none!important;}
+button:focus-visible, input:focus-visible, textarea:focus-visible, [tabindex]:focus-visible{
+  outline:2px solid var(--accent); outline-offset:2px;
+}
+input,textarea{
+  width:100%; padding:.8rem 1rem; margin-bottom:.7rem; border-radius:var(--radius-sm);
+  border:1px solid var(--border); background:rgba(0,0,0,.28); color:var(--text);
+  outline:none; transition:.15s; font-size:.95rem;
+}
+input::placeholder,textarea::placeholder{color:var(--text-faint);}
+input:focus,textarea:focus{border-color:var(--accent);background:rgba(0,0,0,.45);box-shadow:0 0 0 3px var(--accent-soft);}
+button{
+  font-family:inherit; border:none; cursor:pointer; font-weight:600; font-size:.92rem;
+  border-radius:var(--radius-sm); transition:.15s; color:var(--text);
+}
+.btn{padding:.8rem 1.1rem; background:var(--accent); display:flex; justify-content:center; align-items:center; gap:.5rem; width:100%; margin-bottom:.7rem;}
+.btn:hover{background:var(--accent-hover); transform:translateY(-1px);}
+.btn.secondary{background:rgba(255,255,255,.05); border:1px solid var(--border);}
+.btn.secondary:hover{background:rgba(255,255,255,.09); transform:none;}
+.btn.danger{background:var(--danger);}
+.btn.danger:hover{background:var(--danger-hover);}
+.btn.ghost{background:transparent; border:1px solid var(--border); color:var(--text-muted);}
+.btn.ghost:hover{background:rgba(255,255,255,.05); color:var(--text);}
+.icon-btn{width:36px; height:36px; padding:0; background:transparent; color:var(--text-muted); border:1px solid transparent; display:flex; align-items:center; justify-content:center; border-radius:var(--radius-sm); flex-shrink:0;}
+.icon-btn:hover{background:rgba(255,255,255,.06); color:var(--text); border-color:var(--border);}
+.icon-btn.danger:hover{color:var(--danger); border-color:rgba(239,71,87,.3); background:rgba(239,71,87,.08);}
+svg{width:19px;height:19px;stroke-width:2;stroke:currentColor;fill:none;stroke-linecap:round;stroke-linejoin:round;}
+.glass{background:var(--surface-raised); border:1px solid var(--border); box-shadow:var(--shadow-2);}
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
-    
-    body { 
-      background: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop') center/cover no-repeat fixed;
-      color: var(--text); height: 100vh; display: flex; overflow: hidden;
-    }
-    
-    .glass-panel { 
-      background: var(--panel); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); 
-      border: 1px solid var(--border); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    }
-    
-    .hidden { display: none !important; }
+/* loader */
+.loader{border:3px solid rgba(255,255,255,.1); border-top:3px solid var(--accent); border-radius:50%; width:26px; height:26px; animation:spin .8s linear infinite;}
+.global-loader{position:fixed; inset:0; background:rgba(11,14,23,.72); backdrop-filter:blur(6px); z-index:999; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:1rem; color:var(--text-muted);}
+@keyframes spin{to{transform:rotate(360deg);}}
 
-    input, button, textarea { 
-      width: 100%; padding: 0.85rem 1rem; margin-bottom: 0.75rem; border-radius: 8px; 
-      border: 1px solid var(--border); background: rgba(0,0,0,0.3); color: var(--text); 
-      outline: none; transition: all 0.2s; font-size: 0.95rem;
-    }
-    input:focus, textarea:focus { border-color: var(--accent); background: rgba(0,0,0,0.5); box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2); }
-    button { background: var(--accent); border: none; font-weight: 600; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 0.5rem; }
-    button:hover { background: var(--accent-hover); transform: translateY(-1px); }
-    button.danger { background: #ef4444; } button.danger:hover { background: #dc2626; }
-    button.icon-btn { width: auto; padding: 0.5rem; background: transparent; border-radius: 6px; margin: 0; color: var(--text-muted); border: 1px solid transparent; }
-    button.icon-btn:hover { background: rgba(255,255,255,0.05); color: var(--text); border-color: var(--border); }
+/* auth */
+#auth-screen{position:fixed; inset:0; z-index:50; display:flex; justify-content:center; align-items:center; background:var(--surface-0);}
+.card{padding:2.4rem; border-radius:var(--radius-lg); width:100%; max-width:400px;}
+.brand-mark{width:52px; height:52px; border-radius:14px; background:linear-gradient(160deg,#635bff,#4338ca); display:flex; align-items:center; justify-content:center; margin:0 auto 1.1rem;}
+.brand-mark svg{width:26px;height:26px;color:#fff;}
+.auth-tabs{display:flex; gap:.4rem; background:rgba(0,0,0,.25); padding:.3rem; border-radius:var(--radius-sm); margin-bottom:1.4rem;}
+.auth-tabs button{flex:1; background:transparent; padding:.55rem; color:var(--text-muted);}
+.auth-tabs button.active{background:var(--accent); color:#fff;}
 
-    /* Icons */
-    svg { width: 18px; height: 18px; stroke-width: 2; stroke: currentColor; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+/* app shell */
+#app-container{display:flex; width:100%; height:100vh; height:100dvh;}
+#rail{
+  width:76px; flex-shrink:0; background:var(--surface-1); border-right:1px solid var(--border);
+  display:flex; flex-direction:column; align-items:center; padding:.9rem 0; gap:.55rem; z-index:20;
+}
+.rail-icon{
+  width:48px; height:48px; border-radius:16px; background:var(--surface-3); color:var(--text-muted);
+  display:flex; align-items:center; justify-content:center; cursor:pointer; position:relative; flex-shrink:0;
+  transition:border-radius .18s, background .18s, color .18s; overflow:hidden; user-select:none;
+}
+.profile-avatar{cursor:pointer;}
+.setup-toggle button, .install-tab, .auth-tabs button{cursor:pointer;}
+.rail-icon img{width:100%;height:100%;object-fit:cover;}
+.rail-icon:hover{border-radius:14px; background:var(--accent); color:#fff;}
+.rail-icon.active{border-radius:14px; background:var(--accent); color:#fff;}
+.rail-icon.active::before{
+  content:""; position:absolute; left:-13px; top:50%; transform:translateY(-50%);
+  width:5px; height:26px; border-radius:0 4px 4px 0; background:#fff;
+}
+.rail-icon-fallback{font-size:.72rem; font-weight:700; letter-spacing:.02em;}
+.rail-divider{width:32px; height:2px; background:var(--border); border-radius:1px; flex-shrink:0;}
+#rail-servers{display:flex; flex-direction:column; gap:.55rem; overflow-y:auto; max-height:100%; flex:1; min-height:0; align-items:center; scrollbar-width:none;}
+#rail-servers::-webkit-scrollbar{display:none;}
+#rail-add{background:var(--surface-3); color:var(--success);}
+#rail-add:hover{background:var(--success); color:#0b0e17;}
 
-    /* Loading Animations */
-    .loader {
-      border: 3px solid rgba(255,255,255,0.1);
-      border-top: 3px solid var(--accent);
-      border-radius: 50%; width: 24px; height: 24px;
-      animation: spin 1s linear infinite;
-    }
-    .global-loader {
-      position: absolute; inset: 0; background: rgba(15, 23, 42, 0.8);
-      z-index: 999; display: flex; flex-direction: column; justify-content: center; align-items: center;
-      backdrop-filter: blur(8px); gap: 1rem; color: var(--text-muted);
-    }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+#list-col{
+  width:272px; flex-shrink:0; background:var(--surface-2); border-right:1px solid var(--border);
+  display:flex; flex-direction:column; z-index:15;
+}
+.profile-bar{
+  height:68px; flex-shrink:0; padding:0 .9rem; display:flex; align-items:center; gap:.7rem;
+  border-bottom:1px solid var(--border);
+}
+.profile-avatar{width:38px; height:38px; border-radius:50%; object-fit:cover; flex-shrink:0; background:var(--surface-3); border:1px solid var(--border); cursor:pointer;}
+.profile-name{flex:1; min-width:0; font-weight:600; font-size:.92rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.profile-actions{display:flex; gap:.25rem;}
+.list-section-title{
+  padding:1rem 1rem .5rem; font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em;
+  color:var(--text-faint); display:flex; align-items:center; justify-content:space-between;
+}
+#dm-list{overflow-y:auto; flex:1; padding:0 .55rem .8rem; min-height:0;}
+.chat-item{
+  padding:.55rem .6rem; border-radius:var(--radius-sm); cursor:pointer; margin-bottom:.15rem;
+  display:flex; gap:.7rem; align-items:center; transition:.12s; color:var(--text-muted);
+}
+.chat-item:hover{background:rgba(255,255,255,.05); color:var(--text);}
+.chat-item.active{background:var(--accent-soft); color:var(--text);}
+.chat-icon{
+  width:36px; height:36px; border-radius:10px; object-fit:cover; background:var(--surface-3);
+  border:1px solid var(--border); display:flex; align-items:center; justify-content:center; flex-shrink:0; color:inherit;
+}
+.chat-meta strong{font-size:.87rem; font-weight:600; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.empty-hint{padding:.4rem 1rem 1rem; font-size:.8rem; color:var(--text-faint); line-height:1.5;}
 
-    /* Layout */
-    #auth-screen { width: 100%; height: 100vh; display: flex; justify-content: center; align-items: center; position: absolute; z-index: 50; background: rgba(0,0,0,0.6); backdrop-filter: blur(12px); }
-    .card { padding: 2.5rem; border-radius: 16px; width: 100%; max-width: 400px; text-align: center; }
-    
-    #app-container { display: flex; width: 100%; height: 100%; }
-    
-    /* Collapsible Sidebar */
-    #sidebar { 
-      width: 76px; /* Collapsed width */
-      border-right: 1px solid var(--border); display: flex; flex-direction: column; 
-      z-index: 10; transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      white-space: nowrap; overflow: hidden;
-    }
-    #sidebar:hover { width: 280px; } /* Expanded width */
-    
-    .header { padding: 1.25rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); height: 74px; }
-    
-    .sidebar-section { display: flex; flex-direction: column; border-bottom: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; flex: 1; }
-    
-    .section-title { 
-      padding: 0.75rem 1.25rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; 
-      color: var(--text-muted); background: rgba(0,0,0,0.15); letter-spacing: 1px;
-      display: flex; justify-content: space-between; align-items: center; cursor: pointer;
-      transition: background 0.2s;
-    }
-    .section-title:hover { background: rgba(0,0,0,0.3); color: var(--text); }
-    .section-title svg { transition: transform 0.2s; }
-    
-    .scroll-list { overflow-y: auto; padding: 0.5rem; flex: 1; min-height: 0; }
-    
-    /* Scrollbar styling */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+/* main area */
+#main-area{flex:1; display:flex; flex-direction:column; min-width:0; background:var(--surface-3); position:relative;}
+.center-state{flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:2rem; text-align:center;}
+.center-state svg{width:44px;height:44px;color:var(--text-faint);margin-bottom:1rem;}
+.center-state h2{font-weight:600; color:var(--text-muted); font-size:1.15rem; margin-bottom:.4rem;}
+.center-state p{color:var(--text-faint); font-size:.88rem; max-width:340px; line-height:1.5;}
 
-    .chat-item { 
-      padding: 0.5rem; border-radius: 8px; cursor: pointer; margin-bottom: 0.25rem; 
-      display: flex; gap: 1rem; align-items: center; transition: all 0.2s; 
-    }
-    .chat-item:hover, .chat-item.active { background: var(--panel-hover); }
-    .chat-icon { 
-      width: 40px; height: 40px; border-radius: 8px; object-fit: cover; 
-      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
-      display: flex; justify-content: center; align-items: center; flex-shrink: 0; color: var(--text-muted);
-    }
-    
-    /* Hide text smoothly when sidebar collapses */
-    .sidebar-text { opacity: 0; transition: opacity 0.2s; }
-    #sidebar:hover .sidebar-text { opacity: 1; }
-    
-    /* Main Area */
-    #main-area { flex: 1; display: flex; flex-direction: column; position: relative; border-left: none; }
-    .center-state { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2rem; }
-    
-    #messages { flex: 1; overflow-y: auto; padding: 2rem; display: flex; flex-direction: column; gap: 1.5rem; }
-    .msg-wrap { display: flex; gap: 1rem; max-width: 80%; animation: popIn 0.2s ease-out; }
-    .msg-wrap.mine { align-self: flex-end; flex-direction: row-reverse; }
-    .msg-wrap.other { align-self: flex-start; }
-    .msg-avatar { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 1px solid var(--border); }
-    .msg-content { display: flex; flex-direction: column; }
-    .msg-name { font-size: 0.8rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text-muted); }
-    .msg-wrap.mine .msg-name { text-align: right; }
-    .message { 
-      padding: 0.85rem 1.1rem; border-radius: 12px; line-height: 1.5; font-size: 0.95rem;
-      background: rgba(255,255,255,0.03); border: 1px solid var(--border); box-shadow: 0 4px 6px rgba(0,0,0,0.1); word-break: break-word;
-    }
-    .msg-wrap.mine .message { background: var(--accent); border-color: var(--accent-hover); }
-    
-    .input-area { padding: 1.5rem; border-top: 1px solid var(--border); display: flex; gap: 1rem; background: rgba(0,0,0,0.2); align-items: center; }
-    #msg-input { flex: 1; border-radius: 8px; padding: 1rem; margin: 0; resize: none; height: 50px; background: rgba(0,0,0,0.4); }
-    .input-area button { width: auto; padding: 0 2rem; margin: 0; height: 50px; }
+.mobile-menu-btn{display:none;}
+.chat-header{height:68px; flex-shrink:0; padding:0 1.4rem; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); background:rgba(0,0,0,.14);}
+.chat-header-left{display:flex; align-items:center; gap:.85rem; min-width:0;}
+#active-icon{width:40px;height:40px;border-radius:11px;}
+#active-title{font-weight:700; font-size:1rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.status-line{font-size:.74rem; color:var(--success); display:flex; align-items:center; gap:.35rem;}
+.status-dot{width:6px;height:6px;border-radius:50%;background:var(--success);flex-shrink:0;}
+.chat-header-actions{display:flex; gap:.3rem; flex-shrink:0;}
 
-    .modal { position: absolute; inset: 0; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(6px); }
-    
-    @keyframes popIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-  </style>
+#messages{flex:1; overflow-y:auto; padding:1.6rem 1.8rem; display:flex; flex-direction:column; gap:.3rem;}
+.msg-wrap{display:flex; gap:.8rem; max-width:min(640px,80%); animation:popIn .18s ease-out; margin-top:1rem;}
+.msg-wrap.grouped{margin-top:.15rem;}
+.msg-wrap.mine{align-self:flex-end; flex-direction:row-reverse;}
+.msg-avatar{width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid var(--border); background:var(--surface-1);}
+.msg-wrap.grouped .msg-avatar{visibility:hidden; height:0;}
+.msg-content{display:flex; flex-direction:column; min-width:0;}
+.msg-name{font-size:.78rem; font-weight:600; margin-bottom:.3rem; color:var(--text-muted);}
+.msg-wrap.mine .msg-name{text-align:right;}
+.message{
+  padding:.72rem 1rem; border-radius:var(--radius-md); line-height:1.48; font-size:.93rem;
+  background:var(--surface-1); border:1px solid var(--border); word-break:break-word; white-space:pre-wrap;
+}
+.msg-wrap.mine .message{background:var(--accent); border-color:var(--accent-hover);}
+@keyframes popIn{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+.input-area{padding:1.1rem 1.4rem; border-top:1px solid var(--border); display:flex; gap:.8rem; align-items:flex-end; background:rgba(0,0,0,.1);}
+#msg-input{flex:1; border-radius:var(--radius-sm); padding:.85rem 1rem; margin:0; resize:none; max-height:140px; background:rgba(0,0,0,.32);}
+.send-btn{width:46px; height:46px; padding:0; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:var(--accent);}
+.send-btn:hover{background:var(--accent-hover);}
+
+/* setup */
+.setup-toggle{display:flex; gap:.7rem; margin-bottom:1.3rem;}
+.setup-toggle button{flex:1; padding:.75rem; background:rgba(255,255,255,.04); border:1px solid var(--border); color:var(--text-muted);}
+.setup-toggle button.active{background:var(--accent); border-color:transparent; color:#fff;}
+.info-box{background:rgba(0,0,0,.22); padding:1rem; border-radius:var(--radius-sm); margin-bottom:1.1rem; font-size:.83rem; color:var(--text-muted); border:1px solid var(--border); line-height:1.55;}
+.info-box b{color:var(--text);}
+.info-box ol{margin-left:1.3rem; margin-top:.4rem;}
+
+/* modals */
+.modal{position:fixed; inset:0; background:rgba(6,8,14,.62); backdrop-filter:blur(5px); display:flex; justify-content:center; align-items:center; z-index:100; padding:1.2rem;}
+.modal-card{width:100%; max-width:440px; max-height:88vh; overflow-y:auto; padding:1.8rem; border-radius:var(--radius-lg);}
+.modal-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:1.3rem;}
+.modal-head h2{font-size:1.15rem; font-weight:700;}
+.field-label{font-size:.78rem; font-weight:600; color:var(--text-muted); margin-bottom:.4rem; display:block; margin-top:.3rem;}
+.field-label.danger-label{color:var(--danger);}
+.hint-text{font-size:.78rem; color:var(--text-faint); margin:-.35rem 0 .8rem; line-height:1.4;}
+
+/* install panel */
+#install-panel{position:fixed; inset:0; background:rgba(6,8,14,.72); backdrop-filter:blur(5px); z-index:200; display:flex; justify-content:center; align-items:center; padding:1.2rem;}
+.install-card{width:100%; max-width:520px; max-height:90vh; overflow-y:auto; padding:1.8rem; border-radius:var(--radius-lg);}
+.install-tabs{display:flex; gap:.4rem; background:rgba(0,0,0,.25); padding:.3rem; border-radius:var(--radius-sm); margin-bottom:1.3rem; flex-wrap:wrap;}
+.install-tab{flex:1; min-width:70px; background:transparent; padding:.55rem .4rem; color:var(--text-muted); font-size:.82rem;}
+.install-tab.active{background:var(--accent); color:#fff;}
+.install-steps ol{margin-left:1.3rem; line-height:1.9; font-size:.92rem; color:var(--text-muted);}
+.install-steps ol b{color:var(--text);}
+.install-steps p.note{margin-top:1rem; font-size:.82rem; color:var(--text-faint); line-height:1.55; background:rgba(0,0,0,.2); padding:.8rem 1rem; border-radius:var(--radius-sm); border:1px solid var(--border);}
+
+/* toast */
+#toast{
+  position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+  background:var(--surface-raised); border:1px solid var(--border-strong); color:var(--text);
+  padding:.85rem 1.3rem; border-radius:var(--radius-sm); font-size:.88rem; box-shadow:var(--shadow-1);
+  opacity:0; pointer-events:none; transition:.22s; z-index:500; max-width:90vw;
+}
+#toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+#toast.error{border-color:rgba(239,71,87,.4);}
+#toast.success{border-color:rgba(34,193,122,.4);}
+
+/* uploads */
+.upload-row{display:flex; align-items:center; gap:.7rem; margin-bottom:.7rem;}
+.upload-row .btn{width:auto; margin-bottom:0; flex:1;}
+.upload-preview{width:42px; height:42px; border-radius:9px; object-fit:cover; border:1px solid var(--border); background:var(--surface-1); flex-shrink:0;}
+.dropzone{border:1.5px dashed var(--border-strong); border-radius:var(--radius-sm); transition:.15s;}
+.dropzone.drag-over{border-color:var(--accent); background:var(--accent-soft);}
+
+/* message images */
+.msg-image{max-width:280px; max-height:280px; border-radius:10px; cursor:zoom-in; display:block; object-fit:cover;}
+.msg-image + .msg-text{margin-top:.5rem;}
+.message:has(.msg-image){padding:.5rem; background:transparent; border:none;}
+.msg-wrap.mine .message:has(.msg-image) .msg-text{background:var(--accent); border:1px solid var(--accent-hover); border-radius:var(--radius-md); padding:.7rem 1rem;}
+.msg-wrap.other .message:has(.msg-image) .msg-text{background:var(--surface-1); border:1px solid var(--border); border-radius:var(--radius-md); padding:.7rem 1rem;}
+
+/* composer attachment preview */
+#composer-preview{padding:.6rem 1.4rem 0; display:flex; gap:.6rem;}
+#composer-preview.hidden{display:none;}
+.preview-chip{position:relative; flex-shrink:0;}
+.preview-chip img{width:58px; height:58px; object-fit:cover; border-radius:9px; border:1px solid var(--border);}
+.preview-chip button{
+  position:absolute; top:-7px; right:-7px; width:20px; height:20px; border-radius:50%;
+  background:var(--danger); color:#fff; font-size:.75rem; line-height:1; display:flex;
+  align-items:center; justify-content:center; padding:0; border:2px solid var(--surface-3);
+}
+.attach-btn{flex-shrink:0;}
+
+/* lightbox */
+#lightbox{position:fixed; inset:0; background:rgba(4,5,9,.88); backdrop-filter:blur(4px); z-index:300; display:flex; align-items:center; justify-content:center; padding:2.5rem; cursor:zoom-out;}
+#lightbox img{max-width:100%; max-height:100%; border-radius:10px; box-shadow:var(--shadow-2);}
+
+/* mobile */
+.mobile-backdrop{display:none;}
+@media (max-width:820px){
+  #rail, #list-col{position:fixed; top:0; bottom:0; z-index:40; transition:transform .25s ease;}
+  #rail{left:0; transform:translateX(-100%);}
+  #list-col{left:0; transform:translateX(-100%);}
+  body.drawer-open #rail{transform:translateX(0);}
+  body.drawer-open #list-col{transform:translateX(76px);}
+  .mobile-backdrop{display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:35;}
+  body.drawer-open .mobile-backdrop{display:block;}
+  .mobile-menu-btn{display:flex;}
+  #main-area{width:100%;}
+  .msg-wrap{max-width:88%;}
+}
+</style>
 </head>
 <body>
 
-  <!-- Global Loader -->
-  <div id="global-loader" class="global-loader hidden">
-    <div class="loader"></div>
-    <span id="loader-text">Connecting...</span>
-  </div>
+<div id="global-loader" class="global-loader hidden">
+  <div class="loader"></div>
+  <span id="loader-text">Connecting&hellip;</span>
+</div>
 
-  <!-- Auth -->
-  <div id="auth-screen">
-    <div class="card glass-panel">
-      <h1 style="margin-bottom:0.2rem; font-weight: 800; font-size: 2rem;">stuffchat</h1>
-      <p style="margin-bottom:2.5rem; color: var(--text-muted); font-size: 0.9rem;">Secure Workspace Protocol</p>
-      <input type="text" id="auth-username" placeholder="Login ID">
-      <input type="password" id="auth-password" placeholder="Password">
-      <button onclick="auth('login')">Login</button>
-      <button onclick="auth('signup')" style="background: rgba(255,255,255,0.05); color: var(--text); border: 1px solid var(--border);">Sign Up</button>
+<div id="toast"></div>
+
+<!-- Auth -->
+<div id="auth-screen">
+  <div class="card glass" style="text-align:center;">
+    <div class="brand-mark"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></div>
+    <h1 style="font-weight:800; font-size:1.6rem; margin-bottom:.2rem;">stuffchat</h1>
+    <p style="color:var(--text-muted); font-size:.86rem; margin-bottom:1.6rem;">Encrypted rooms, deployed by you</p>
+    <div class="auth-tabs">
+      <button id="tab-login" class="active" onclick="switchAuthTab('login')">Log In</button>
+      <button id="tab-signup" onclick="switchAuthTab('signup')">Sign Up</button>
+    </div>
+    <div style="text-align:left;">
+      <input type="text" id="auth-username" placeholder="Login ID" autocomplete="username">
+      <input type="password" id="auth-password" placeholder="Password" autocomplete="current-password">
+      <div id="auth-password2-wrap" class="hidden">
+        <input type="password" id="auth-password2" placeholder="Confirm password" autocomplete="new-password">
+      </div>
+    </div>
+    <button class="btn" id="auth-submit" onclick="handleAuthSubmit()">Log In</button>
+    <p style="font-size:.76rem; color:var(--text-faint); margin-top:.4rem; line-height:1.5;">Messages are encrypted in your browser before they're sent. Losing your password means losing access &mdash; there's no recovery.</p>
+  </div>
+</div>
+
+<!-- App -->
+<div id="app-container" class="hidden">
+  <div class="mobile-backdrop" onclick="closeMobileDrawer()"></div>
+
+  <div id="rail">
+    <div class="rail-icon" id="rail-home" title="Direct Messages" onclick="goHome()">
+      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+    </div>
+    <div class="rail-divider"></div>
+    <div id="rail-servers"></div>
+    <div class="rail-icon" id="rail-add" title="Create Network" onclick="showSetup()">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
     </div>
   </div>
 
-  <!-- App -->
-  <div id="app-container" class="hidden">
-    <div id="sidebar" class="glass-panel">
-      
-      <!-- Profile Header -->
-      <div class="header">
-        <div style="display:flex; align-items:center; gap:1rem;">
-          <img id="my-avatar-img" src="" style="width:36px; height:36px; border-radius:8px; display:none; object-fit:cover; flex-shrink: 0;">
-          <div class="sidebar-text" style="display:flex; flex-direction: column;">
-             <span id="my-displayname" style="font-size: 0.95rem; font-weight: 600;">User</span>
-          </div>
-        </div>
-        <div class="sidebar-text" style="display:flex; gap:0.25rem;">
-          <button onclick="openSettings()" class="icon-btn" title="Settings">
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-          </button>
-          <button onclick="showSetup()" class="icon-btn" title="Create Network">
-            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-          </button>
-        </div>
+  <div id="list-col">
+    <div class="profile-bar">
+      <img id="my-avatar-img" class="profile-avatar" onclick="openSettings()" src="" alt="">
+      <span id="my-displayname" class="profile-name">User</span>
+      <div class="profile-actions">
+        <button class="icon-btn" title="Help &amp; Install" onclick="showInstallPanel(true)">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        </button>
+        <button class="icon-btn" title="Settings" onclick="openSettings()">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        </button>
       </div>
+    </div>
+    <div class="list-section-title">
+      <span>Direct Messages</span>
+      <svg viewBox="0 0 24 24" style="width:15px;height:15px;cursor:pointer;" onclick="showSetup()"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+    </div>
+    <div id="dm-list"></div>
+    <p id="dm-empty" class="empty-hint hidden">No direct chats yet. Tap the + above to start one.</p>
+  </div>
 
-      <!-- Servers Section -->
-      <div class="sidebar-section">
-        <div class="section-title" onclick="toggleSection('server-list-container', 'srv-chevron')">
-          <span class="sidebar-text">Custom Servers</span>
-          <svg id="srv-chevron" class="sidebar-text" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
-        </div>
-        <div id="server-list-container" class="scroll-list"><div id="server-list"></div></div>
-      </div>
-
-      <!-- DMs Section -->
-      <div class="sidebar-section">
-        <div class="section-title" onclick="toggleSection('dm-list-container', 'dm-chevron')">
-          <span class="sidebar-text">Direct Messages</span>
-          <svg id="dm-chevron" class="sidebar-text" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
-        </div>
-        <div id="dm-list-container" class="scroll-list"><div id="dm-list"></div></div>
-      </div>
-
+  <div id="main-area">
+    <div id="empty-state" class="center-state">
+      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+      <h2>No conversation open</h2>
+      <p>Pick a direct message or server from the left, or deploy a new one to get started.</p>
     </div>
 
-    <!-- Main Content Area -->
-    <div id="main-area" class="glass-panel">
-      <div id="empty-state" class="center-state">
-        <svg viewBox="0 0 24 24" style="width: 48px; height: 48px; color: var(--border); margin-bottom: 1rem;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-        <h2 style="color: var(--text-muted); font-weight: 500;">Select a network to connect</h2>
-      </div>
-
-      <!-- Creation Setup -->
-      <div id="setup-state" class="center-state hidden">
-        <div class="card glass-panel" style="max-width: 500px; text-align: left;">
-          <h2 style="margin-bottom: 1.5rem;">Deploy Infrastructure</h2>
-          <div style="display:flex; gap:1rem; margin-bottom: 1.5rem;">
-            <button onclick="setMode('main')" id="btn-main" style="background: var(--accent);">Direct Chat</button>
-            <button onclick="setMode('custom')" id="btn-custom" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border);">Custom Server</button>
-          </div>
-          
-          <div id="custom-instructions" class="hidden" style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.85rem; color: var(--text-muted); border: 1px solid var(--border);">
-            <strong style="color: var(--text);">Custom Setup Protocol:</strong>
-            <ol style="margin-left: 1.5rem; margin-top: 0.5rem; line-height: 1.6;">
-              <li>Create a new Google Sheet (Set to Editor).</li>
-              <li>To attach a server icon, create a tab named <b>logo</b>.</li>
-              <li>Paste the Image/GIF URL in cell <b>A1</b>.</li>
-              <li>Paste the Sheet URL below.</li>
-            </ol>
-          </div>
-
-          <input type="text" id="new-name" placeholder="Network Name">
-          <input type="text" id="new-users" placeholder="Allowed IDs (comma separated)">
-          <input type="text" id="new-sheet" class="hidden" placeholder="Google Sheet URL">
-          
-          <div style="display:flex; gap: 1rem; margin-top: 1rem;">
-             <button onclick="deployServer()" style="flex:2;">Deploy</button>
-             <button onclick="hideSetup()" style="flex:1; background: transparent; border: 1px solid var(--border);">Cancel</button>
-          </div>
+    <div id="setup-state" class="center-state hidden">
+      <div class="card glass" style="max-width:480px; text-align:left;">
+        <h2 style="margin-bottom:1.4rem; font-size:1.2rem;">Deploy a network</h2>
+        <div class="setup-toggle">
+          <button id="btn-main" class="active" onclick="setMode('main')">Direct Chat</button>
+          <button id="btn-custom" onclick="setMode('custom')">Custom Server</button>
+        </div>
+        <div id="custom-instructions" class="info-box hidden">
+          <b>Custom server setup</b>
+          <ol>
+            <li>Create a new Google Sheet, shared as Editor.</li>
+            <li>Paste the sheet's URL below.</li>
+            <li>Optionally upload a server icon &mdash; it's saved to the sheet automatically, no manual tab needed.</li>
+          </ol>
+        </div>
+        <input type="text" id="new-name" placeholder="Network name">
+        <input type="text" id="new-users" placeholder="Allowed login IDs (comma separated)">
+        <input type="text" id="new-sheet" class="hidden" placeholder="Google Sheet URL">
+        <div id="new-logo-row" class="upload-row hidden">
+          <img id="new-logo-preview" class="upload-preview hidden" alt="" onerror="this.classList.add('hidden')">
+          <button type="button" class="btn secondary" onclick="document.getElementById('new-logo-file').click()">Upload server icon</button>
+          <input type="file" id="new-logo-file" accept="image/*" class="hidden" onchange="handleLogoFileChange(event)">
+        </div>
+        <div style="display:flex; gap:.8rem; margin-top:.4rem;">
+          <button class="btn" style="flex:2; margin-bottom:0;" onclick="deployServer()">Deploy</button>
+          <button class="btn ghost" style="flex:1; margin-bottom:0;" onclick="hideSetup()">Cancel</button>
         </div>
       </div>
+    </div>
 
-      <!-- Chat Room -->
-      <div id="chat-state" class="hidden" style="flex: 1; display: flex; flex-direction: column; height: 100%;">
-        <div class="header" style="background: rgba(0,0,0,0.3); padding: 1rem 2rem;">
-          <div style="display:flex; align-items:center; gap: 1rem;">
-            <div id="active-icon" class="chat-icon" style="width: 44px; height: 44px;"></div>
-            <div>
-               <h3 id="active-title" style="margin-bottom: 0.2rem;">Room</h3>
-               <span id="active-status" style="font-size: 0.75rem; color: #10b981; display:flex; align-items:center; gap:0.3rem;"><span style="display:inline-block; width:6px; height:6px; background:#10b981; border-radius:50%;"></span>Secure Connection</span>
-            </div>
-          </div>
-          <div style="display:flex; gap: 0.5rem;">
-            <button onclick="reportChat()" class="icon-btn danger" title="Report Issue">
-              <svg viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
-            </button>
-            <button id="admin-btn" onclick="openAdmin()" class="hidden icon-btn" style="background: rgba(255,255,255,0.1);" title="Admin Panel">
-              <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-            </button>
+    <div id="chat-state" class="hidden" style="flex:1; display:flex; flex-direction:column; min-height:0;">
+      <div class="chat-header">
+        <div class="chat-header-left">
+          <button class="icon-btn mobile-menu-btn" title="Menu" onclick="openMobileDrawer()">
+            <svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+          </button>
+          <div id="active-icon" class="chat-icon"></div>
+          <div style="min-width:0;">
+            <div id="active-title">Room</div>
+            <span class="status-line"><span class="status-dot"></span>Encrypted connection</span>
           </div>
         </div>
-        
-        <div id="messages"></div>
-        
-        <div class="input-area">
-          <textarea id="msg-input" placeholder="Initiate transmission..." onkeypress="if(event.key==='Enter' && !event.shiftKey){ event.preventDefault(); sendMsg(); }"></textarea>
-          <button onclick="sendMsg()">
-             <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+        <div class="chat-header-actions">
+          <button class="icon-btn danger" title="Report Issue" onclick="reportChat()">
+            <svg viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
+          </button>
+          <button id="admin-btn" class="hidden icon-btn" title="Admin Panel" onclick="openAdmin()">
+            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
           </button>
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- Settings Modal -->
-  <div id="settings-modal" class="modal hidden">
-    <div class="card glass-panel" style="text-align: left; max-width: 400px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem;">
-         <h2>Preferences</h2>
-         <button onclick="document.getElementById('settings-modal').classList.add('hidden')" class="icon-btn"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+      <div id="messages"></div>
+
+      <div id="composer-preview" class="hidden"></div>
+      <div class="input-area">
+        <button class="icon-btn attach-btn" title="Attach image" onclick="document.getElementById('msg-image-file').click()">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><path d="M21 15l-5-5L5 21"></path></svg>
+        </button>
+        <input type="file" id="msg-image-file" accept="image/*" class="hidden" onchange="handleComposerImageChange(event)">
+        <textarea id="msg-input" rows="1" placeholder="Message..." onkeydown="handleComposerKey(event)" oninput="autoResizeInput(this)"></textarea>
+        <button class="send-btn" onclick="sendMsg()">
+          <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+        </button>
       </div>
-      <label style="font-size: 0.8rem; font-weight:600; color: var(--text-muted); margin-bottom: 0.5rem; display:block;">Display Alias</label>
-      <input type="text" id="set-displayname" placeholder="Visual name">
-      <label style="font-size: 0.8rem; font-weight:600; color: var(--text-muted); margin-top: 0.5rem; margin-bottom: 0.5rem; display:block;">Avatar Endpoint (Image/GIF URL)</label>
-      <input type="text" id="set-avatar" placeholder="https://...">
-      <button onclick="saveSettings()" style="margin-top: 1rem;">Update Profile</button>
     </div>
   </div>
+</div>
 
-  <!-- Admin Modal -->
-  <div id="admin-modal" class="modal hidden">
-    <div class="card glass-panel" style="text-align: left; max-width: 450px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem;">
-         <h2>Network Config</h2>
-         <button onclick="document.getElementById('admin-modal').classList.add('hidden')" class="icon-btn"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
-      </div>
-      <button onclick="copyJoinLink()" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border); margin-bottom: 1.5rem;">
-        <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-        Generate Invite Link
-      </button>
-      
-      <label style="font-size: 0.8rem; font-weight:600; color: var(--text-muted); display:block; margin-bottom: 0.3rem;">Administrators (Login IDs)</label>
-      <input type="text" id="admin-admins" placeholder="user1, user2">
-      
-      <label style="font-size: 0.8rem; font-weight:600; color: var(--text-muted); display:block; margin-top: 0.5rem; margin-bottom: 0.3rem;">Whitelisted Users</label>
-      <input type="text" id="admin-users">
-      
-      <label style="font-size: 0.8rem; font-weight:600; color: #ef4444; display:block; margin-top: 0.5rem; margin-bottom: 0.3rem;">Blacklisted Users</label>
-      <input type="text" id="admin-banned" placeholder="user3, user4">
-      
-      <button onclick="saveAdmin()" style="margin-top: 1.5rem;">Save Configuration</button>
+<!-- Settings Modal -->
+<div id="settings-modal" class="modal hidden">
+  <div class="modal-card glass">
+    <div class="modal-head">
+      <h2>Preferences</h2>
+      <button class="icon-btn" onclick="closeModal('settings-modal')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+    </div>
+    <label class="field-label">Display name</label>
+    <input type="text" id="set-displayname" placeholder="Visual name">
+    <label class="field-label">Avatar</label>
+    <div class="upload-row">
+      <img id="set-avatar-preview" class="upload-preview hidden" alt="" onerror="this.classList.add('hidden')">
+      <button type="button" class="btn secondary" onclick="document.getElementById('set-avatar-file').click()">Upload image</button>
+      <input type="file" id="set-avatar-file" accept="image/*" class="hidden" onchange="handleAvatarFileChange(event)">
+    </div>
+    <input type="text" id="set-avatar" placeholder="...or paste an image URL" oninput="previewFromUrl('set-avatar', 'set-avatar-preview')">
+    <label class="field-label">New password <span style="color:var(--text-faint); font-weight:400;">(optional)</span></label>
+    <input type="password" id="set-newpass" placeholder="Leave blank to keep current" autocomplete="new-password">
+    <input type="password" id="set-newpass2" placeholder="Confirm new password" autocomplete="new-password">
+    <button class="btn" style="margin-top:.5rem;" onclick="saveSettings()">Save changes</button>
+    <p class="hint-text" style="margin-top:.8rem;">Your password is hashed on your device before it's ever sent &mdash; Stuffchat's storage never sees it in plain text.</p>
+  </div>
+</div>
+
+<!-- Admin Modal -->
+<div id="admin-modal" class="modal hidden">
+  <div class="modal-card glass">
+    <div class="modal-head">
+      <h2>Network Config</h2>
+      <button class="icon-btn" onclick="closeModal('admin-modal')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+    </div>
+    <button class="btn secondary" onclick="copyJoinLink()">
+      <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+      Copy invite link
+    </button>
+    <p class="hint-text">Anyone with this link can join and read messages here &mdash; share it like a password, not in a public place.</p>
+    <div id="admin-logo-row" class="upload-row hidden">
+      <img id="admin-logo-preview" class="upload-preview hidden" alt="" onerror="this.classList.add('hidden')">
+      <button type="button" class="btn secondary" onclick="document.getElementById('admin-logo-file').click()">Change server icon</button>
+      <input type="file" id="admin-logo-file" accept="image/*" class="hidden" onchange="handleAdminLogoFileChange(event)">
+    </div>
+    <label class="field-label">Administrators</label>
+    <input type="text" id="admin-admins" placeholder="user1, user2">
+    <label class="field-label">Whitelisted users</label>
+    <input type="text" id="admin-users">
+    <label class="field-label danger-label">Blacklisted users</label>
+    <input type="text" id="admin-banned" placeholder="user3, user4">
+    <button class="btn" style="margin-top:.5rem;" onclick="saveAdmin()">Save configuration</button>
+  </div>
+</div>
+
+<!-- Install / Help Panel -->
+<div id="install-panel" class="hidden">
+  <div class="install-card glass">
+    <div class="modal-head">
+      <h2>Install Stuffchat</h2>
+      <button class="icon-btn" onclick="closeInstallPanel()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+    </div>
+    <div class="install-tabs">
+      <button class="install-tab" data-platform="iphone" onclick="selectInstallTab('iphone')">iPhone</button>
+      <button class="install-tab" data-platform="ipad" onclick="selectInstallTab('ipad')">iPad</button>
+      <button class="install-tab" data-platform="android" onclick="selectInstallTab('android')">Android</button>
+      <button class="install-tab" data-platform="other" onclick="selectInstallTab('other')">Other</button>
+    </div>
+
+    <div class="install-steps" data-platform="iphone">
+      <ol>
+        <li>Open this page in <b>Safari</b> (required &mdash; other browsers can't add to your home screen on iOS).</li>
+        <li>Tap the <b>Share</b> icon (square with an arrow) in the toolbar.</li>
+        <li>Scroll down and tap <b>Add to Home Screen</b>.</li>
+        <li>Tap <b>Add</b> in the top-right corner.</li>
+      </ol>
+      <p class="note">Stuffchat will appear on your home screen with its own icon and open full-screen, with no address bar.</p>
+    </div>
+    <div class="install-steps hidden" data-platform="ipad">
+      <ol>
+        <li>Open this page in <b>Safari</b>.</li>
+        <li>Tap the <b>Share</b> icon in the toolbar (top-right in most layouts).</li>
+        <li>Tap <b>Add to Home Screen</b>, then <b>Add</b>.</li>
+      </ol>
+      <p class="note">If you're in Split View, exit it first &mdash; the Share icon can be hidden in narrow layouts.</p>
+    </div>
+    <div class="install-steps hidden" data-platform="android">
+      <ol>
+        <li>Open this page in <b>Chrome</b>.</li>
+        <li>Tap the <b>&#8942;</b> menu in the top-right corner.</li>
+        <li>Tap <b>Add to Home screen</b> or <b>Install app</b> (wording varies by Chrome version).</li>
+        <li>Confirm by tapping <b>Add</b> / <b>Install</b>.</li>
+      </ol>
+      <p class="note">Stuffchat opens in its own window afterward, separate from your browser tabs.</p>
+    </div>
+    <div class="install-steps hidden" data-platform="other">
+      <ol>
+        <li>Look for an install icon in the address bar (a small screen with an arrow), or open your browser's menu.</li>
+        <li>Choose <b>Install Stuffchat&hellip;</b> (Chrome/Edge) or the equivalent option.</li>
+        <li>Confirm the install prompt.</li>
+      </ol>
+      <p class="note">On browsers without app-install support (e.g. Firefox), bookmark this page instead for one-click access.</p>
     </div>
   </div>
+</div>
 
-  <script>
-    // --- APP CONFIG ---
-    const API_URL = "https://script.google.com/macros/s/AKfycbzXSqjCpqSKt_9B0CP_gV-Cx140fDPZEiT9QrhTfH746_OdYyAe1iUUoDRFh8imWVCY/exec"; 
-    const DIR_KEY = "hi"; 
-    
-    let user = "", userPass = "", userCipher = ""; 
-    let activeChat = null, knownMessages = 0, pollTimer, isCustom = false;
-    let usersMap = {}; 
+<div id="lightbox" class="hidden" onclick="closeLightbox()">
+  <img id="lightbox-img" src="" alt="" onclick="event.stopPropagation()">
+</div>
 
-    // --- CRYPTO & UTILS ---
-    const enc = (data, key) => CryptoJS.AES.encrypt(JSON.stringify(data), key).toString();
-    const dec = (cipher, key) => { try { return JSON.parse(CryptoJS.AES.decrypt(cipher, key).toString(CryptoJS.enc.Utf8)); } catch(e) { return null; } };
+<script>
+/* =========================================================================
+   CONFIG
+   ========================================================================= */
+const API_URL = "https://script.google.com/macros/s/AKfycbzXSqjCpqSKt_9B0CP_gV-Cx140fDPZEiT9QrhTfH746_OdYyAe1iUUoDRFh8imWVCY/exec";
+// DIR_KEY encrypts the Directory/Users "envelope" so raw JSON isn't sitting
+// in plain sight in the spreadsheet UI. It is NOT a secret: it ships in this
+// public file, so treat envelope confidentiality as zero against anyone who
+// reads this source. Real secrets (passwords, room keys) are protected
+// separately below - see the security notes in the accompanying message.
+const DIR_KEY = "hi";
+const PBKDF2_ITERATIONS = 150000;
+const ICON_192 = "data:image/png;base64,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";
+const ICON_512 = "data:image/png;base64,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";
 
-    // Default SVGs
-    const chatIconSVG = `<svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`;
-    const serverIconSVG = `<svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>`;
+let user = "", userCipher = "", userSalt = "", userHash = "";
+let authMode = "login";
+let activeChat = null, knownMessages = -1, pollTimer = null, isCustom = false;
+let usersMap = {};
 
-    function showLoader(msg = "Processing...") {
-      document.getElementById('loader-text').innerText = msg;
-      document.getElementById('global-loader').classList.remove('hidden');
+const chatIconSVG = `<svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`;
+const serverIconSVG = `<svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2"></rect><rect x="2" y="14" width="20" height="8" rx="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>`;
+
+/* =========================================================================
+   TINY UTILITIES
+   ========================================================================= */
+function escapeHTML(str) {
+  return String(str ?? "").replace(/[&<>"']/g, ch => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[ch]));
+}
+function defaultAvatar(seed) {
+  return `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(seed||"?")}&backgroundColor=4f46e5&textColor=ffffff`;
+}
+function safeImageUrl(url) {
+  if (typeof url === "string" && (/^https?:\/\//i.test(url) || /^data:image\//i.test(url))) return url;
+  return defaultAvatar("?");
+}
+function initials(name) {
+  return (name||"?").trim().split(/\s+/).slice(0,2).map(w=>w[0]||"").join("").toUpperCase() || "?";
+}
+function showLoader(msg) {
+  document.getElementById("loader-text").textContent = msg || "Working\u2026";
+  document.getElementById("global-loader").classList.remove("hidden");
+}
+function hideLoader() { document.getElementById("global-loader").classList.add("hidden"); }
+
+let toastTimer;
+function toast(message, kind) {
+  const el = document.getElementById("toast");
+  el.textContent = message;
+  el.className = "show" + (kind ? " " + kind : "");
+  el.id = "toast";
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 3400);
+}
+function openModal(id) { document.getElementById(id).classList.remove("hidden"); }
+function closeModal(id) { document.getElementById(id).classList.add("hidden"); }
+
+async function apiPost(body) {
+  try {
+    const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(body) });
+    return await res.json();
+  } catch(e) { console.error(e); return { error: String(e) }; }
+}
+async function apiGet(params) {
+  try {
+    const qs = new URLSearchParams(params).toString();
+    const res = await fetch(`${API_URL}?${qs}`);
+    return await res.json();
+  } catch(e) { console.error(e); return { error: String(e) }; }
+}
+
+/* =========================================================================
+   CRYPTO
+   Two different jobs need two different tools:
+
+   1) The Directory/Users "envelope" and chat message bodies need fast
+      authenticated encryption so tampering is detectable - but the key is
+      either public (DIR_KEY) or already high-entropy random (a chat's key),
+      so there's nothing to slow down an attacker with. We use plain
+      SHA-256(passphrase) -> AES-GCM for this: fast, and it fixes the
+      original code's real weaknesses (no auth tag, Math.random() keys).
+
+   2) Passwords are the opposite: low-entropy, human-chosen, and worth
+      slowing an attacker down on. Those get salted PBKDF2-SHA256 with a
+      high iteration count, and the plain password is never stored or
+      transmitted in any recoverable form.
+   ========================================================================= */
+function bytesToB64(bytes) {
+  let bin = "";
+  bytes.forEach(b => bin += String.fromCharCode(b));
+  return btoa(bin);
+}
+function b64ToBytes(b64) {
+  const bin = atob(b64);
+  const out = new Uint8Array(bin.length);
+  for (let i=0;i<bin.length;i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+async function sha256Key(passphrase) {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(passphrase));
+  return crypto.subtle.importKey("raw", digest, { name: "AES-GCM" }, false, ["encrypt","decrypt"]);
+}
+async function encryptGCM(obj, passphrase) {
+  const key = await sha256Key(passphrase);
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const plaintext = new TextEncoder().encode(JSON.stringify(obj));
+  const cipherBuf = await crypto.subtle.encrypt({ name:"AES-GCM", iv }, key, plaintext);
+  return "v2:" + bytesToB64(iv) + ":" + bytesToB64(new Uint8Array(cipherBuf));
+}
+async function decryptGCM(payload, passphrase) {
+  const parts = payload.split(":");
+  const iv = b64ToBytes(parts[1]);
+  const data = b64ToBytes(parts[2]);
+  const key = await sha256Key(passphrase);
+  const plainBuf = await crypto.subtle.decrypt({ name:"AES-GCM", iv }, key, data);
+  return JSON.parse(new TextDecoder().decode(plainBuf));
+}
+function decryptLegacy(cipherText, passphrase) {
+  try {
+    const bytes = CryptoJS.AES.decrypt(cipherText, passphrase);
+    const text = bytes.toString(CryptoJS.enc.Utf8);
+    return text ? JSON.parse(text) : null;
+  } catch(e) { return null; }
+}
+async function enc(obj, passphrase) { return encryptGCM(obj, passphrase); }
+async function dec(payload, passphrase) {
+  if (typeof payload !== "string" || !payload) return null;
+  try {
+    if (payload.startsWith("v2:")) return await decryptGCM(payload, passphrase);
+    return decryptLegacy(payload, passphrase);
+  } catch(e) { return null; }
+}
+
+async function pbkdf2Hash(password, saltBytes, iterations) {
+  const baseKey = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveBits"]);
+  const bits = await crypto.subtle.deriveBits({ name:"PBKDF2", salt:saltBytes, iterations, hash:"SHA-256" }, baseKey, 256);
+  return bytesToB64(new Uint8Array(bits));
+}
+async function hashPassword(password) {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const hashB64 = await pbkdf2Hash(password, salt, PBKDF2_ITERATIONS);
+  return { saltB64: bytesToB64(salt), hashB64 };
+}
+async function verifyPassword(password, saltB64, expectedHashB64) {
+  const hashB64 = await pbkdf2Hash(password, b64ToBytes(saltB64), PBKDF2_ITERATIONS);
+  return safeEqual(hashB64, expectedHashB64);
+}
+function safeEqual(a, b) {
+  if (typeof a !== "string" || typeof b !== "string" || a.length !== b.length) return false;
+  let diff = 0;
+  for (let i=0;i<a.length;i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+/* =========================================================================
+   IMAGE UPLOADS
+   Files never leave the browser as files - they're drawn to a canvas,
+   resized, and re-encoded as a compressed JPEG data: URI. That data: URI is
+   then treated exactly like the app already treats a pasted image URL, so
+   no image hosting or extra backend storage is needed. Google Sheets caps a
+   single cell at ~50,000 characters, and encryption adds its own overhead
+   on top of the image's own base64 encoding, so uploads are compressed to
+   stay comfortably under that limit.
+   ========================================================================= */
+function readFileAsImage(file) {
+  return new Promise((resolve, reject) => {
+    if (!file || !file.type || !file.type.startsWith("image/")) {
+      return reject(new Error("Please choose an image file."));
     }
-    function hideLoader() {
-      document.getElementById('global-loader').classList.add('hidden');
-    }
-
-    function toggleSection(containerId, chevronId) {
-      const el = document.getElementById(containerId);
-      const chevron = document.getElementById(chevronId);
-      if(el.style.display === 'none') {
-        el.style.display = 'block';
-        chevron.style.transform = 'rotate(0deg)';
-      } else {
-        el.style.display = 'none';
-        chevron.style.transform = 'rotate(-90deg)';
-      }
-    }
-
-    window.onload = () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      if(urlParams.has('join')) {
-        sessionStorage.setItem('pendingJoin', urlParams.get('join'));
-        window.history.replaceState({}, document.title, window.location.pathname);
-      }
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("Couldn't read that file."));
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error("That file doesn't look like a valid image."));
+      img.src = reader.result;
     };
+    reader.readAsDataURL(file);
+  });
+}
 
-    // --- AUTH ---
-    async function auth(mode) {
-      const u = document.getElementById("auth-username").value.trim();
-      const p = document.getElementById("auth-password").value.trim();
-      if(!u || !p) return;
-      
-      showLoader("Authenticating...");
-      try {
-        const res = await fetch(`${API_URL}?action=readMain&tab=Users`);
-        const rows = await res.json();
-        
-        let valid = false;
-        for (let row of rows) {
-          if(!row[0]) continue;
-          const du = dec(row[0], DIR_KEY);
-          if (du) {
-            usersMap[du.u] = { d: du.d || du.u, a: du.a };
-            if (du.u === u && du.p === p) { 
-              valid = true; userCipher = row[0]; 
-            }
-          }
+async function compressImageToDataURL(file, opts) {
+  const o = Object.assign({ maxDim: 800, targetBytes: 24000, startQuality: 0.78 }, opts || {});
+  const img = await readFileAsImage(file);
+
+  const dimSteps = [o.maxDim, Math.round(o.maxDim * 0.72), Math.round(o.maxDim * 0.5), Math.round(o.maxDim * 0.35)];
+  const qualitySteps = [o.startQuality, 0.6, 0.42, 0.28, 0.16];
+
+  for (const dim of dimSteps) {
+    const scale = Math.min(1, dim / Math.max(img.width, img.height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(img.width * scale));
+    canvas.height = Math.max(1, Math.round(img.height * scale));
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    for (const q of qualitySteps) {
+      const dataUrl = canvas.toDataURL("image/jpeg", q);
+      const approxBytes = Math.round(dataUrl.length * 0.75);
+      if (approxBytes <= o.targetBytes) return dataUrl;
+    }
+  }
+  throw new Error("This image is too large even after compression. Try a smaller or simpler image.");
+}
+
+function previewFromUrl(inputId, previewId) {
+  const val = document.getElementById(inputId).value.trim();
+  const preview = document.getElementById(previewId);
+  if (val) { preview.src = val; preview.classList.remove("hidden"); }
+  else { preview.classList.add("hidden"); }
+}
+
+async function handleAvatarFileChange(e) {
+  const file = e.target.files[0];
+  e.target.value = "";
+  if (!file) return;
+  showLoader("Compressing image\u2026");
+  try {
+    const dataUrl = await compressImageToDataURL(file, { maxDim: 320, targetBytes: 15000, startQuality: 0.82 });
+    document.getElementById("set-avatar").value = dataUrl;
+    const preview = document.getElementById("set-avatar-preview");
+    preview.src = dataUrl; preview.classList.remove("hidden");
+  } catch (err) { toast(err.message, "error"); }
+  hideLoader();
+}
+
+let pendingLogoDataUrl = "";
+async function handleLogoFileChange(e) {
+  const file = e.target.files[0];
+  e.target.value = "";
+  if (!file) return;
+  showLoader("Compressing image\u2026");
+  try {
+    pendingLogoDataUrl = await compressImageToDataURL(file, { maxDim: 320, targetBytes: 15000, startQuality: 0.82 });
+    const preview = document.getElementById("new-logo-preview");
+    preview.src = pendingLogoDataUrl; preview.classList.remove("hidden");
+  } catch (err) { toast(err.message, "error"); }
+  hideLoader();
+}
+
+async function handleAdminLogoFileChange(e) {
+  const file = e.target.files[0];
+  e.target.value = "";
+  if (!file || !activeChat || !activeChat.sheetId) return;
+  showLoader("Uploading icon\u2026");
+  try {
+    const dataUrl = await compressImageToDataURL(file, { maxDim: 320, targetBytes: 15000, startQuality: 0.82 });
+    const res = await apiPost({ action: "writeLogo", chatId: activeChat.id, sheetId: activeChat.sheetId, dataUrl });
+    if (res.error) { hideLoader(); return toast("Couldn't update icon: " + res.error, "error"); }
+    activeChat.serverLogo = dataUrl;
+    document.getElementById("admin-logo-preview").src = dataUrl;
+    document.getElementById("admin-logo-preview").classList.remove("hidden");
+    document.getElementById("active-icon").innerHTML =
+      `<img src="${escapeHTML(dataUrl)}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">`;
+    await fetchDir();
+  } catch (err) { toast(err.message, "error"); }
+  hideLoader();
+}
+
+let pendingMessageImage = null;
+async function handleComposerImageChange(e) {
+  const file = e.target.files[0];
+  e.target.value = "";
+  if (!file) return;
+  showLoader("Compressing image\u2026");
+  try {
+    pendingMessageImage = await compressImageToDataURL(file, { maxDim: 900, targetBytes: 24000, startQuality: 0.75 });
+    const strip = document.getElementById("composer-preview");
+    strip.innerHTML = `<div class="preview-chip"><img src="${pendingMessageImage}" alt=""><button type="button" title="Remove" onclick="clearComposerImage()">&times;</button></div>`;
+    strip.classList.remove("hidden");
+  } catch (err) { toast(err.message, "error"); }
+  hideLoader();
+}
+function clearComposerImage() {
+  pendingMessageImage = null;
+  const strip = document.getElementById("composer-preview");
+  strip.innerHTML = "";
+  strip.classList.add("hidden");
+}
+
+function openLightbox(src) {
+  document.getElementById("lightbox-img").src = src;
+  document.getElementById("lightbox").classList.remove("hidden");
+}
+function closeLightbox() {
+  document.getElementById("lightbox").classList.add("hidden");
+  document.getElementById("lightbox-img").src = "";
+}
+
+/* =========================================================================
+   AUTH
+   ========================================================================= */
+function switchAuthTab(mode) {
+  authMode = mode;
+  document.getElementById("tab-login").classList.toggle("active", mode === "login");
+  document.getElementById("tab-signup").classList.toggle("active", mode === "signup");
+  document.getElementById("auth-password2-wrap").classList.toggle("hidden", mode !== "signup");
+  document.getElementById("auth-submit").textContent = mode === "login" ? "Log In" : "Sign Up";
+}
+async function handleAuthSubmit() {
+  if (authMode === "signup") {
+    const p1 = document.getElementById("auth-password").value;
+    const p2 = document.getElementById("auth-password2").value;
+    if (p1.length < 6) return toast("Password should be at least 6 characters.", "error");
+    if (p1 !== p2) return toast("Passwords don't match.", "error");
+  }
+  await auth(authMode);
+}
+
+async function auth(mode) {
+  const u = document.getElementById("auth-username").value.trim();
+  const p = document.getElementById("auth-password").value;
+  if (!u || !p) return toast("Enter a login ID and password.", "error");
+
+  showLoader(mode === "login" ? "Authenticating\u2026" : "Creating account\u2026");
+  try {
+    const rows = await apiGet({ action:"readMain", tab:"Users" });
+    if (rows.error) { hideLoader(); return toast("Connection error: " + rows.error, "error"); }
+
+    usersMap = {};
+    let matched = null;
+    for (const row of rows) {
+      if (!row[0]) continue;
+      const profile = await dec(row[0], DIR_KEY);
+      if (!profile || !profile.u) continue;
+      usersMap[profile.u] = { d: profile.d || profile.u, a: profile.a || defaultAvatar(profile.u) };
+      if (profile.u === u) matched = { raw: row[0], profile };
+    }
+
+    if (mode === "signup") {
+      if (matched) { hideLoader(); return toast("That login ID is already taken.", "error"); }
+      const { saltB64, hashB64 } = await hashPassword(p);
+      const newProfile = { u, salt: saltB64, hash: hashB64, d: u, a: defaultAvatar(u) };
+      userCipher = await enc(newProfile, DIR_KEY);
+      const res = await apiPost({ action:"writeMain", tab:"Users", data: userCipher });
+      if (res.error) { hideLoader(); return toast("Couldn't create account: " + res.error, "error"); }
+      usersMap[u] = { d: newProfile.d, a: newProfile.a };
+      userSalt = saltB64; userHash = hashB64;
+    } else {
+      if (!matched) { hideLoader(); return toast("Invalid login ID or password.", "error"); }
+      const profile = matched.profile;
+      let ok = false;
+      if (profile.hash && profile.salt) {
+        ok = await verifyPassword(p, profile.salt, profile.hash);
+        if (ok) { userSalt = profile.salt; userHash = profile.hash; }
+      } else if (typeof profile.p === "string") {
+        // Legacy account from before password hashing. Verify once against
+        // the old plaintext-in-envelope field, then silently upgrade it.
+        ok = profile.p === p;
+        if (ok) {
+          const { saltB64, hashB64 } = await hashPassword(p);
+          const migrated = { u, salt: saltB64, hash: hashB64, d: profile.d || u, a: profile.a || defaultAvatar(u) };
+          const migratedCipher = await enc(migrated, DIR_KEY);
+          await apiPost({ action:"updateUser", oldData: matched.raw, newData: migratedCipher });
+          matched.raw = migratedCipher;
+          userSalt = saltB64; userHash = hashB64;
         }
-
-        if (mode === "login" && !valid) { hideLoader(); return alert("Invalid credentials."); }
-        if (mode === "signup") {
-          if(valid) { hideLoader(); return alert("ID unavailable."); }
-          const newProfile = { u: u, p: p, d: u, a: `https://api.dicebear.com/7.x/initials/svg?seed=${u}&backgroundColor=0f172a` };
-          userCipher = enc(newProfile, DIR_KEY);
-          await fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "writeMain", tab: "Users", data: userCipher }) });
-          usersMap[u] = { d: newProfile.d, a: newProfile.a };
-        }
-
-        user = u; userPass = p;
-        updateProfileUI();
-        
-        document.getElementById("auth-screen").classList.add("hidden");
-        document.getElementById("app-container").classList.remove("hidden");
-        
-        await checkPendingJoins();
-        await fetchDir();
-      } catch (e) {
-        alert("Connection Error.");
       }
-      hideLoader();
+      if (!ok) { hideLoader(); return toast("Invalid login ID or password.", "error"); }
+      userCipher = matched.raw;
     }
 
-    function updateProfileUI() {
-      const pData = usersMap[user];
-      document.getElementById("my-displayname").innerText = pData.d;
-      document.getElementById("my-avatar-img").src = pData.a;
-      document.getElementById("my-avatar-img").style.display = 'block';
+    user = u;
+    updateProfileUI();
+    document.getElementById("auth-screen").classList.add("hidden");
+    document.getElementById("app-container").classList.remove("hidden");
+
+    await checkPendingJoin();
+    await fetchDir();
+  } catch (e) {
+    console.error(e);
+    toast("Connection error. Check your network and try again.", "error");
+  }
+  hideLoader();
+}
+
+function updateProfileUI() {
+  const pData = usersMap[user] || { d:user, a:defaultAvatar(user) };
+  document.getElementById("my-displayname").textContent = pData.d;
+  const img = document.getElementById("my-avatar-img");
+  img.src = safeImageUrl(pData.a);
+  img.onerror = () => { img.onerror = null; img.src = defaultAvatar(user); };
+}
+
+/* =========================================================================
+   DIRECTORY / NAVIGATION
+   ========================================================================= */
+async function fetchDir() {
+  const rows = await apiGet({ action:"readMain", tab:"Directory" });
+  if (rows.error) { toast("Couldn't load your networks: " + rows.error, "error"); return; }
+
+  const chats = new Map();
+  for (const row of rows) {
+    if (!row[0]) continue;
+    const chat = await dec(row[0], DIR_KEY);
+    if (!chat || !chat.id) continue;
+    chats.set(chat.id, chat);
+
+    // Self-heal: rows created before sheetId pinning was added to the
+    // backend won't have column C set yet. Backfill it transparently the
+    // first time anyone loads the app after the upgrade, so existing
+    // custom servers keep working without manual sheet edits.
+    if (chat.type === "custom" && chat.sheetId && row[2] !== chat.sheetId) {
+      await apiPost({ action:"updateDirectory", data: row[0], chatId: chat.id, sheetId: chat.sheetId });
     }
+  }
+  renderChatLists(chats);
+}
 
-    // --- DIRECTORY & UI ---
-    async function fetchDir() {
-      const res = await fetch(`${API_URL}?action=readMain&tab=Directory`);
-      const rows = await res.json();
-      
-      const uniqueChats = new Map();
-      rows.forEach(row => {
-        if(!row[0]) return;
-        const chat = dec(row[0], DIR_KEY);
-        if (chat) uniqueChats.set(chat.id, chat);
-      });
+function renderChatLists(chats) {
+  const dmList = document.getElementById("dm-list");
+  const rail = document.getElementById("rail-servers");
+  dmList.innerHTML = "";
+  rail.innerHTML = "";
 
-      const dmList = document.getElementById("dm-list");
-      const serverList = document.getElementById("server-list");
-      dmList.innerHTML = ""; serverList.innerHTML = "";
+  let anyDM = false;
 
-      uniqueChats.forEach(chat => {
-        const allowed = chat.users.split(",").map(s=>s.trim());
-        const banned = (chat.banned || "").split(",").map(s=>s.trim());
-        
-        if (allowed.includes(user) && !banned.includes(user)) {
-          const el = document.createElement("div");
-          el.className = "chat-item";
-          el.onclick = () => openChat(chat);
-          
-          let iconHtml = chat.serverLogo 
-            ? `<img src="${chat.serverLogo}" class="chat-icon">` 
-            : `<div class="chat-icon">${chat.type === 'custom' ? serverIconSVG : chatIconSVG}</div>`;
-            
-          el.innerHTML = `${iconHtml}<div class="chat-meta sidebar-text" style="text-align: left; overflow: hidden; text-overflow: ellipsis;"><strong>${chat.name}</strong></div>`;
-          
-          if (chat.type === 'custom') serverList.appendChild(el);
-          else dmList.appendChild(el);
-        }
-      });
+  chats.forEach(chat => {
+    const allowed = (chat.users || "").split(",").map(s=>s.trim()).filter(Boolean);
+    const banned = (chat.banned || "").split(",").map(s=>s.trim()).filter(Boolean);
+    if (!allowed.includes(user) || banned.includes(user)) return;
+
+    const isActive = activeChat && activeChat.id === chat.id;
+
+    if (chat.type === "custom") {
+      const btn = document.createElement("div");
+      btn.className = "rail-icon" + (isActive ? " active" : "");
+      btn.title = chat.name;
+      btn.innerHTML = chat.serverLogo
+        ? `<img src="${escapeHTML(safeImageUrl(chat.serverLogo))}" alt="" onerror="this.parentElement.innerHTML='<span class=&quot;rail-icon-fallback&quot;>${escapeHTML(initials(chat.name))}</span>'">`
+        : `<span class="rail-icon-fallback">${escapeHTML(initials(chat.name))}</span>`;
+      btn.onclick = () => openChat(chat);
+      rail.appendChild(btn);
+    } else {
+      anyDM = true;
+      const el = document.createElement("div");
+      el.className = "chat-item" + (isActive ? " active" : "");
+      el.innerHTML = `<div class="chat-icon">${chatIconSVG}</div><div class="chat-meta"><strong>${escapeHTML(chat.name)}</strong></div>`;
+      el.onclick = () => openChat(chat);
+      dmList.appendChild(el);
     }
+  });
 
-    async function checkPendingJoins() {
-      const joinData = sessionStorage.getItem('pendingJoin');
-      if (joinData) {
-        try {
-          const chatData = JSON.parse(atob(joinData));
-          if (confirm(`Join network: ${chatData.name}?`)) {
-            showLoader("Joining Network...");
-            let usersList = chatData.users.split(',').map(s=>s.trim());
-            if (!usersList.includes(user)) usersList.push(user);
-            chatData.users = usersList.join(', ');
-            await fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "joinChat", chatId: chatData.id, data: enc(chatData, DIR_KEY) }) });
-          }
-        } catch(e) {}
-        sessionStorage.removeItem('pendingJoin');
-      }
+  document.getElementById("dm-empty").classList.toggle("hidden", anyDM);
+}
+
+function goHome() {
+  activeChat = null;
+  clearInterval(pollTimer);
+  showScreen("empty");
+  fetchDir();
+  closeMobileDrawer();
+}
+
+function showScreen(name) {
+  document.getElementById("empty-state").classList.toggle("hidden", name !== "empty");
+  document.getElementById("setup-state").classList.toggle("hidden", name !== "setup");
+  document.getElementById("chat-state").classList.toggle("hidden", name !== "chat");
+}
+
+/* =========================================================================
+   SETUP / DEPLOY
+   ========================================================================= */
+function setMode(mode) {
+  isCustom = mode === "custom";
+  document.getElementById("btn-custom").classList.toggle("active", isCustom);
+  document.getElementById("btn-main").classList.toggle("active", !isCustom);
+  document.getElementById("new-sheet").classList.toggle("hidden", !isCustom);
+  document.getElementById("new-logo-row").classList.toggle("hidden", !isCustom);
+  document.getElementById("custom-instructions").classList.toggle("hidden", !isCustom);
+}
+function showSetup() { showScreen("setup"); closeMobileDrawer(); }
+function hideSetup() {
+  showScreen(activeChat ? "chat" : "empty");
+  pendingLogoDataUrl = "";
+  document.getElementById("new-logo-preview").classList.add("hidden");
+  document.getElementById("new-name").value = "";
+  document.getElementById("new-users").value = "";
+  document.getElementById("new-sheet").value = "";
+}
+
+async function deployServer() {
+  const name = document.getElementById("new-name").value.trim();
+  if (!name) return toast("Give your network a name.", "error");
+
+  let users = document.getElementById("new-users").value.trim();
+  const usersArr = users.split(",").map(s=>s.trim()).filter(Boolean);
+  if (!usersArr.includes(user)) usersArr.unshift(user);
+  users = usersArr.join(", ");
+
+  let sheetId = "";
+  if (isCustom) {
+    const sheetUrl = document.getElementById("new-sheet").value.trim();
+    const match = sheetUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
+    if (!match) return toast("That doesn't look like a valid Google Sheet URL.", "error");
+    sheetId = match[1];
+  }
+
+  showLoader("Deploying\u2026");
+  const payload = {
+    id: "chat_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8),
+    name, users, banned: "", admins: user,
+    type: isCustom ? "custom" : "main",
+    sheetId: isCustom ? sheetId : null,
+    key: bytesToB64(crypto.getRandomValues(new Uint8Array(32))),
+    serverLogo: ""
+  };
+
+  const cipher = await enc(payload, DIR_KEY);
+  const res = await apiPost({ action:"writeMain", tab:"Directory", data: cipher, chatId: payload.id, sheetId: sheetId || "" });
+  if (res.error) { hideLoader(); return toast("Couldn't deploy: " + res.error, "error"); }
+
+  if (isCustom && pendingLogoDataUrl && sheetId) {
+    await apiPost({ action:"writeLogo", chatId: payload.id, sheetId, dataUrl: pendingLogoDataUrl });
+  }
+
+  hideLoader();
+  hideSetup();
+  await fetchDir();
+  toast("Network deployed.", "success");
+}
+
+/* =========================================================================
+   CHAT
+   ========================================================================= */
+async function openChat(chat) {
+  showLoader("Connecting\u2026");
+  activeChat = chat; knownMessages = -1;
+  document.getElementById("active-title").textContent = chat.name;
+  document.getElementById("active-icon").innerHTML = chat.type === "custom" ? serverIconSVG : chatIconSVG;
+
+  const adminList = (chat.admins || "").split(",").map(s=>s.trim());
+  document.getElementById("admin-btn").classList.toggle("hidden", !adminList.includes(user));
+  document.getElementById("admin-logo-row").classList.toggle("hidden", chat.type !== "custom");
+  const adminLogoPreview = document.getElementById("admin-logo-preview");
+  if (chat.serverLogo) { adminLogoPreview.src = chat.serverLogo; adminLogoPreview.classList.remove("hidden"); }
+  else { adminLogoPreview.classList.add("hidden"); }
+
+  const data = await apiGet({
+    action:"readChat",
+    isMain: chat.type === "main",
+    sheetId: chat.sheetId || "",
+    chatId: chat.id,
+    fetchLogo: true
+  });
+
+  if (data.error) { hideLoader(); return toast("Couldn't open this chat: " + data.error, "error"); }
+
+  if (data.logo && data.logo !== chat.serverLogo) {
+    activeChat.serverLogo = data.logo;
+    document.getElementById("active-icon").innerHTML =
+      `<img src="${escapeHTML(safeImageUrl(data.logo))}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" onerror="this.style.display='none'">`;
+  }
+
+  showScreen("chat");
+  await fetchDir();
+  clearInterval(pollTimer);
+  pollTimer = setInterval(pollMessages, 1500);
+  await renderMessages(data.messages || []);
+  hideLoader();
+  closeMobileDrawer();
+}
+
+async function pollMessages() {
+  if (!activeChat) return;
+  const data = await apiGet({
+    action:"readChat",
+    isMain: activeChat.type === "main",
+    sheetId: activeChat.sheetId || "",
+    chatId: activeChat.id
+  });
+  if (data.error || !data.messages) return;
+  if (data.messages.length !== knownMessages) await renderMessages(data.messages);
+}
+
+async function renderMessages(rawRows) {
+  knownMessages = rawRows.length;
+  const decoded = [];
+  for (const row of rawRows) {
+    const msg = await dec(row, activeChat.key);
+    if (msg && msg.sender && typeof msg.text === "string") decoded.push(msg);
+  }
+  paintMessages(decoded);
+}
+
+function paintMessages(decoded) {
+  const container = document.getElementById("messages");
+  container.innerHTML = "";
+  let lastSender = null;
+  decoded.forEach(msg => {
+    const isMine = msg.sender === user;
+    const pData = usersMap[msg.sender] || { d: msg.sender, a: defaultAvatar(msg.sender) };
+    const grouped = lastSender === msg.sender;
+    lastSender = msg.sender;
+
+    const wrap = document.createElement("div");
+    wrap.className = `msg-wrap ${isMine ? "mine" : "other"}${grouped ? " grouped" : ""}`;
+
+    let bodyHtml = "";
+    if (msg.image) bodyHtml += `<img class="msg-image" alt="Attached image">`;
+    if (msg.text) bodyHtml += `<div class="msg-text">${escapeHTML(msg.text)}</div>`;
+
+    wrap.innerHTML = `
+      <img class="msg-avatar" src="${escapeHTML(safeImageUrl(pData.a))}" onerror="this.onerror=null;this.src='${defaultAvatar(msg.sender)}'">
+      <div class="msg-content">
+        ${grouped ? "" : `<span class="msg-name">${escapeHTML(pData.d)}</span>`}
+        <div class="message">${bodyHtml}</div>
+      </div>`;
+
+    if (msg.image) {
+      const imgEl = wrap.querySelector(".msg-image");
+      const src = safeImageUrl(msg.image);
+      imgEl.src = src;
+      imgEl.onclick = () => openLightbox(src);
     }
+    container.appendChild(wrap);
+  });
+  container.scrollTop = container.scrollHeight;
+}
 
-    // --- SETTINGS ---
-    function openSettings() {
-      document.getElementById("set-displayname").value = usersMap[user].d;
-      document.getElementById("set-avatar").value = usersMap[user].a;
-      document.getElementById("settings-modal").classList.remove("hidden");
-    }
+function autoResizeInput(el) {
+  el.style.height = "auto";
+  el.style.height = Math.min(el.scrollHeight, 140) + "px";
+}
+function handleComposerKey(event) {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    sendMsg();
+  }
+}
 
-    async function saveSettings() {
-      showLoader("Updating Data...");
-      const newD = document.getElementById("set-displayname").value.trim();
-      const newA = document.getElementById("set-avatar").value.trim();
-      
-      const newCipher = enc({ u: user, p: userPass, d: newD, a: newA }, DIR_KEY);
-      await fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "updateUser", oldData: userCipher, newData: newCipher }) });
-      
-      userCipher = newCipher; 
-      usersMap[user] = { d: newD, a: newA };
-      updateProfileUI();
-      
-      document.getElementById("settings-modal").classList.add("hidden");
-      if(activeChat) { document.getElementById("messages").innerHTML = ""; pollMessages(); }
-      hideLoader();
-    }
+async function sendMsg() {
+  const input = document.getElementById("msg-input");
+  const text = input.value.trim();
+  if (!activeChat || (!text && !pendingMessageImage)) return;
+  input.value = "";
+  autoResizeInput(input);
 
-    // --- SETUP ---
-    function setMode(mode) {
-      isCustom = mode === 'custom';
-      document.getElementById("btn-custom").style.background = isCustom ? "var(--accent)" : "rgba(255,255,255,0.05)";
-      document.getElementById("btn-custom").style.borderColor = isCustom ? "transparent" : "var(--border)";
-      document.getElementById("btn-main").style.background = isCustom ? "rgba(255,255,255,0.05)" : "var(--accent)";
-      document.getElementById("btn-main").style.borderColor = isCustom ? "var(--border)" : "transparent";
-      document.getElementById("new-sheet").classList.toggle("hidden", !isCustom);
-      document.getElementById("custom-instructions").classList.toggle("hidden", !isCustom);
-    }
-    
-    function showSetup() { document.getElementById("empty-state").classList.add("hidden"); document.getElementById("chat-state").classList.add("hidden"); document.getElementById("setup-state").classList.remove("hidden"); }
-    function hideSetup() { document.getElementById("setup-state").classList.add("hidden"); document.getElementById("empty-state").classList.remove("hidden"); }
+  const msgObj = { sender: user, text, time: new Date().toISOString() };
+  if (pendingMessageImage) msgObj.image = pendingMessageImage;
+  clearComposerImage();
 
-    async function deployServer() {
-      showLoader("Deploying...");
-      const name = document.getElementById("new-name").value.trim();
-      let users = document.getElementById("new-users").value.trim();
-      if (!users.includes(user)) users = (user + (users ? ", " + users : ""));
-      const sId = document.getElementById("new-sheet").value.trim().match(/\/d\/([a-zA-Z0-9-_]+)/);
-      
-      const payload = {
-        id: "chat_" + Date.now(), name, users, banned: "", admins: user, 
-        type: isCustom ? "custom" : "main",
-        sheetId: isCustom ? (sId ? sId[1] : "") : null,
-        key: Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2), serverLogo: ""
-      };
-      
-      await fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "writeMain", tab: "Directory", data: enc(payload, DIR_KEY), chatId: payload.id }) });
-      hideSetup(); await fetchDir(); hideLoader();
-    }
+  const cipher = await enc(msgObj, activeChat.key);
+  const res = await apiPost({
+    action:"writeChat",
+    isMain: activeChat.type === "main",
+    sheetId: activeChat.sheetId || "",
+    chatId: activeChat.id,
+    data: cipher
+  });
+  if (res.error) { toast("Message failed to send: " + res.error, "error"); return; }
+  pollMessages();
+}
 
-    // --- CHAT INTERACTION ---
-    async function openChat(chat) {
-      showLoader("Connecting...");
-      activeChat = chat; knownMessages = 0;
-      document.getElementById("active-title").innerText = chat.name;
-      
-      const adminList = (chat.admins || chat.admin || "").split(",").map(s=>s.trim());
-      document.getElementById("admin-btn").classList.toggle("hidden", !adminList.includes(user));
-      document.getElementById("messages").innerHTML = "";
-      
-      const res = await fetch(`${API_URL}?action=readChat&isMain=${chat.type==='main'}&sheetId=${chat.sheetId}&chatId=${chat.id}&fetchLogo=true`);
-      const data = await res.json();
-      
-      if(data.logo && data.logo !== activeChat.serverLogo) {
-        activeChat.serverLogo = data.logo; 
-        document.getElementById("active-icon").innerHTML = `<img src="${data.logo}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">`;
-      } else {
-        document.getElementById("active-icon").innerHTML = chat.type === 'custom' ? serverIconSVG : chatIconSVG;
-      }
+/* =========================================================================
+   ADMIN
+   ========================================================================= */
+function openAdmin() {
+  document.getElementById("admin-admins").value = activeChat.admins || user;
+  document.getElementById("admin-users").value = activeChat.users || "";
+  document.getElementById("admin-banned").value = activeChat.banned || "";
+  openModal("admin-modal");
+}
+async function saveAdmin() {
+  showLoader("Saving configuration\u2026");
+  activeChat.admins = document.getElementById("admin-admins").value.trim();
+  activeChat.users = document.getElementById("admin-users").value.trim();
+  activeChat.banned = document.getElementById("admin-banned").value.trim();
+  const cipher = await enc(activeChat, DIR_KEY);
+  const res = await apiPost({ action:"updateDirectory", data: cipher, chatId: activeChat.id });
+  hideLoader();
+  if (res.error) return toast("Couldn't save: " + res.error, "error");
+  closeModal("admin-modal");
+  await fetchDir();
+  toast("Configuration saved.", "success");
+}
+function copyJoinLink() {
+  // Only what's needed to join and decrypt this room - never the admin/ban
+  // lists, so a shared link can't be used to grant itself privileges.
+  const invite = { id: activeChat.id, name: activeChat.name, key: activeChat.key };
+  const link = `${location.origin}${location.pathname}?join=${btoa(JSON.stringify(invite))}`;
+  navigator.clipboard.writeText(link).then(() => {
+    toast("Invite link copied. Treat it like a password - anyone with it can read this room.", "success");
+  }).catch(() => toast("Couldn't copy automatically: " + link, "error"));
+}
+function reportChat() {
+  if (confirm("Flag this conversation for review?")) toast("Report submitted.", "success");
+}
 
-      document.getElementById("empty-state").classList.add("hidden");
-      document.getElementById("setup-state").classList.add("hidden");
-      document.getElementById("chat-state").classList.remove("hidden");
-      
-      clearInterval(pollTimer);
-      pollTimer = setInterval(pollMessages, 1500);
-      renderData(data.messages || []);
-      hideLoader();
-    }
+/* =========================================================================
+   JOIN VIA INVITE LINK
+   The invite link only ever carries {id, name, key}. To apply a join we
+   always re-fetch the CURRENT Directory entry from the server and only ever
+   add the current user to its users list - we never write back whatever
+   object came from the link itself. That's what stops a tampered link from
+   being able to grant itself admin or clear a ban.
+   ========================================================================= */
+async function checkPendingJoin() {
+  const joinData = sessionStorage.getItem("pendingJoin");
+  if (!joinData) return;
+  sessionStorage.removeItem("pendingJoin");
 
-    async function pollMessages() {
-      if (!activeChat) return;
-      const res = await fetch(`${API_URL}?action=readChat&isMain=${activeChat.type==='main'}&sheetId=${activeChat.sheetId}&chatId=${activeChat.id}`);
-      const data = await res.json();
-      if (data.messages && data.messages.length > knownMessages) renderData(data.messages);
-    }
+  let invite;
+  try { invite = JSON.parse(atob(joinData)); } catch(e) { return; }
+  if (!invite || !invite.id) return;
+  if (!confirm(`Join "${invite.name || invite.id}"?`)) return;
 
-    async function sendMsg() {
-      const input = document.getElementById("msg-input");
-      const text = input.value.trim();
-      if (!text) return;
-      input.value = "";
+  showLoader("Joining network\u2026");
+  const rows = await apiGet({ action:"readMain", tab:"Directory" });
+  if (rows.error) { hideLoader(); return toast("Couldn't reach the network directory.", "error"); }
 
-      const msgObj = { sender: user, text, time: new Date().toISOString() };
-      const myData = usersMap[user];
-      
-      const container = document.getElementById("messages");
-      container.insertAdjacentHTML('beforeend', `
-        <div class="msg-wrap mine">
-          <img src="${myData.a}" class="msg-avatar">
-          <div class="msg-content">
-            <span class="msg-name">${myData.d}</span>
-            <div class="message" style="opacity: 0.8;">${text}</div>
-          </div>
-        </div>
-      `);
-      container.scrollTop = container.scrollHeight;
+  let liveChat = null;
+  for (const row of rows) {
+    if (!row[0]) continue;
+    const chat = await dec(row[0], DIR_KEY);
+    if (chat && chat.id === invite.id) { liveChat = chat; break; }
+  }
+  if (!liveChat) { hideLoader(); return toast("That invite is no longer valid.", "error"); }
 
-      await fetch(API_URL, {
-        method: "POST",
-        body: JSON.stringify({ action: "writeChat", isMain: activeChat.type === 'main', sheetId: activeChat.sheetId, chatId: activeChat.id, data: enc(msgObj, activeChat.key) })
-      });
-      pollMessages();
-    }
+  const banned = (liveChat.banned || "").split(",").map(s=>s.trim()).filter(Boolean);
+  if (banned.includes(user)) { hideLoader(); return toast("You've been banned from this network.", "error"); }
 
-    function renderData(rows) {
-      knownMessages = rows.length;
-      const container = document.getElementById("messages");
-      container.innerHTML = "";
-      
-      rows.forEach(row => {
-        const msg = dec(row, activeChat.key);
-        if (msg) {
-          const isMine = msg.sender === user;
-          const pData = usersMap[msg.sender] || { d: msg.sender, a: `https://api.dicebear.com/7.x/initials/svg?seed=${msg.sender}` };
-          container.insertAdjacentHTML('beforeend', `
-            <div class="msg-wrap ${isMine ? 'mine' : 'other'}">
-              <img src="${pData.a}" class="msg-avatar">
-              <div class="msg-content">
-                <span class="msg-name">${pData.d}</span>
-                <div class="message">${msg.text}</div>
-              </div>
-            </div>
-          `);
-        }
-      });
-      container.scrollTop = container.scrollHeight;
-    }
+  const usersList = (liveChat.users || "").split(",").map(s=>s.trim()).filter(Boolean);
+  if (!usersList.includes(user)) usersList.push(user);
+  liveChat.users = usersList.join(", ");
+  if (!liveChat.key && invite.key) liveChat.key = invite.key;
 
-    // --- ADMIN ---
-    function openAdmin() {
-      document.getElementById("admin-admins").value = activeChat.admins || user;
-      document.getElementById("admin-users").value = activeChat.users;
-      document.getElementById("admin-banned").value = activeChat.banned || "";
-      document.getElementById("admin-modal").classList.remove("hidden");
-    }
-    
-    async function saveAdmin() {
-      showLoader("Saving config...");
-      activeChat.admins = document.getElementById("admin-admins").value;
-      activeChat.users = document.getElementById("admin-users").value;
-      activeChat.banned = document.getElementById("admin-banned").value;
-      await fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "updateDirectory", data: enc(activeChat, DIR_KEY), chatId: activeChat.id }) });
-      document.getElementById("admin-modal").classList.add("hidden");
-      await fetchDir(); hideLoader();
-    }
+  const cipher = await enc(liveChat, DIR_KEY);
+  const res = await apiPost({ action:"joinChat", chatId: liveChat.id, data: cipher });
+  hideLoader();
+  if (res.error) return toast("Couldn't join: " + res.error, "error");
+  toast(`Joined ${liveChat.name}.`, "success");
+}
 
-    function copyJoinLink() {
-      const linkData = btoa(JSON.stringify(activeChat));
-      navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}?join=${linkData}`);
-      alert("Invite link copied to clipboard.");
-    }
-    function reportChat() { if(confirm("Flag content for review?")) alert("Report submitted."); }
-  </script>
+/* =========================================================================
+   SETTINGS
+   ========================================================================= */
+function openSettings() {
+  const pData = usersMap[user] || { d:user, a:"" };
+  document.getElementById("set-displayname").value = pData.d;
+  document.getElementById("set-avatar").value = pData.a;
+  previewFromUrl("set-avatar", "set-avatar-preview");
+  document.getElementById("set-newpass").value = "";
+  document.getElementById("set-newpass2").value = "";
+  openModal("settings-modal");
+}
+async function saveSettings() {
+  const newD = document.getElementById("set-displayname").value.trim() || user;
+  const newA = document.getElementById("set-avatar").value.trim() || defaultAvatar(user);
+  const newPass = document.getElementById("set-newpass").value;
+  const newPass2 = document.getElementById("set-newpass2").value;
+
+  if (newPass || newPass2) {
+    if (newPass.length < 6) return toast("New password should be at least 6 characters.", "error");
+    if (newPass !== newPass2) return toast("New passwords don't match.", "error");
+  }
+
+  showLoader("Updating profile\u2026");
+  let salt = userSalt, hash = userHash;
+  if (newPass) {
+    const h = await hashPassword(newPass);
+    salt = h.saltB64; hash = h.hashB64;
+  }
+
+  const newCipher = await enc({ u:user, salt, hash, d:newD, a:newA }, DIR_KEY);
+  const res = await apiPost({ action:"updateUser", oldData: userCipher, newData: newCipher });
+  hideLoader();
+  if (res.error) return toast("Couldn't update: " + res.error, "error");
+
+  userCipher = newCipher; userSalt = salt; userHash = hash;
+  usersMap[user] = { d:newD, a:newA };
+  updateProfileUI();
+  closeModal("settings-modal");
+  if (activeChat) pollMessages();
+  toast("Profile updated.", "success");
+}
+
+/* =========================================================================
+   INSTALL / HELP PANEL
+   ========================================================================= */
+function detectPlatform() {
+  const ua = navigator.userAgent || "";
+  const isIPad = /iPad/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  if (isIPad) return "ipad";
+  if (/iPhone|iPod/.test(ua)) return "iphone";
+  if (/Android/.test(ua)) return "android";
+  return "other";
+}
+function showInstallPanel(auto) {
+  document.getElementById("install-panel").classList.remove("hidden");
+  selectInstallTab(auto ? detectPlatform() : (document.querySelector(".install-tab.active")?.dataset.platform || detectPlatform()));
+}
+function selectInstallTab(platform) {
+  document.querySelectorAll(".install-tab").forEach(t => t.classList.toggle("active", t.dataset.platform === platform));
+  document.querySelectorAll(".install-steps").forEach(s => s.classList.toggle("hidden", s.dataset.platform !== platform));
+}
+function closeInstallPanel() { document.getElementById("install-panel").classList.add("hidden"); }
+
+function setupManifest() {
+  const manifest = {
+    name: "Stuffchat", short_name: "Stuffchat",
+    start_url: location.pathname, display: "standalone",
+    background_color: "#0b0e17", theme_color: "#0b0e17",
+    icons: [
+      { src: ICON_192, sizes: "192x192", type: "image/png" },
+      { src: ICON_512, sizes: "512x512", type: "image/png" }
+    ]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], { type: "application/json" });
+  const link = document.createElement("link");
+  link.rel = "manifest";
+  link.href = URL.createObjectURL(blob);
+  document.head.appendChild(link);
+}
+
+/* =========================================================================
+   MOBILE DRAWER
+   ========================================================================= */
+function openMobileDrawer() { document.body.classList.add("drawer-open"); }
+function closeMobileDrawer() { document.body.classList.remove("drawer-open"); }
+
+/* =========================================================================
+   INIT
+   ========================================================================= */
+window.addEventListener("DOMContentLoaded", () => {
+  setupManifest();
+
+  const params = new URLSearchParams(location.search);
+  const join = params.get("join");
+  const modeApp = params.get("mode") === "app";
+  if (join || modeApp) history.replaceState({}, document.title, location.pathname);
+  if (join) sessionStorage.setItem("pendingJoin", join);
+
+  document.getElementById("auth-password").addEventListener("keydown", e => {
+    if (e.key === "Enter") handleAuthSubmit();
+  });
+  document.getElementById("auth-password2").addEventListener("keydown", e => {
+    if (e.key === "Enter") handleAuthSubmit();
+  });
+
+  if (modeApp) showInstallPanel(true);
+});
+</script>
 </body>
 </html>
