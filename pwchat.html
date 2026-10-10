@@ -134,7 +134,11 @@ svg{width:19px;height:19px;stroke-width:2;stroke:currentColor;fill:none;stroke-l
   width:36px; height:36px; border-radius:10px; object-fit:cover; background:var(--surface-3);
   border:1px solid var(--border); display:flex; align-items:center; justify-content:center; flex-shrink:0; color:inherit;
 }
+.chat-meta{flex:1; min-width:0; cursor:pointer;}
 .chat-meta strong{font-size:.87rem; font-weight:600; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.rename-btn{width:28px; height:28px; opacity:0; flex-shrink:0;}
+.chat-item:hover .rename-btn{opacity:1;}
+.rename-btn svg{width:14px; height:14px;}
 .empty-hint{padding:.4rem 1rem 1rem; font-size:.8rem; color:var(--text-faint); line-height:1.5;}
 
 /* main area */
@@ -145,6 +149,7 @@ svg{width:19px;height:19px;stroke-width:2;stroke:currentColor;fill:none;stroke-l
 .center-state p{color:var(--text-faint); font-size:.88rem; max-width:340px; line-height:1.5;}
 
 .mobile-menu-btn{display:none;}
+.mobile-topbar{display:none;}
 .chat-header{height:68px; flex-shrink:0; padding:0 1.4rem; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); background:rgba(0,0,0,.14);}
 .chat-header-left{display:flex; align-items:center; gap:.85rem; min-width:0;}
 #active-icon{width:40px;height:40px;border-radius:11px;}
@@ -190,6 +195,7 @@ svg{width:19px;height:19px;stroke-width:2;stroke:currentColor;fill:none;stroke-l
 .field-label{font-size:.78rem; font-weight:600; color:var(--text-muted); margin-bottom:.4rem; display:block; margin-top:.3rem;}
 .field-label.danger-label{color:var(--danger);}
 .hint-text{font-size:.78rem; color:var(--text-faint); margin:-.35rem 0 .8rem; line-height:1.4;}
+.modal-divider{height:1px; background:var(--border); margin:1.2rem 0;}
 
 /* install panel */
 #install-panel{position:fixed; inset:0; background:rgba(6,8,14,.72); backdrop-filter:blur(5px); z-index:200; display:flex; justify-content:center; align-items:center; padding:1.2rem;}
@@ -237,6 +243,27 @@ svg{width:19px;height:19px;stroke-width:2;stroke:currentColor;fill:none;stroke-l
   align-items:center; justify-content:center; padding:0; border:2px solid var(--surface-3);
 }
 .attach-btn{flex-shrink:0;}
+#mic-btn.listening{color:#fff; background:var(--danger); border-color:var(--danger); animation:micPulse 1.4s infinite;}
+@keyframes micPulse{0%,100%{box-shadow:0 0 0 0 rgba(239,71,87,.45);} 50%{box-shadow:0 0 0 7px rgba(239,71,87,0);}}
+
+.msg-meta{font-size:.68rem; color:var(--text-faint); margin-top:.3rem; display:block;}
+.msg-wrap.mine .msg-meta{text-align:right;}
+
+.storage-notice{
+  position:fixed; left:0; right:0; bottom:0; z-index:400;
+  background:var(--surface-raised); border-top:1px solid var(--border-strong);
+  padding:1rem 1.4rem; padding-bottom:calc(1rem + env(safe-area-inset-bottom, 0px));
+  display:flex; align-items:center; justify-content:space-between; gap:1.2rem;
+  box-shadow:var(--shadow-2); flex-wrap:wrap;
+}
+.storage-notice p{font-size:.83rem; color:var(--text-muted); line-height:1.5; flex:1; min-width:220px;}
+.storage-notice .btn{width:auto; margin:0; flex-shrink:0; padding:.7rem 1.3rem;}
+
+.typing-dots{display:inline-flex; gap:4px; padding:.7rem 1rem; background:var(--surface-1); border:1px solid var(--border); border-radius:var(--radius-md);}
+.typing-dots span{width:6px; height:6px; border-radius:50%; background:var(--text-faint); animation:typingBounce 1.2s infinite ease-in-out;}
+.typing-dots span:nth-child(2){animation-delay:.15s;}
+.typing-dots span:nth-child(3){animation-delay:.3s;}
+@keyframes typingBounce{0%,60%,100%{transform:translateY(0); opacity:.5;} 30%{transform:translateY(-4px); opacity:1;}}
 
 /* lightbox */
 #lightbox{position:fixed; inset:0; background:rgba(4,5,9,.88); backdrop-filter:blur(4px); z-index:300; display:flex; align-items:center; justify-content:center; padding:2.5rem; cursor:zoom-out;}
@@ -253,9 +280,99 @@ svg{width:19px;height:19px;stroke-width:2;stroke:currentColor;fill:none;stroke-l
   .mobile-backdrop{display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:35;}
   body.drawer-open .mobile-backdrop{display:block;}
   .mobile-menu-btn{display:flex;}
+  .mobile-topbar{display:flex; align-items:center; gap:.8rem; height:56px; padding:0 1.1rem; border-bottom:1px solid var(--border); flex-shrink:0;}
   #main-area{width:100%;}
   .msg-wrap{max-width:88%;}
 }
+
+/* ===== header status / typing ===== */
+.status-line.typing{color:var(--text-muted);}
+.status-line.typing .status-dot{background:var(--accent);}
+.mini-dots{display:inline-flex; gap:3px; margin-left:4px; align-items:flex-end; height:10px;}
+.mini-dots i{width:4px; height:4px; border-radius:50%; background:currentColor; animation:typingBounce 1.2s infinite ease-in-out; display:block;}
+.mini-dots i:nth-child(2){animation-delay:.15s;}
+.mini-dots i:nth-child(3){animation-delay:.3s;}
+
+/* ===== system lines + call banner ===== */
+.sys-msg{align-self:center; margin:1rem 0 .3rem; font-size:.74rem; color:var(--text-faint); background:rgba(255,255,255,.04); border:1px solid var(--border); padding:.3rem .85rem; border-radius:999px; text-align:center;}
+.call-banner{display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:.75rem 1.4rem; background:linear-gradient(90deg, rgba(34,193,122,.16), rgba(34,193,122,.05)); border-bottom:1px solid rgba(34,193,122,.28); flex-wrap:wrap;}
+.call-banner-text{display:flex; flex-direction:column; gap:.1rem; min-width:0;}
+.call-banner-text strong{font-size:.9rem;}
+.call-banner-text span{font-size:.76rem; color:var(--text-muted);}
+.call-banner-actions{display:flex; gap:.5rem;}
+.call-banner-actions .btn{width:auto; margin:0; padding:.55rem 1.1rem; font-size:.85rem;}
+.call-banner-actions .btn:first-child{background:var(--success); color:#06130d;}
+.call-banner-actions .btn:first-child:hover{background:#1aa868;}
+.call-hdr-btn:hover{color:var(--success); border-color:rgba(34,193,122,.35); background:rgba(34,193,122,.08);}
+
+/* ===== call panel ===== */
+#call-panel{position:fixed; inset:0; z-index:250; background:#07090f; display:flex; flex-direction:column; padding-top:env(safe-area-inset-top,0px);}
+#call-panel.minimized{visibility:hidden; pointer-events:none; opacity:0;}
+.call-topbar{display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:.85rem 1.2rem; border-bottom:1px solid var(--border); flex-shrink:0;}
+.call-title{display:flex; flex-direction:column; gap:.1rem; min-width:0;}
+.call-title strong{font-size:1rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.call-title span{font-size:.78rem; color:var(--text-muted);}
+.call-grid{flex:1; min-height:0; display:grid; gap:.8rem; padding:1rem; grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr)); align-content:center; overflow:auto;}
+.call-grid[data-count="1"]{grid-template-columns:minmax(0,860px); justify-content:center;}
+.tile{position:relative; background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; aspect-ratio:16/9; display:flex; align-items:center; justify-content:center; transition:box-shadow .15s, border-color .15s;}
+.tile video{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; background:#000; display:none;}
+.tile.video-on video{display:block;}
+.tile.sharing video{object-fit:contain;}
+.tile.me.mirror video{transform:scaleX(-1);}
+.tile-avatar{display:flex; align-items:center; justify-content:center;}
+.tile.video-on .tile-avatar{display:none;}
+.tile-avatar img{width:84px; height:84px; border-radius:50%; object-fit:cover; border:2px solid var(--border-strong); background:var(--surface-1);}
+.tile-label{position:absolute; left:.7rem; bottom:.6rem; display:flex; align-items:center; gap:.4rem; background:rgba(0,0,0,.6); padding:.25rem .65rem; border-radius:999px; font-size:.78rem; font-weight:600;}
+.tile-mic-off{display:none; width:14px; height:14px; color:var(--danger);}
+.tile.muted .tile-mic-off{display:block;}
+.tile-status{position:absolute; top:.6rem; left:50%; transform:translateX(-50%); font-size:.74rem; color:var(--text-muted); background:rgba(0,0,0,.6); padding:.2rem .75rem; border-radius:999px; white-space:nowrap;}
+.tile-status:empty{display:none;}
+.tile.speaking{border-color:var(--success); box-shadow:0 0 0 2px rgba(34,193,122,.55);}
+.call-grid.has-share{grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); grid-template-rows:minmax(180px,1fr); grid-auto-rows:104px; align-content:start;}
+.call-grid.has-share .tile{aspect-ratio:auto;}
+.call-grid.has-share .tile.sharing{order:-1; grid-column:1 / -1; grid-row:1;}
+.call-grid.has-share .tile:not(.sharing) .tile-avatar img{width:44px; height:44px;}
+.call-grid.has-share .tile:not(.sharing) .tile-label{font-size:.7rem; left:.4rem; bottom:.35rem;}
+.call-notice{align-self:center; margin-bottom:.3rem; font-size:.82rem; color:var(--text-muted); background:rgba(255,255,255,.05); border:1px solid var(--border); padding:.45rem 1rem; border-radius:999px; display:flex; align-items:center; gap:.7rem;}
+.call-notice button{width:auto; padding:.3rem .8rem; background:var(--accent); font-size:.78rem;}
+.call-controls{display:flex; justify-content:center; gap:.9rem; padding:.9rem 1rem calc(1.2rem + env(safe-area-inset-bottom,0px)); flex-shrink:0;}
+.ctl-btn{width:58px; height:58px; border-radius:50%; background:var(--surface-raised); border:1px solid var(--border-strong); display:flex; align-items:center; justify-content:center; color:var(--text); padding:0;}
+.ctl-btn:hover{background:#2a2f3d;}
+.ctl-btn svg{width:22px; height:22px;}
+.ctl-btn .ic-off{display:none;}
+.ctl-btn.off{background:#f3f4f8; color:#0b0e17; border-color:#f3f4f8;}
+.ctl-btn.off .ic-on{display:none;}
+.ctl-btn.off .ic-off{display:block;}
+.ctl-btn.on{background:var(--accent); border-color:var(--accent);}
+.ctl-btn.hang{background:var(--danger); border-color:var(--danger);}
+.ctl-btn.hang:hover{background:var(--danger-hover);}
+.call-pill{position:fixed; right:1rem; bottom:calc(1rem + env(safe-area-inset-bottom,0px)); z-index:240; background:var(--success); color:#06130d; font-weight:700; font-size:.85rem; padding:.7rem 1.1rem; border-radius:999px; cursor:pointer; box-shadow:var(--shadow-1); display:flex; align-items:center; gap:.5rem;}
+.call-pill svg{width:16px; height:16px;}
+#call-audio-sink{position:fixed; width:0; height:0; overflow:hidden; opacity:0; pointer-events:none;}
+
+/* ===== queue ===== */
+#queue-panel{position:fixed; inset:0; z-index:260; background:rgba(6,8,14,.84); backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center; padding:1.2rem;}
+.queue-card{width:100%; max-width:420px; border-radius:var(--radius-lg); padding:2rem 1.8rem; text-align:center;}
+.queue-orb{position:relative; width:132px; height:132px; margin:0 auto 1.3rem; display:flex; align-items:center; justify-content:center;}
+.queue-ring{position:absolute; inset:0; border-radius:50%; border:3px solid rgba(255,255,255,.08); border-top-color:var(--accent); animation:spin 1.1s linear infinite;}
+.queue-number{font-size:2.5rem; font-weight:800; letter-spacing:-.02em;}
+.queue-card h2{font-size:1.25rem; margin-bottom:.5rem;}
+.queue-card p{color:var(--text-muted); font-size:.88rem; line-height:1.55; margin-bottom:1.3rem;}
+.queue-stats{display:flex; gap:.7rem; margin-bottom:1.4rem;}
+.queue-stats div{flex:1; background:rgba(0,0,0,.25); border:1px solid var(--border); border-radius:var(--radius-sm); padding:.7rem .4rem; display:flex; flex-direction:column; gap:.2rem;}
+.queue-stats span{font-weight:700; font-size:1.05rem;}
+.queue-stats label{font-size:.66rem; color:var(--text-faint); text-transform:uppercase; letter-spacing:.05em;}
+
+/* ===== calls setup modal ===== */
+.setup-steps{margin:0 0 1rem 1.2rem; font-size:.86rem; line-height:1.75; color:var(--text-muted);}
+.setup-steps b{color:var(--text);}
+.code-block{background:rgba(0,0,0,.35); border:1px solid var(--border); border-radius:var(--radius-sm); padding:.9rem 1rem; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.72rem; line-height:1.5; color:#c9d1e6; max-height:200px; overflow:auto; margin-bottom:.8rem; white-space:pre;}
+@media (max-width:820px){
+  .call-grid{padding:.7rem; gap:.6rem;}
+  .ctl-btn{width:54px; height:54px;}
+  .call-banner{padding:.7rem 1rem;}
+}
+
 </style>
 </head>
 <body>
@@ -271,8 +388,8 @@ svg{width:19px;height:19px;stroke-width:2;stroke:currentColor;fill:none;stroke-l
 <div id="auth-screen">
   <div class="card glass" style="text-align:center;">
     <div class="brand-mark"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></div>
-    <h1 style="font-weight:800; font-size:1.6rem; margin-bottom:.2rem;">Stuffchat</h1>
-    <p style="color:var(--text-muted); font-size:.86rem; margin-bottom:1.6rem;">Stuffnest chat</p>
+    <h1 style="font-weight:800; font-size:1.6rem; margin-bottom:.2rem;">stuffchat</h1>
+    <p style="color:var(--text-muted); font-size:.86rem; margin-bottom:1.6rem;">Encrypted rooms, deployed by you</p>
     <div class="auth-tabs">
       <button id="tab-login" class="active" onclick="switchAuthTab('login')">Log In</button>
       <button id="tab-signup" onclick="switchAuthTab('signup')">Sign Up</button>
@@ -285,7 +402,7 @@ svg{width:19px;height:19px;stroke-width:2;stroke:currentColor;fill:none;stroke-l
       </div>
     </div>
     <button class="btn" id="auth-submit" onclick="handleAuthSubmit()">Log In</button>
-    <p style="font-size:.76rem; color:var(--text-faint); margin-top:.4rem; line-height:1.5;">Messages are encrypted in your browser before they're sent. Losing your password means losing access &mdash; there's no recovery. Womp Womp</p>
+    <p style="font-size:.76rem; color:var(--text-faint); margin-top:.4rem; line-height:1.5;">Messages are encrypted in your browser before they're sent. Losing your password means losing access &mdash; there's no recovery.</p>
   </div>
 </div>
 
@@ -326,6 +443,12 @@ svg{width:19px;height:19px;stroke-width:2;stroke:currentColor;fill:none;stroke-l
   </div>
 
   <div id="main-area">
+    <div id="mobile-topbar" class="mobile-topbar">
+      <button class="icon-btn mobile-menu-btn" title="Menu" onclick="openMobileDrawer()">
+        <svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      </button>
+      <span style="font-weight:700;">stuffchat</span>
+    </div>
     <div id="empty-state" class="center-state">
       <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
       <h2>No conversation open</h2>
@@ -371,10 +494,16 @@ svg{width:19px;height:19px;stroke-width:2;stroke:currentColor;fill:none;stroke-l
           <div id="active-icon" class="chat-icon"></div>
           <div style="min-width:0;">
             <div id="active-title">Room</div>
-            <span class="status-line"><span class="status-dot"></span>Encrypted connection</span>
+            <span class="status-line"><span class="status-dot"></span><span id="status-text">Encrypted connection</span></span>
           </div>
         </div>
         <div class="chat-header-actions">
+          <button class="icon-btn call-hdr-btn" title="Voice call" aria-label="Start voice call" onclick="startOrJoinCall('voice')">
+            <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+          </button>
+          <button class="icon-btn call-hdr-btn" title="Video call" aria-label="Start video call" onclick="startOrJoinCall('video')">
+            <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+          </button>
           <button class="icon-btn danger" title="Report Issue" onclick="reportChat()">
             <svg viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
           </button>
@@ -384,6 +513,13 @@ svg{width:19px;height:19px;stroke-width:2;stroke:currentColor;fill:none;stroke-l
         </div>
       </div>
 
+      <div id="call-banner" class="call-banner hidden">
+        <div class="call-banner-text"><strong id="call-banner-title"></strong><span id="call-banner-sub"></span></div>
+        <div class="call-banner-actions">
+          <button type="button" class="btn" onclick="joinFromBanner()">Join</button>
+          <button type="button" class="btn ghost" onclick="dismissCallBanner()">Dismiss</button>
+        </div>
+      </div>
       <div id="messages"></div>
 
       <div id="composer-preview" class="hidden"></div>
@@ -392,7 +528,10 @@ svg{width:19px;height:19px;stroke-width:2;stroke:currentColor;fill:none;stroke-l
           <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><path d="M21 15l-5-5L5 21"></path></svg>
         </button>
         <input type="file" id="msg-image-file" accept="image/*" class="hidden" onchange="handleComposerImageChange(event)">
-        <textarea id="msg-input" rows="1" placeholder="Message..." onkeydown="handleComposerKey(event)" oninput="autoResizeInput(this)"></textarea>
+        <textarea id="msg-input" rows="1" placeholder="Message..." onkeydown="handleComposerKey(event)" oninput="handleComposerInput(this)"></textarea>
+        <button class="icon-btn attach-btn" id="mic-btn" title="Speech to text" onclick="toggleMic()">
+          <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+        </button>
         <button class="send-btn" onclick="sendMsg()">
           <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
         </button>
@@ -422,6 +561,12 @@ svg{width:19px;height:19px;stroke-width:2;stroke:currentColor;fill:none;stroke-l
     <input type="password" id="set-newpass2" placeholder="Confirm new password" autocomplete="new-password">
     <button class="btn" style="margin-top:.5rem;" onclick="saveSettings()">Save changes</button>
     <p class="hint-text" style="margin-top:.8rem;">Your password is hashed on your device before it's ever sent &mdash; Stuffchat's storage never sees it in plain text.</p>
+    <div class="modal-divider"></div>
+    <p class="hint-text" style="margin-bottom:.7rem;">Signed in as <span id="settings-signed-in-as" style="color:var(--text); font-weight:600;"></span> on this device.</p>
+    <button class="btn danger" onclick="signOut()">
+      <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+      Sign out
+    </button>
   </div>
 </div>
 
@@ -503,6 +648,124 @@ svg{width:19px;height:19px;stroke-width:2;stroke:currentColor;fill:none;stroke-l
   </div>
 </div>
 
+<!-- Call panel -->
+<div id="call-panel" class="hidden">
+  <div class="call-topbar">
+    <div class="call-title">
+      <strong id="call-title-text">Call</strong>
+      <span id="call-sub">0:00 &middot; 1 in call</span>
+    </div>
+    <button class="icon-btn" title="Minimize" aria-label="Minimize call" onclick="minimizeCall()">
+      <svg viewBox="0 0 24 24"><polyline points="4 14 10 14 10 20"></polyline><polyline points="20 10 14 10 14 4"></polyline><line x1="14" y1="10" x2="21" y2="3"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+    </button>
+  </div>
+  <div id="call-grid" class="call-grid" data-count="1"></div>
+  <div id="call-notice" class="call-notice hidden"></div>
+  <div class="call-controls">
+    <button id="ctl-mic" class="ctl-btn" title="Mute" aria-label="Toggle microphone" onclick="toggleCallMic()">
+      <svg class="ic-on" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+      <svg class="ic-off" viewBox="0 0 24 24"><line x1="1" y1="1" x2="23" y2="23"></line><path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"></path><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+    </button>
+    <button id="ctl-cam" class="ctl-btn" title="Turn camera on" aria-label="Toggle camera" onclick="toggleCallCamera()">
+      <svg class="ic-on" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+      <svg class="ic-off" viewBox="0 0 24 24"><path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2m5.66 0H14a2 2 0 0 1 2 2v3.34l1 1L23 7v10"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+    </button>
+    <button id="ctl-screen" class="ctl-btn" title="Share your screen" aria-label="Toggle screen sharing" onclick="toggleCallScreen()">
+      <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+    </button>
+    <button id="ctl-hang" class="ctl-btn hang" title="Leave call" aria-label="Leave call" onclick="hangUp()">
+      <svg viewBox="0 0 24 24"><path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-3.33-2.67m-2.67-3.34a19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91"></path><line x1="23" y1="1" x2="1" y2="23"></line></svg>
+    </button>
+  </div>
+</div>
+<div id="call-pill" class="call-pill hidden" onclick="restoreCall()">
+  <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+  <span id="call-pill-text">In call</span>
+</div>
+<div id="call-audio-sink"></div>
+
+<!-- Queue page -->
+<div id="queue-panel" class="hidden">
+  <div class="queue-card glass">
+    <div class="queue-orb"><div class="queue-ring"></div><div class="queue-number" id="queue-number">#1</div></div>
+    <h2 id="queue-title">You're in line</h2>
+    <p id="queue-sub"></p>
+    <div class="queue-stats">
+      <div><span id="queue-s1">0</span><label id="queue-l1">ahead of you</label></div>
+      <div><span id="queue-s2">0</span><label id="queue-l2">in calls</label></div>
+      <div><span id="queue-s3">0:00</span><label>waiting</label></div>
+    </div>
+    <button class="btn ghost" style="margin-bottom:0;" onclick="cancelQueue()">Leave queue</button>
+  </div>
+</div>
+
+<!-- Calls setup help (shown when Firebase isn't configured yet) -->
+<div id="calls-setup-modal" class="modal hidden">
+  <div class="modal-card glass" style="max-width:580px;">
+    <div class="modal-head">
+      <h2>Set up calls</h2>
+      <button class="icon-btn" onclick="closeModal('calls-setup-modal')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+    </div>
+    <p class="hint-text" style="margin:-.4rem 0 .9rem;">Calls need a free Firebase project for connection setup. It takes about five minutes &mdash; full guide in <b>FIREBASE_SETUP.md</b>.</p>
+    <ol class="setup-steps">
+      <li>Create a project at <b>console.firebase.google.com</b>.</li>
+      <li><b>Build &rarr; Realtime Database &rarr; Create database</b> (locked mode is fine).</li>
+      <li><b>Build &rarr; Authentication &rarr; Sign-in method</b> &rarr; enable <b>Anonymous</b>.</li>
+      <li><b>Project settings &rarr; Your apps &rarr; Web (&lt;/&gt;)</b>, then copy the config into <b>FIREBASE_CONFIG</b> near the top of <b>stuffchat.html</b>.</li>
+      <li><b>Realtime Database &rarr; Rules</b>: paste the rules below and <b>Publish</b>.</li>
+    </ol>
+    <label class="field-label">Realtime Database rules</label>
+    <pre id="rules-pre" class="code-block">{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "lobby": {
+      "active": {
+        ".read": "auth != null",
+        "$clientId": {
+          ".write": "auth != null &amp;&amp; $clientId.beginsWith(auth.uid)",
+          ".validate": "newData.isNumber()"
+        }
+      },
+      "queue": {
+        ".read": "auth != null",
+        "$clientId": {
+          ".write": "auth != null &amp;&amp; $clientId.beginsWith(auth.uid)",
+          ".validate": "newData.hasChildren(['t']) &amp;&amp; newData.child('t').isNumber()"
+        }
+      }
+    },
+
+    "calls": {
+      "$callId": {
+        ".read": "auth != null",
+        ".write": "auth != null",
+        "participants": {
+          "$peerId": {
+            ".validate": "newData.hasChildren(['user', 'joinedAt'])"
+          }
+        },
+        "signals": {
+          "$toPeerId": {
+            "$msgId": {
+              ".validate": "newData.hasChildren(['from', 'type', 'data']) &amp;&amp; newData.child('data').isString() &amp;&amp; newData.child('data').val().length &lt; 20000"
+            }
+          }
+        }
+      }
+    }
+  }
+}</pre>
+    <button class="btn secondary" onclick="copyRules()">Copy rules</button>
+  </div>
+</div>
+
+<div id="storage-notice" class="storage-notice hidden glass">
+  <p>Stuffchat uses local storage on this device to keep you signed in and remember things like conversation nicknames. No cookies, no tracking, nothing sent anywhere else.</p>
+  <button type="button" class="btn" onclick="dismissStorageNotice()">Got it</button>
+</div>
+
 <div id="lightbox" class="hidden" onclick="closeLightbox()">
   <img id="lightbox-img" src="" alt="" onclick="event.stopPropagation()">
 </div>
@@ -511,7 +774,7 @@ svg{width:19px;height:19px;stroke-width:2;stroke:currentColor;fill:none;stroke-l
 /* =========================================================================
    CONFIG
    ========================================================================= */
-const API_URL = "https://script.google.com/macros/s/AKfycbxdN_vFs0i1gS0XsIulNrdi5ZDUsvUsUwNHj6ZjtGt_ct8GojPXjRygyHkZ6Zecjf7RAA/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzXSqjCpqSKt_9B0CP_gV-Cx140fDPZEiT9QrhTfH746_OdYyAe1iUUoDRFh8imWVCY/exec";
 // DIR_KEY encrypts the Directory/Users "envelope" so raw JSON isn't sitting
 // in plain sight in the spreadsheet UI. It is NOT a secret: it ships in this
 // public file, so treat envelope confidentiality as zero against anyone who
@@ -519,6 +782,28 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxdN_vFs0i1gS0XsIulNrdi
 // separately below - see the security notes in the accompanying message.
 const DIR_KEY = "hi";
 const PBKDF2_ITERATIONS = 150000;
+
+/* ---- Calls: Firebase Realtime Database (signaling only) ------------------
+   Fill FIREBASE_CONFIG in from Firebase console > Project settings > Your
+   apps > Web app. These values identify your project; they are NOT secret
+   (your database rules are what protect it). See FIREBASE_SETUP.md.       */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyA4jI_10yOOb0KVDfDGS0ZohxN1vMybjkw",
+  authDomain: "stuffchat-e58cf.firebaseapp.com",
+  databaseURL: "https://stuffchat-e58cf-default-rtdb.firebaseio.com",
+  projectId: "stuffchat-e58cf",
+  appId: "1:599696873946:web:af8a30bec9aa1821c348e3"
+};
+const FIREBASE_SDK_VERSION = "10.12.2";    // gstatic CDN version; bump if you like
+const FIREBASE_MAX_CONNECTIONS = 90;       // Spark (free) plan hard limit is 100; Blaze allows 200,000
+const FIREBASE_CONNECT_TIMEOUT_MS = 8000;  // how long to wait before showing the "busy" queue page
+const MAX_CALL_PARTICIPANTS = 6;           // full-mesh WebRTC gets heavy beyond ~6 people
+const ICE_SERVERS = [
+  { urls: "stun:stun.l.google.com:19302" },
+  { urls: "stun:stun1.l.google.com:19302" }
+  // STUN alone fails on some strict networks. For reliable calls add a TURN server, e.g.:
+  // { urls: "turn:YOUR_TURN_HOST:443?transport=tcp", username: "USER", credential: "PASS" }
+];
 const ICON_192 = "data:image/png;base64,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";
 const ICON_512 = "data:image/png;base64,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";
 
@@ -526,6 +811,64 @@ let user = "", userCipher = "", userSalt = "", userHash = "";
 let authMode = "login";
 let activeChat = null, knownMessages = -1, pollTimer = null, isCustom = false;
 let usersMap = {};
+
+const SESSION_KEY = "stuffchat_session_v1";
+function saveSession() {
+  try { localStorage.setItem(SESSION_KEY, JSON.stringify({ user, userCipher, userSalt, userHash })); }
+  catch (e) { /* localStorage may be unavailable (private browsing, quota) - login just won't persist */ }
+}
+function loadSession() {
+  try {
+    const raw = localStorage.getItem(SESSION_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) { return null; }
+}
+function clearSession() {
+  try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
+}
+
+const STORAGE_NOTICE_KEY = "stuffchat_storage_notice_dismissed_v1";
+function maybeShowStorageNotice() {
+  try { if (localStorage.getItem(STORAGE_NOTICE_KEY)) return; } catch (e) { return; }
+  document.getElementById("storage-notice").classList.remove("hidden");
+}
+function dismissStorageNotice() {
+  document.getElementById("storage-notice").classList.add("hidden");
+  try { localStorage.setItem(STORAGE_NOTICE_KEY, "1"); } catch (e) {}
+}
+
+// Per-device nicknames: renaming a conversation only relabels it in your
+// own sidebar. It's stored locally and never touches the shared Directory
+// entry, so nobody else sees it and it doesn't follow you to another device.
+const NICKNAMES_KEY = "stuffchat_nicknames_v1";
+let nicknames = {};
+function loadNicknames() {
+  try { nicknames = JSON.parse(localStorage.getItem(NICKNAMES_KEY) || "{}"); } catch (e) { nicknames = {}; }
+}
+function saveNicknames() {
+  try { localStorage.setItem(NICKNAMES_KEY, JSON.stringify(nicknames)); } catch (e) {}
+}
+function displayNameFor(chat) {
+  if (nicknames[chat.id]) return nicknames[chat.id];
+  // Auto-named DMs show the OTHER person from each viewer's side, so Alice
+  // sees "Bob" and Bob sees "Alice" - the shared record only stores a flag.
+  if (chat.type === "main" && chat.autoName) {
+    const others = (chat.users || "").split(",").map(s => s.trim()).filter(Boolean).filter(u => u !== user);
+    if (others.length) return others.map(u => (usersMap[u] && usersMap[u].d) || u).join(", ");
+  }
+  return chat.name;
+}
+function renameChatLocally(chatId, currentLabel) {
+  const next = prompt("Rename this conversation (only visible to you):", currentLabel);
+  if (next === null) return;
+  const trimmed = next.trim();
+  if (trimmed) nicknames[chatId] = trimmed; else delete nicknames[chatId];
+  saveNicknames();
+  if (activeChat && activeChat.id === chatId) {
+    document.getElementById("active-title").textContent = trimmed || activeChat.name;
+  }
+  fetchDir();
+}
 
 const chatIconSVG = `<svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`;
 const serverIconSVG = `<svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2"></rect><rect x="2" y="14" width="20" height="8" rx="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>`;
@@ -690,25 +1033,55 @@ function readFileAsImage(file) {
   });
 }
 
+function hasTransparency(img) {
+  try {
+    const c = document.createElement("canvas");
+    const w = c.width = Math.max(1, Math.min(img.width, 100));
+    const h = c.height = Math.max(1, Math.min(img.height, 100));
+    const ctx = c.getContext("2d");
+    ctx.clearRect(0, 0, w, h);
+    ctx.drawImage(img, 0, 0, w, h);
+    const data = ctx.getImageData(0, 0, w, h).data;
+    for (let i = 3; i < data.length; i += 4) {
+      if (data[i] < 255) return true;
+    }
+  } catch (e) { /* if we can't inspect it, treat it as opaque */ }
+  return false;
+}
+
+function renderToCanvas(img, dim, mime, quality) {
+  const scale = Math.min(1, dim / Math.max(img.width, img.height));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(img.width * scale));
+  canvas.height = Math.max(1, Math.round(img.height * scale));
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height); // stay transparent, don't default to black
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  return quality != null ? canvas.toDataURL(mime, quality) : canvas.toDataURL(mime);
+}
+
 async function compressImageToDataURL(file, opts) {
   const o = Object.assign({ maxDim: 800, targetBytes: 24000, startQuality: 0.78 }, opts || {});
   const img = await readFileAsImage(file);
+  const dimSteps = [o.maxDim, Math.round(o.maxDim * 0.72), Math.round(o.maxDim * 0.5), Math.round(o.maxDim * 0.35), Math.round(o.maxDim * 0.22)];
 
-  const dimSteps = [o.maxDim, Math.round(o.maxDim * 0.72), Math.round(o.maxDim * 0.5), Math.round(o.maxDim * 0.35)];
+  // Images with real transparency are kept as PNG so the transparent
+  // background survives - JPEG has no alpha channel and would flatten it
+  // to solid black. PNG has no quality *****, so we can only shrink
+  // dimensions to hit the size budget, not lower the quality.
+  if (hasTransparency(img)) {
+    for (const dim of dimSteps) {
+      const dataUrl = renderToCanvas(img, dim, "image/png");
+      if (Math.round(dataUrl.length * 0.75) <= o.targetBytes) return dataUrl;
+    }
+    throw new Error("This transparent image is too large even at a small size. Try a simpler image.");
+  }
+
   const qualitySteps = [o.startQuality, 0.6, 0.42, 0.28, 0.16];
-
   for (const dim of dimSteps) {
-    const scale = Math.min(1, dim / Math.max(img.width, img.height));
-    const canvas = document.createElement("canvas");
-    canvas.width = Math.max(1, Math.round(img.width * scale));
-    canvas.height = Math.max(1, Math.round(img.height * scale));
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
     for (const q of qualitySteps) {
-      const dataUrl = canvas.toDataURL("image/jpeg", q);
-      const approxBytes = Math.round(dataUrl.length * 0.75);
-      if (approxBytes <= o.targetBytes) return dataUrl;
+      const dataUrl = renderToCanvas(img, dim, "image/jpeg", q);
+      if (Math.round(dataUrl.length * 0.75) <= o.targetBytes) return dataUrl;
     }
   }
   throw new Error("This image is too large even after compression. Try a smaller or simpler image.");
@@ -872,6 +1245,7 @@ async function auth(mode) {
     }
 
     user = u;
+    saveSession();
     updateProfileUI();
     document.getElementById("auth-screen").classList.add("hidden");
     document.getElementById("app-container").classList.remove("hidden");
@@ -883,6 +1257,64 @@ async function auth(mode) {
     toast("Connection error. Check your network and try again.", "error");
   }
   hideLoader();
+}
+
+/**
+ * Restores a previously saved login without asking for a password again.
+ * There's no server-side session token in this architecture - "staying
+ * signed in" just means this device remembers your username and your own
+ * encrypted profile blob (which contains a password HASH, never the
+ * password itself). Anyone with access to this browser profile while
+ * you're signed in has the same access you do, same as any "remember me"
+ * option - that's what the Sign Out button in Settings is for.
+ */
+async function resumeSession(session) {
+  showLoader("Signing you in\u2026");
+  try {
+    const profile = await dec(session.userCipher, DIR_KEY);
+    if (!profile) { clearSession(); hideLoader(); return false; }
+
+    user = session.user;
+    userCipher = session.userCipher;
+    userSalt = session.userSalt || profile.salt;
+    userHash = session.userHash || profile.hash;
+    usersMap[user] = { d: profile.d || user, a: profile.a || defaultAvatar(user) };
+    await refreshRoster(true);
+
+    updateProfileUI();
+    document.getElementById("auth-screen").classList.add("hidden");
+    document.getElementById("app-container").classList.remove("hidden");
+
+    await checkPendingJoin();
+    await fetchDir();
+    hideLoader();
+    return true;
+  } catch (e) {
+    console.error(e);
+    clearSession();
+    hideLoader();
+    return false;
+  }
+}
+
+function signOut() {
+  if (!confirm("Sign out of Stuffchat on this device?")) return;
+  if (call.active) leaveCall({ silent: true });
+  stopRing(); liveCall = null;
+  clearSession();
+  clearInterval(pollTimer);
+  stopTypingTicker();
+  user = ""; userCipher = ""; userSalt = ""; userHash = ""; usersMap = {};
+  activeChat = null; knownMessages = -1; typingUsers = {};
+
+  closeModal("settings-modal");
+  document.getElementById("app-container").classList.add("hidden");
+  document.getElementById("auth-screen").classList.remove("hidden");
+  document.getElementById("auth-username").value = "";
+  document.getElementById("auth-password").value = "";
+  document.getElementById("auth-password2").value = "";
+  switchAuthTab("login");
+  toast("Signed out.", "success");
 }
 
 function updateProfileUI() {
@@ -944,10 +1376,17 @@ function renderChatLists(chats) {
       rail.appendChild(btn);
     } else {
       anyDM = true;
+      const label = displayNameFor(chat);
       const el = document.createElement("div");
       el.className = "chat-item" + (isActive ? " active" : "");
-      el.innerHTML = `<div class="chat-icon">${chatIconSVG}</div><div class="chat-meta"><strong>${escapeHTML(chat.name)}</strong></div>`;
+      el.innerHTML = `
+        <div class="chat-icon">${chatIconSVG}</div>
+        <div class="chat-meta"><strong>${escapeHTML(label)}</strong></div>
+        <button type="button" class="icon-btn rename-btn" title="Rename for you">
+          <svg viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
+        </button>`;
       el.onclick = () => openChat(chat);
+      el.querySelector(".rename-btn").onclick = (ev) => { ev.stopPropagation(); renameChatLocally(chat.id, label); };
       dmList.appendChild(el);
     }
   });
@@ -958,6 +1397,7 @@ function renderChatLists(chats) {
 function goHome() {
   activeChat = null;
   clearInterval(pollTimer);
+  stopTypingTicker();
   showScreen("empty");
   fetchDir();
   closeMobileDrawer();
@@ -967,6 +1407,9 @@ function showScreen(name) {
   document.getElementById("empty-state").classList.toggle("hidden", name !== "empty");
   document.getElementById("setup-state").classList.toggle("hidden", name !== "setup");
   document.getElementById("chat-state").classList.toggle("hidden", name !== "chat");
+  // chat-state has its own header (with its own menu button); the other two
+  // screens don't, so the persistent top bar fills in for them on mobile.
+  document.getElementById("mobile-topbar").classList.toggle("hidden", name === "chat");
 }
 
 /* =========================================================================
@@ -979,6 +1422,9 @@ function setMode(mode) {
   document.getElementById("new-sheet").classList.toggle("hidden", !isCustom);
   document.getElementById("new-logo-row").classList.toggle("hidden", !isCustom);
   document.getElementById("custom-instructions").classList.toggle("hidden", !isCustom);
+  document.getElementById("new-name").placeholder = isCustom
+    ? "Network name"
+    : "Name (optional \u2014 defaults to the other person)";
 }
 function showSetup() { showScreen("setup"); closeMobileDrawer(); }
 function hideSetup() {
@@ -991,13 +1437,23 @@ function hideSetup() {
 }
 
 async function deployServer() {
-  const name = document.getElementById("new-name").value.trim();
-  if (!name) return toast("Give your network a name.", "error");
+  let name = document.getElementById("new-name").value.trim();
+  let autoName = false;
+  if (isCustom && !name) return toast("Give your network a name.", "error");
 
   let users = document.getElementById("new-users").value.trim();
   const usersArr = users.split(",").map(s=>s.trim()).filter(Boolean);
   if (!usersArr.includes(user)) usersArr.unshift(user);
   users = usersArr.join(", ");
+
+  if (!isCustom && !name) {
+    // Direct chats default to "whoever you're talking to" rather than
+    // forcing you to type a name. You can always rename it for yourself
+    // later from the chat list - that's a local label, not a shared one.
+    const others = usersArr.filter(u => u !== user);
+    name = others.length ? others.join(", ") : user;
+    autoName = true;
+  }
 
   let sheetId = "";
   if (isCustom) {
@@ -1010,7 +1466,7 @@ async function deployServer() {
   showLoader("Deploying\u2026");
   const payload = {
     id: "chat_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8),
-    name, users, banned: "", admins: user,
+    name, autoName, users, banned: "", admins: user,
     type: isCustom ? "custom" : "main",
     sheetId: isCustom ? sheetId : null,
     key: bytesToB64(crypto.getRandomValues(new Uint8Array(32))),
@@ -1037,7 +1493,12 @@ async function deployServer() {
 async function openChat(chat) {
   showLoader("Connecting\u2026");
   activeChat = chat; knownMessages = -1;
-  document.getElementById("active-title").textContent = chat.name;
+  typingUsers = {}; typingIdx = {};
+  const staleBubble = document.getElementById("typing-bubble-el");
+  if (staleBubble) staleBubble.remove();
+  setHeaderStatus("");
+  liveCall = null; stopRing(); updateBannerVisibility();
+  document.getElementById("active-title").textContent = displayNameFor(chat);
   document.getElementById("active-icon").innerHTML = chat.type === "custom" ? serverIconSVG : chatIconSVG;
 
   const adminList = (chat.admins || "").split(",").map(s=>s.trim());
@@ -1067,6 +1528,7 @@ async function openChat(chat) {
   await fetchDir();
   clearInterval(pollTimer);
   pollTimer = setInterval(pollMessages, 1500);
+  startTypingTicker();
   await renderMessages(data.messages || []);
   hideLoader();
   closeMobileDrawer();
@@ -1084,21 +1546,112 @@ async function pollMessages() {
   if (data.messages.length !== knownMessages) await renderMessages(data.messages);
 }
 
-async function renderMessages(rawRows) {
-  knownMessages = rawRows.length;
-  const decoded = [];
-  for (const row of rawRows) {
-    const msg = await dec(row, activeChat.key);
-    if (msg && msg.sender && typeof msg.text === "string") decoded.push(msg);
-  }
-  paintMessages(decoded);
+function formatTime(iso) {
+  try { return new Date(iso).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }); }
+  catch (e) { return ""; }
 }
 
-function paintMessages(decoded) {
+// The roster (everyone's display name + avatar) is loaded at login, but a
+// saved-session start or a brand-new member can leave gaps - refill them.
+let lastRosterAt = 0;
+async function refreshRoster(force) {
+  if (!force && Date.now() - lastRosterAt < 30000) return;
+  lastRosterAt = Date.now();
+  const rows = await apiGet({ action: "readMain", tab: "Users" });
+  if (!Array.isArray(rows)) return;
+  for (const row of rows) {
+    if (!row[0]) continue;
+    const p = await dec(row[0], DIR_KEY);
+    if (p && p.u) usersMap[p.u] = { d: p.d || p.u, a: p.a || defaultAvatar(p.u) };
+  }
+}
+
+/**
+ * Read receipts, typing indicators and call events are small marker
+ * "messages" written into the same chat sheet as real messages, then
+ * filtered out of the visible list on decrypt. That needs no backend
+ * changes, but it does grow the sheet a little faster than messages alone
+ * (a read marker is only written when there's a NEW message from someone
+ * else; typing markers are throttled to one per ~3s of continuous typing).
+ *
+ * All ordering decisions use sheet ROW ORDER or this device's own clock for
+ * "when did I see it" - never the sender's timestamp - so phones with
+ * skewed clocks can't break read receipts or the typing indicator.
+ */
+let typingUsers = {};   // sender -> local ms when we last saw a NEW typing marker from them
+let typingIdx = {};     // sender -> row index of the newest typing marker already seen
+let typingTicker = null;
+
+async function renderMessages(rawRows) {
+  const chat = activeChat;
+  const firstRender = knownMessages === -1;
+  knownMessages = rawRows.length;
+  const decoded = [], callEvents = [];
+  const readIdx = {}, lastRealIdx = {};
+
+  for (let i = 0; i < rawRows.length; i++) {
+    const msg = await dec(rawRows[i], chat.key);
+    if (!msg || !msg.sender) continue;
+    if (msg.type === "read") { readIdx[msg.sender] = i; continue; }
+    if (msg.type === "typing") {
+      if (i > (typingIdx[msg.sender] ?? -1)) {
+        typingIdx[msg.sender] = i;
+        if (!firstRender) typingUsers[msg.sender] = Date.now();
+      }
+      continue;
+    }
+    if (msg.type === "call" || msg.type === "callend") {
+      msg._idx = i; callEvents.push(msg); decoded.push(msg);
+      continue;
+    }
+    if (typeof msg.text === "string") {
+      msg._idx = i; decoded.push(msg); lastRealIdx[msg.sender] = i;
+      // a real message from someone means they've stopped typing
+      if (typingIdx[msg.sender] !== undefined && i > typingIdx[msg.sender]) delete typingUsers[msg.sender];
+    }
+  }
+  if (activeChat !== chat) return;   // user switched chats while we were decrypting
+
+  if (decoded.some(m => m.sender && !usersMap[m.sender])) await refreshRoster();
+
+  const others = obj => Object.keys(obj).filter(k => k !== user).map(k => obj[k]);
+  const otherReadMax = Math.max(-1, ...others(readIdx));
+  const newestOtherIdx = Math.max(-1, ...others(lastRealIdx));
+  const myReadIdx = readIdx[user] ?? -1;
+
+  paintMessages(decoded, otherReadMax, firstRender);
+  updateCallBanner(callEvents);
+  updateTypingBubble();
+  if (newestOtherIdx > myReadIdx) sendReadMarker(chat);
+}
+
+function buildSystemLine(msg) {
+  const el = document.createElement("div");
+  el.className = "sys-msg";
+  const who = msg.sender === user ? "You" : ((usersMap[msg.sender] || {}).d || msg.sender);
+  const when = formatTime(msg.time);
+  if (msg.type === "call") {
+    el.textContent = `${who} started a ${msg.mode === "video" ? "video" : "voice"} call \u00b7 ${when}`;
+  } else {
+    el.textContent = `Call ended${msg.duration ? " \u00b7 " + formatDuration(msg.duration) : ""} \u00b7 ${when}`;
+  }
+  return el;
+}
+
+function paintMessages(decoded, otherReadMax, forceBottom) {
   const container = document.getElementById("messages");
+  const existingBubble = document.getElementById("typing-bubble-el");
+  const prevTop = container.scrollTop;
+  const nearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 140;
   container.innerHTML = "";
+
   let lastSender = null;
   decoded.forEach(msg => {
+    if (msg.type === "call" || msg.type === "callend") {
+      container.appendChild(buildSystemLine(msg));
+      lastSender = null;
+      return;
+    }
     const isMine = msg.sender === user;
     const pData = usersMap[msg.sender] || { d: msg.sender, a: defaultAvatar(msg.sender) };
     const grouped = lastSender === msg.sender;
@@ -1111,11 +1664,16 @@ function paintMessages(decoded) {
     if (msg.image) bodyHtml += `<img class="msg-image" alt="Attached image">`;
     if (msg.text) bodyHtml += `<div class="msg-text">${escapeHTML(msg.text)}</div>`;
 
+    const timeLabel = formatTime(msg.time);
+    const wasRead = isMine && otherReadMax > msg._idx;
+    const metaLabel = isMine ? `${timeLabel} \u00b7 ${wasRead ? "Read" : "Sent"}` : timeLabel;
+
     wrap.innerHTML = `
       <img class="msg-avatar" src="${escapeHTML(safeImageUrl(pData.a))}" onerror="this.onerror=null;this.src='${defaultAvatar(msg.sender)}'">
       <div class="msg-content">
         ${grouped ? "" : `<span class="msg-name">${escapeHTML(pData.d)}</span>`}
         <div class="message">${bodyHtml}</div>
+        <span class="msg-meta">${escapeHTML(metaLabel)}</span>
       </div>`;
 
     if (msg.image) {
@@ -1126,12 +1684,100 @@ function paintMessages(decoded) {
     }
     container.appendChild(wrap);
   });
-  container.scrollTop = container.scrollHeight;
+
+  if (existingBubble) container.appendChild(existingBubble);
+  // Only jump to the newest message if you were already at the bottom (or
+  // this is the first load) - don't yank you away while reading history.
+  container.scrollTop = (forceBottom || nearBottom) ? container.scrollHeight : prevTop;
+}
+
+/* =========================================================================
+   TYPING INDICATOR (animated dots bubble + header status)
+   ========================================================================= */
+function startTypingTicker() { stopTypingTicker(); typingTicker = setInterval(updateTypingBubble, 1000); }
+function stopTypingTicker() { if (typingTicker) clearInterval(typingTicker); typingTicker = null; }
+
+function setHeaderStatus(name) {
+  const line = document.querySelector(".status-line"), st = document.getElementById("status-text");
+  if (!line || !st) return;
+  const key = name || "";
+  if (st.dataset.who === key) return;
+  st.dataset.who = key;
+  if (name) {
+    st.innerHTML = `${escapeHTML(name)} is typing<span class="mini-dots"><i></i><i></i><i></i></span>`;
+    line.classList.add("typing");
+  } else {
+    st.textContent = "Encrypted connection";
+    line.classList.remove("typing");
+  }
+}
+
+function updateTypingBubble() {
+  const container = document.getElementById("messages");
+  if (!container) return;
+  let bubble = document.getElementById("typing-bubble-el");
+  const now = Date.now();
+  const typingOthers = Object.keys(typingUsers).filter(s => s !== user && now - typingUsers[s] < 6000);
+
+  if (typingOthers.length === 0) {
+    if (bubble) bubble.remove();
+    setHeaderStatus("");
+    return;
+  }
+
+  const who = typingOthers[0];
+  const pData = usersMap[who] || { d: who, a: defaultAvatar(who) };
+  setHeaderStatus(pData.d);
+
+  const wasNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 140;
+  if (!bubble) {
+    bubble = document.createElement("div");
+    bubble.id = "typing-bubble-el";
+    bubble.className = "msg-wrap other typing-bubble";
+  }
+  if (bubble.dataset.who !== who) {
+    bubble.dataset.who = who;
+    bubble.innerHTML = `
+      <img class="msg-avatar" src="${escapeHTML(safeImageUrl(pData.a))}" alt="">
+      <div class="msg-content"><div class="typing-dots" aria-label="${escapeHTML(pData.d)} is typing"><span></span><span></span><span></span></div></div>`;
+  }
+  if (bubble.parentNode !== container || container.lastElementChild !== bubble) container.appendChild(bubble);
+  if (wasNearBottom) container.scrollTop = container.scrollHeight;
+}
+
+/* =========================================================================
+   READ RECEIPTS / TYPING SIGNALS / CALL EVENTS (shared marker mechanism)
+   ========================================================================= */
+async function sendMarker(chat, type, extra) {
+  const marker = Object.assign({ sender: user, type, time: new Date().toISOString() }, extra || {});
+  const cipher = await enc(marker, chat.key);
+  return apiPost({ action:"writeChat", isMain: chat.type === "main", sheetId: chat.sheetId || "", chatId: chat.id, data: cipher });
+}
+
+let lastReadMarkerAt = {};
+async function sendReadMarker(chat) {
+  const now = Date.now();
+  if (lastReadMarkerAt[chat.id] && now - lastReadMarkerAt[chat.id] < 4000) return;
+  lastReadMarkerAt[chat.id] = now;
+  await sendMarker(chat, "read");
+}
+
+let lastTypingSentAt = 0;
+async function sendTypingSignal() {
+  if (!activeChat) return;
+  const now = Date.now();
+  if (now - lastTypingSentAt < 3000) return;
+  lastTypingSentAt = now;
+  await sendMarker(activeChat, "typing");
 }
 
 function autoResizeInput(el) {
   el.style.height = "auto";
   el.style.height = Math.min(el.scrollHeight, 140) + "px";
+}
+function handleComposerInput(el) {
+  autoResizeInput(el);
+  sendTypingSignal();
 }
 function handleComposerKey(event) {
   if (event.key === "Enter" && !event.shiftKey) {
@@ -1253,6 +1899,7 @@ function openSettings() {
   previewFromUrl("set-avatar", "set-avatar-preview");
   document.getElementById("set-newpass").value = "";
   document.getElementById("set-newpass2").value = "";
+  document.getElementById("settings-signed-in-as").textContent = user;
   openModal("settings-modal");
 }
 async function saveSettings() {
@@ -1280,6 +1927,7 @@ async function saveSettings() {
 
   userCipher = newCipher; userSalt = salt; userHash = hash;
   usersMap[user] = { d:newD, a:newA };
+  saveSession();
   updateProfileUI();
   closeModal("settings-modal");
   if (activeChat) pollMessages();
@@ -1331,10 +1979,919 @@ function openMobileDrawer() { document.body.classList.add("drawer-open"); }
 function closeMobileDrawer() { document.body.classList.remove("drawer-open"); }
 
 /* =========================================================================
+   SPEECH-TO-TEXT
+   Uses the browser's built-in Web Speech API - nothing is sent to any
+   server for this, it's handled entirely by the browser/OS. Support varies
+   (strong in Chrome/Edge/Safari, generally unavailable in Firefox), so the
+   mic button hides itself automatically when the API isn't present, and it
+   requires the page to be served over HTTPS plus a one-time microphone
+   permission prompt.
+   ========================================================================= */
+let recognition = null;
+let isListening = false;
+let baseTextBeforeListening = "";
+
+function speechRecognitionSupported() {
+  return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+}
+
+function setupSpeechRecognition() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const r = new SR();
+  r.continuous = true;
+  r.interimResults = true;
+  r.lang = navigator.language || "en-US";
+
+  r.onstart = () => {
+    isListening = true;
+    document.getElementById("mic-btn").classList.add("listening");
+  };
+  r.onend = () => {
+    isListening = false;
+    document.getElementById("mic-btn").classList.remove("listening");
+  };
+  r.onerror = (e) => {
+    isListening = false;
+    document.getElementById("mic-btn").classList.remove("listening");
+    if (e.error !== "no-speech" && e.error !== "aborted") {
+      toast("Speech-to-text error: " + e.error, "error");
+    }
+  };
+  r.onresult = (event) => {
+    let finalText = "", interimText = "";
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const transcript = event.results[i][0].transcript;
+      if (event.results[i].isFinal) finalText += transcript;
+      else interimText += transcript;
+    }
+    const input = document.getElementById("msg-input");
+    input.value = baseTextBeforeListening + finalText + interimText;
+    if (finalText) baseTextBeforeListening = input.value;
+    autoResizeInput(input);
+  };
+  return r;
+}
+
+function toggleMic() {
+  if (!speechRecognitionSupported()) {
+    return toast("Speech-to-text isn't supported in this browser.", "error");
+  }
+  if (!recognition) recognition = setupSpeechRecognition();
+
+  if (isListening) { recognition.stop(); return; }
+
+  const input = document.getElementById("msg-input");
+  baseTextBeforeListening = input.value ? input.value.replace(/\s*$/, " ") : "";
+  try { recognition.start(); } catch (e) { /* already running */ }
+}
+
+/* =========================================================================
+   CALLS - voice, video and screen share
+   -------------------------------------------------------------------------
+   Audio/video/screen media flows directly between browsers over WebRTC and
+   is end-to-end encrypted by the browser itself (DTLS-SRTP). Firebase
+   Realtime Database is used only as the "signaling" channel: it carries the
+   small connection-setup messages (offers, answers, ICE candidates) and the
+   list of who's in the room - never any media.
+
+   Ringing goes through the normal encrypted chat channel (a "call" marker
+   that contains the secret room ID), so only people in the chat can learn
+   the room ID, and Firebase connections are held ONLY while someone is
+   actually in a call. That matters because the free Firebase plan caps
+   simultaneous connections at 100 - see the lobby/queue logic below.
+   ========================================================================= */
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+function randomHex(bytes) {
+  return Array.from(crypto.getRandomValues(new Uint8Array(bytes)), b => b.toString(16).padStart(2, "0")).join("");
+}
+function formatDuration(sec) {
+  sec = Math.max(0, Math.round(sec));
+  const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+  const pad = n => String(n).padStart(2, "0");
+  return h ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
+}
+
+const AUDIO_CONSTRAINTS = { echoCancellation: true, noiseSuppression: true, autoGainControl: true };
+const VIDEO_CONSTRAINTS = { width: { ideal: 640 }, height: { ideal: 360 }, frameRate: { ideal: 24, max: 30 } };
+
+/* ---------- Firebase loading (lazy: only when someone uses calls) -------- */
+function isFirebaseConfigured() {
+  const c = FIREBASE_CONFIG;
+  return !!(c && c.apiKey && c.databaseURL && !/YOUR_/i.test(String(c.apiKey) + String(c.databaseURL)));
+}
+function loadScriptOnce(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = src; s.async = false;
+    s.onload = resolve;
+    s.onerror = () => reject(new Error("Couldn't load " + src));
+    document.head.appendChild(s);
+  });
+}
+let firebaseReady = null;
+function ensureFirebase() {
+  if (firebaseReady) return firebaseReady;
+  firebaseReady = (async () => {
+    if (!(window.firebase && firebase.database)) {
+      const base = `https://www.gstatic.com/firebasejs/${FIREBASE_SDK_VERSION}/`;
+      for (const f of ["firebase-app-compat.js", "firebase-auth-compat.js", "firebase-database-compat.js"]) {
+        await loadScriptOnce(base + f);
+      }
+    }
+    if (!firebase.apps || !firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+    await firebase.auth().signInAnonymously();
+  })().catch(e => { firebaseReady = null; throw e; });
+  return firebaseReady;
+}
+function explainFirebaseError(e) {
+  const code = (e && e.code) || "";
+  const msg = String((e && e.message) || e);
+  const both = code + " " + msg;
+  if (/operation-not-allowed|admin-restricted/i.test(both)) return "Anonymous sign-in isn't enabled in your Firebase project (Authentication \u2192 Sign-in method).";
+  if (/api-key-not-valid|invalid-api-key/i.test(both)) return "The API key in FIREBASE_CONFIG isn't valid.";
+  if (/PERMISSION_DENIED/i.test(both)) return "Firebase rules are blocking calls \u2014 publish the rules from database.rules.json.";
+  if (/Couldn't load/i.test(both)) return "Couldn't load the Firebase SDK (offline, or blocked by an ad blocker?).";
+  return msg;
+}
+
+/* =========================================================================
+   CAPACITY LOBBY + QUEUE PAGE
+   Firebase refuses new connections once the plan's simultaneous-connection
+   limit is hit (100 on the free plan). To stay under it we keep a "soft
+   cap" a little below the real one:
+     lobby/active/<id>  = people currently holding a call connection
+     lobby/queue/<id>   = people waiting, ordered by server timestamp
+   Everyone derives the same answer from the same data - the first N people
+   in the queue, where N = free slots, admit themselves - so there's no
+   central server needed. If Firebase won't even accept our connection
+   (it's already full from other sources), we show the queue page in
+   "retry" mode and keep trying with backoff.
+   ========================================================================= */
+const slot = { state: "idle", clientId: null, cancelled: false, promise: null, abort: null };
+class QueueCancelled extends Error { constructor() { super("cancelled"); this.name = "QueueCancelled"; } }
+
+let queueSince = 0, queueTicker = null;
+function renderQueue(v) {
+  const panel = document.getElementById("queue-panel");
+  if (panel.classList.contains("hidden")) {
+    queueSince = Date.now();
+    panel.classList.remove("hidden");
+    clearInterval(queueTicker);
+    queueTicker = setInterval(() => {
+      document.getElementById("queue-s3").textContent = formatDuration((Date.now() - queueSince) / 1000);
+    }, 1000);
+  }
+  const retry = v.mode === "retry";
+  document.getElementById("queue-title").textContent = retry ? "Calls are busy right now" : "You're in line";
+  document.getElementById("queue-number").textContent = retry ? (v.trying ? "\u2026" : v.countdown + "s") : "#" + v.position;
+  document.getElementById("queue-sub").textContent = retry
+    ? "Our call service is at its connection limit or can't be reached. We'll keep retrying automatically \u2014 keep this page open."
+    : "Calls are at capacity. You'll be connected automatically the moment a spot opens \u2014 keep this page open.";
+  document.getElementById("queue-s1").textContent = retry ? "#" + v.attempt : String(v.ahead);
+  document.getElementById("queue-l1").textContent = retry ? "attempt" : "ahead of you";
+  document.getElementById("queue-s2").textContent = retry ? String(FIREBASE_MAX_CONNECTIONS) : String(v.active);
+  document.getElementById("queue-l2").textContent = retry ? "call capacity" : "in calls";
+  document.getElementById("queue-s3").textContent = formatDuration((Date.now() - queueSince) / 1000);
+}
+function hideQueue() {
+  clearInterval(queueTicker); queueTicker = null;
+  document.getElementById("queue-panel").classList.add("hidden");
+}
+function cancelQueue() {
+  slot.cancelled = true;
+  if (slot.abort) slot.abort();
+  hideQueue();
+}
+
+function newClientId() {
+  const uid = (firebase.auth().currentUser || {}).uid || "anon";
+  return uid + "_" + randomHex(4);
+}
+
+function waitConnected(ms) {
+  return new Promise(resolve => {
+    const ref = firebase.database().ref(".info/connected");
+    let done = false, poll = null, timer = null;
+    const finish = ok => { if (done) return; done = true; ref.off("value", cb); clearTimeout(timer); clearInterval(poll); resolve(ok); };
+    const cb = snap => { if (snap.val() === true) finish(true); };
+    timer = setTimeout(() => finish(false), ms);
+    poll = setInterval(() => { if (slot.cancelled) finish(false); }, 200);
+    ref.on("value", cb);
+  });
+}
+
+async function waitForConnection() {
+  const db = firebase.database();
+  db.goOnline();
+  let attempt = 0;
+  while (true) {
+    if (slot.cancelled) throw new QueueCancelled();
+    if (await waitConnected(FIREBASE_CONNECT_TIMEOUT_MS)) return;
+    if (slot.cancelled) throw new QueueCancelled();
+    attempt++;
+    const wait = Math.min(30, 4 + attempt * 4);
+    for (let s = wait; s > 0; s--) {
+      if (slot.cancelled) throw new QueueCancelled();
+      renderQueue({ mode: "retry", countdown: s, attempt });
+      await sleep(1000);
+    }
+    renderQueue({ mode: "retry", countdown: 0, attempt, trying: true });
+    db.goOffline();
+    db.goOnline();
+  }
+}
+
+function waitForAdmission() {
+  return new Promise((resolve, reject) => {
+    const db = firebase.database();
+    const id = slot.clientId;
+    const activeRef = db.ref("lobby/active"), queueRef = db.ref("lobby/queue");
+    const myQ = queueRef.child(id), myA = activeRef.child(id);
+    let active = {}, queue = {}, gotA = false, gotQ = false, done = false;
+
+    function finish(err) {
+      if (done) return; done = true;
+      activeRef.off("value", onA); queueRef.off("value", onQ);
+      slot.abort = null;
+      if (err) { myQ.onDisconnect().cancel(); Promise.resolve(myQ.remove()).catch(() => {}); reject(err); }
+      else resolve();
+    }
+    function evaluate() {
+      if (done || !gotA || !gotQ) return;
+      if (slot.cancelled) return finish(new QueueCancelled());
+      const others = Object.keys(active).filter(k => k !== id).length;
+      const free = Math.max(0, FIREBASE_MAX_CONNECTIONS - others);
+      const order = Object.keys(queue)
+        .map(k => ({ id: k, t: Number((queue[k] || {}).t) || 0 }))
+        .sort((a, b) => (a.t - b.t) || (a.id < b.id ? -1 : 1));
+      const idx = order.findIndex(e => e.id === id);
+      if (idx === -1) return;
+      if (idx < free) {
+        myA.onDisconnect().remove();
+        myA.set(firebase.database.ServerValue.TIMESTAMP);
+        myQ.onDisconnect().cancel();
+        myQ.remove();
+        finish(null);
+      } else {
+        renderQueue({ mode: "line", position: idx - free + 1, ahead: idx - free, active: others });
+      }
+    }
+    function onA(s) { active = s.val() || {}; gotA = true; evaluate(); }
+    function onQ(s) { queue = s.val() || {}; gotQ = true; evaluate(); }
+
+    slot.abort = () => finish(new QueueCancelled());
+    myQ.onDisconnect().remove();
+    myQ.set({ t: firebase.database.ServerValue.TIMESTAMP });
+    activeRef.on("value", onA);
+    queueRef.on("value", onQ);
+  });
+}
+
+async function abandonSlot() {
+  try {
+    const db = firebase.database();
+    if (slot.clientId) {
+      const q = db.ref("lobby/queue/" + slot.clientId);
+      q.onDisconnect().cancel();
+      await Promise.race([Promise.resolve(q.remove()), sleep(1500)]);
+    }
+    db.goOffline();
+  } catch (e) {}
+  slot.state = "idle";
+}
+
+function acquireSlot() {
+  if (slot.state === "held") return Promise.resolve();
+  if (slot.promise) return slot.promise;
+  slot.cancelled = false;
+  slot.promise = (async () => {
+    try {
+      await ensureFirebase();
+      slot.clientId = newClientId();
+      await waitForConnection();
+      await waitForAdmission();
+      slot.state = "held";
+    } catch (e) {
+      await abandonSlot();
+      throw e;
+    } finally {
+      hideQueue();
+      slot.promise = null;
+    }
+  })();
+  return slot.promise;
+}
+
+async function releaseSlot() {
+  if (slot.state !== "held") return;
+  slot.state = "idle";
+  try {
+    const db = firebase.database();
+    const ref = db.ref("lobby/active/" + slot.clientId);
+    ref.onDisconnect().cancel();
+    await Promise.race([Promise.resolve(ref.remove()), sleep(2000)]);
+    db.goOffline();
+  } catch (e) {}
+}
+
+/* =========================================================================
+   CALL STATE
+   ========================================================================= */
+const call = {
+  active: false, id: null, peerId: null, mode: "voice", chat: null,
+  peers: {}, participants: {}, chains: {}, earlyCandidates: {},
+  localAudio: null, localCam: null, localScreen: null, outVideo: null, localPreview: null,
+  mic: true, cam: false, screen: false,
+  startedAt: 0, ticker: null, levelTimer: null, refs: null, listeners: [],
+  minimized: false, audioBlocked: false, meters: {}
+};
+let liveCall = null;                 // newest un-ended call marker for the open chat
+const dismissedCalls = new Set();
+const ringedCalls = new Set();
+
+function callsAvailable() {
+  if (!isFirebaseConfigured()) { openModal("calls-setup-modal"); return false; }
+  if (!window.RTCPeerConnection || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    toast("Calls need a browser with WebRTC support and a secure (HTTPS) page.", "error");
+    return false;
+  }
+  return true;
+}
+function handleCallError(e) {
+  if (e && e.name === "QueueCancelled") return;
+  console.error(e);
+  toast("Couldn't start the call: " + explainFirebaseError(e), "error");
+}
+
+async function sendCallMarker(chat, type, extra) { return sendMarker(chat, type, extra); }
+
+async function startOrJoinCall(mode) {
+  if (!activeChat) return;
+  if (call.active) { restoreCall(); return; }
+  if (liveCall) return joinCall(liveCall.callId, liveCall.mode || mode);
+  return startCall(mode);
+}
+
+async function startCall(mode) {
+  if (!callsAvailable()) return;
+  const chat = activeChat;
+  try { await acquireSlot(); } catch (e) { return handleCallError(e); }
+  // Someone may have started a call in this chat while we waited in the queue -
+  // join theirs rather than splitting the group into two rooms.
+  if (liveCall && activeChat === chat) {
+    stopRing();
+    await enterCall(liveCall.callId, liveCall.mode || mode, chat, false);
+    return;
+  }
+  const ok = await enterCall(randomHex(16), mode, chat, true);
+  if (ok) await sendCallMarker(chat, "call", { callId: call.id, mode });
+}
+
+async function joinCall(callId, mode) {
+  if (call.active || !callsAvailable()) return;
+  const chat = activeChat;
+  stopRing();
+  try { await acquireSlot(); } catch (e) { return handleCallError(e); }
+  await enterCall(callId, mode || "voice", chat, false);
+}
+function joinFromBanner() { if (liveCall) joinCall(liveCall.callId, liveCall.mode); }
+
+async function enterCall(callId, mode, chat, isStarter) {
+  Object.assign(call, {
+    active: true, id: callId, mode, chat, peers: {}, participants: {}, chains: {}, earlyCandidates: {},
+    peerId: randomHex(8), mic: true, cam: false, screen: false, minimized: false, audioBlocked: false,
+    startedAt: Date.now(), localAudio: null, localCam: null, localScreen: null, outVideo: null, meters: {}
+  });
+  openCallPanel(chat);
+  try {
+    await acquireLocalMedia(mode);
+    const room = firebase.database().ref("calls/" + callId);
+    call.refs = { room, participants: room.child("participants"), me: room.child("participants/" + call.peerId), signals: room.child("signals/" + call.peerId) };
+
+    call.refs.me.onDisconnect().remove();
+    await call.refs.me.set({
+      user, name: (usersMap[user] || {}).d || user,
+      joinedAt: firebase.database.ServerValue.TIMESTAMP,
+      mic: call.mic, cam: call.cam, screen: false
+    });
+    const snap = await call.refs.participants.once("value");
+    const all = snap.val() || {};
+    const me = all[call.peerId] || { joinedAt: Date.now() };
+    const others = Object.keys(all).filter(k => k !== call.peerId);
+
+    if (!isStarter && others.length === 0) {
+      toast("That call has already ended.", "error");
+      await sendCallMarker(chat, "callend", { callId, duration: 0 });
+      await leaveCall({ silent: true });
+      return false;
+    }
+    if (others.length >= MAX_CALL_PARTICIPANTS) {
+      toast(`This call is full (${MAX_CALL_PARTICIPANTS} people max).`, "error");
+      await leaveCall({ silent: true });
+      return false;
+    }
+
+    call.participants = all;
+    // The later joiner always initiates, so two people never both send an offer.
+    for (const pid of others) {
+      const p = all[pid] || {};
+      const iInitiate = (p.joinedAt < me.joinedAt) || (p.joinedAt === me.joinedAt && pid < call.peerId);
+      if (iInitiate) await createPeer(pid, true);
+    }
+    wireRoomListeners();
+    renderCallTiles();
+    startCallTimers();
+    updateBannerVisibility();
+    return true;
+  } catch (e) {
+    console.error(e);
+    toast("Couldn't join the call: " + explainFirebaseError(e), "error");
+    await leaveCall({ silent: true });
+    return false;
+  }
+}
+
+/* ---------- local media ---------- */
+async function acquireLocalMedia(mode) {
+  call.localPreview = new MediaStream();
+  let stream = null;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: AUDIO_CONSTRAINTS, video: mode === "video" ? VIDEO_CONSTRAINTS : false });
+  } catch (e) {
+    if (mode === "video") {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: AUDIO_CONSTRAINTS });
+        toast("Camera unavailable \u2014 joined with audio only.", "error");
+      } catch (e2) { /* fall through */ }
+    }
+    if (!stream) toast("Microphone unavailable \u2014 you can listen but not speak.", "error");
+  }
+  if (stream) {
+    call.localAudio = stream.getAudioTracks()[0] || null;
+    const v = stream.getVideoTracks()[0];
+    if (v) { call.localCam = v; call.cam = true; call.outVideo = v; v.onended = () => { if (call.cam) toggleCallCamera(); }; }
+  }
+  call.mic = !!call.localAudio;
+  rebuildLocalPreview();
+  if (call.localAudio) watchLevel("me", call.localAudio);
+}
+function rebuildLocalPreview() {
+  const s = call.localPreview; if (!s) return;
+  s.getTracks().forEach(t => s.removeTrack(t));
+  if (call.outVideo) s.addTrack(call.outVideo);
+}
+
+/* ---------- signaling ---------- */
+function sendSignal(to, type, obj) {
+  if (!call.refs) return;
+  firebase.database().ref("calls/" + call.id + "/signals/" + to).push({ from: call.peerId, type, data: JSON.stringify(obj) });
+}
+function wireRoomListeners() {
+  const { participants, signals } = call.refs;
+  const upsert = s => { if (s.key !== call.peerId) { call.participants[s.key] = s.val(); renderCallTiles(); } };
+  const removed = s => { delete call.participants[s.key]; closePeer(s.key); renderCallTiles(); };
+  const onSignal = s => { const msg = s.val(); s.ref.remove(); if (msg && msg.from) enqueueSignal(msg.from, msg); };
+  participants.on("child_added", upsert);
+  participants.on("child_changed", upsert);
+  participants.on("child_removed", removed);
+  signals.on("child_added", onSignal);
+  call.listeners = [[participants, "child_added", upsert], [participants, "child_changed", upsert], [participants, "child_removed", removed], [signals, "child_added", onSignal]];
+}
+function enqueueSignal(from, msg) {
+  call.chains[from] = (call.chains[from] || Promise.resolve())
+    .then(() => handleSignal(from, msg))
+    .catch(e => console.error("signal error", e));
+}
+
+/* ---------- peer connections (full mesh) ---------- */
+async function attachLocalTracks(peer) {
+  for (const tx of peer.pc.getTransceivers()) {
+    const kind = tx.receiver && tx.receiver.track && tx.receiver.track.kind;
+    try {
+      if (kind === "audio" && call.localAudio) await tx.sender.replaceTrack(call.localAudio);
+      if (kind === "video" && call.outVideo) await tx.sender.replaceTrack(call.outVideo);
+    } catch (e) { console.error(e); }
+  }
+}
+async function createPeer(peerId, initiator) {
+  if (call.peers[peerId]) return call.peers[peerId];
+  const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+  const peer = { id: peerId, pc, stream: new MediaStream(), pending: call.earlyCandidates[peerId] || [], initiator };
+  delete call.earlyCandidates[peerId];
+  call.peers[peerId] = peer;
+
+  pc.onicecandidate = e => { if (e.candidate) sendSignal(peerId, "candidate", e.candidate.toJSON()); };
+  pc.ontrack = e => {
+    peer.stream.addTrack(e.track);
+    if (e.track.kind === "audio") { ensureAudioSink(peerId, e.track); watchLevel(peerId, e.track); }
+    e.track.onunmute = () => renderCallTiles();
+    renderCallTiles();
+  };
+  pc.onconnectionstatechange = () => {
+    renderCallTiles();
+    if (pc.connectionState === "failed" && peer.initiator) restartIce(peer);
+  };
+
+  if (initiator) {
+    // Always negotiate one audio + one video slot up front, so turning the
+    // camera or screen share on later is a track swap, not a renegotiation.
+    pc.addTransceiver("audio", { direction: "sendrecv" });
+    pc.addTransceiver("video", { direction: "sendrecv" });
+    await attachLocalTracks(peer);
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    sendSignal(peerId, "offer", pc.localDescription.toJSON());
+  }
+  return peer;
+}
+async function restartIce(peer) {
+  try {
+    if (peer.pc.signalingState !== "stable") return;
+    peer.pc.restartIce();
+    const offer = await peer.pc.createOffer({ iceRestart: true });
+    await peer.pc.setLocalDescription(offer);
+    sendSignal(peer.id, "offer", peer.pc.localDescription.toJSON());
+  } catch (e) { console.error(e); }
+}
+async function flushPending(peer) {
+  const list = peer.pending.splice(0);
+  for (const c of list) { try { await peer.pc.addIceCandidate(c); } catch (e) {} }
+}
+async function handleSignal(from, msg) {
+  if (!call.active) return;
+  let data; try { data = JSON.parse(msg.data); } catch (e) { return; }
+  let peer = call.peers[from];
+  if (msg.type === "offer") {
+    if (!peer) peer = await createPeer(from, false);
+    const pc = peer.pc;
+    await pc.setRemoteDescription(data);
+    for (const tx of pc.getTransceivers()) { try { tx.direction = "sendrecv"; } catch (e) {} }
+    await attachLocalTracks(peer);
+    const answer = await pc.createAnswer();
+    await pc.setLocalDescription(answer);
+    sendSignal(from, "answer", pc.localDescription.toJSON());
+    await flushPending(peer);
+  } else if (msg.type === "answer") {
+    if (peer && peer.pc.signalingState === "have-local-offer") {
+      await peer.pc.setRemoteDescription(data);
+      await flushPending(peer);
+    }
+  } else if (msg.type === "candidate") {
+    if (!peer) { (call.earlyCandidates[from] = call.earlyCandidates[from] || []).push(data); return; }
+    if (peer.pc.remoteDescription) { try { await peer.pc.addIceCandidate(data); } catch (e) {} }
+    else peer.pending.push(data);
+  }
+}
+function closePeer(id) {
+  const p = call.peers[id];
+  if (p) { try { p.pc.close(); } catch (e) {} }
+  delete call.peers[id]; delete call.chains[id]; delete call.meters[id];
+  const snk = document.getElementById("snk-" + id);
+  if (snk) snk.remove();
+}
+async function attachToAllPeers(kind, track) {
+  for (const p of Object.values(call.peers)) {
+    for (const tx of p.pc.getTransceivers()) {
+      if (tx.receiver.track && tx.receiver.track.kind === kind) { try { await tx.sender.replaceTrack(track); } catch (e) {} }
+    }
+  }
+}
+async function setOutgoingVideo(track) {
+  call.outVideo = track || null;
+  await attachToAllPeers("video", call.outVideo);
+  rebuildLocalPreview();
+}
+
+/* ---------- audio playback + "who's speaking" ---------- */
+function ensureAudioSink(peerId, track) {
+  let el = document.getElementById("snk-" + peerId);
+  if (!el) {
+    el = document.createElement("audio");
+    el.id = "snk-" + peerId; el.autoplay = true;
+    document.getElementById("call-audio-sink").appendChild(el);
+  }
+  el.srcObject = new MediaStream([track]);
+  const p = el.play();
+  if (p && p.catch) p.catch(() => { call.audioBlocked = true; updateCallNotice(); });
+}
+function enableCallAudio() {
+  document.querySelectorAll("#call-audio-sink audio").forEach(a => { a.play().catch(() => {}); });
+  const ctx = getAudioCtx(); if (ctx && ctx.state === "suspended") ctx.resume().catch(() => {});
+  call.audioBlocked = false; updateCallNotice();
+}
+let audioCtx = null;
+function getAudioCtx() {
+  if (!audioCtx) { const AC = window.AudioContext || window.webkitAudioContext; if (AC) audioCtx = new AC(); }
+  return audioCtx;
+}
+function watchLevel(id, track) {
+  try {
+    const ctx = getAudioCtx(); if (!ctx) return;
+    const src = ctx.createMediaStreamSource(new MediaStream([track]));
+    const an = ctx.createAnalyser(); an.fftSize = 512;
+    src.connect(an);
+    call.meters[id] = { an, data: new Uint8Array(an.fftSize), src };
+  } catch (e) {}
+}
+function pollLevels() {
+  for (const id of Object.keys(call.meters)) {
+    const m = call.meters[id];
+    m.an.getByteTimeDomainData(m.data);
+    let peak = 0; for (let i = 0; i < m.data.length; i++) peak = Math.max(peak, Math.abs(m.data[i] - 128));
+    const tile = document.querySelector(`#call-grid [data-id="${id}"]`);
+    if (tile) tile.classList.toggle("speaking", peak > 14 && !tile.classList.contains("muted"));
+  }
+}
+
+/* ---------- tiles ---------- */
+function buildTile(id, isMe) {
+  const el = document.createElement("div");
+  el.className = "tile" + (isMe ? " me" : "");
+  el.dataset.id = id;
+  el.innerHTML = `
+    <video muted playsinline autoplay></video>
+    <div class="tile-avatar"><img alt=""></div>
+    <div class="tile-label"><span class="tile-name"></span>
+      <svg class="tile-mic-off" viewBox="0 0 24 24"><line x1="1" y1="1" x2="23" y2="23"></line><path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"></path><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"></path></svg>
+    </div>
+    <div class="tile-status"></div>`;
+  return el;
+}
+function renderCallTiles() {
+  if (!call.active) return;
+  const grid = document.getElementById("call-grid");
+  const ids = ["me"].concat(Object.keys(call.participants).filter(k => k !== call.peerId));
+  Array.from(grid.children).forEach(el => { if (!ids.includes(el.dataset.id)) el.remove(); });
+  let anySharing = false;
+  ids.forEach(id => {
+    const isMe = id === "me";
+    const p = isMe
+      ? { user, name: (usersMap[user] || {}).d || user, mic: call.mic, cam: call.cam, screen: call.screen }
+      : call.participants[id];
+    if (!p) return;
+    let el = grid.querySelector(`[data-id="${id}"]`);
+    if (!el) { el = buildTile(id, isMe); grid.appendChild(el); }
+    updateTile(el, id, isMe, p);
+    if (p.screen) anySharing = true;
+  });
+  grid.classList.toggle("has-share", anySharing);
+  grid.dataset.count = String(ids.length);
+  updateCallSub();
+  updateCallNotice();
+}
+function updateTile(el, id, isMe, p) {
+  const u = usersMap[p.user] || {};
+  el.querySelector(".tile-name").textContent = isMe ? "You" : (u.d || p.name || p.user);
+  const img = el.querySelector(".tile-avatar img");
+  const avatar = safeImageUrl(u.a || defaultAvatar(p.user));
+  if (img.dataset.src !== avatar) { img.src = avatar; img.dataset.src = avatar; }
+  const showVideo = !!(p.cam || p.screen);
+  el.classList.toggle("video-on", showVideo);
+  el.classList.toggle("sharing", !!p.screen);
+  el.classList.toggle("muted", !p.mic);
+  el.classList.toggle("mirror", isMe && !!call.cam && !call.screen);
+  const video = el.querySelector("video");
+  const stream = isMe ? call.localPreview : (call.peers[id] && call.peers[id].stream);
+  if (stream && video.srcObject !== stream) video.srcObject = stream;
+  let status = "";
+  if (!isMe) {
+    const st = call.peers[id] ? call.peers[id].pc.connectionState : "new";
+    if (st === "failed") status = "Couldn't connect \u2014 network may be blocking calls";
+    else if (st === "disconnected") status = "Reconnecting\u2026";
+    else if (st !== "connected") status = "Connecting\u2026";
+  }
+  el.querySelector(".tile-status").textContent = status;
+}
+
+/* ---------- controls ---------- */
+function syncMyState() {
+  if (call.refs) Promise.resolve(call.refs.me.update({ mic: call.mic, cam: call.cam, screen: call.screen })).catch(() => {});
+}
+async function toggleCallMic() {
+  if (!call.active) return;
+  if (!call.localAudio) {
+    try {
+      const s = await navigator.mediaDevices.getUserMedia({ audio: AUDIO_CONSTRAINTS });
+      call.localAudio = s.getAudioTracks()[0];
+      await attachToAllPeers("audio", call.localAudio);
+      watchLevel("me", call.localAudio);
+      call.mic = true;
+    } catch (e) { return toast("Microphone unavailable: " + (e.message || e.name), "error"); }
+  } else {
+    call.mic = !call.mic;
+    call.localAudio.enabled = call.mic;
+  }
+  syncMyState(); updateControls(); renderCallTiles();
+}
+async function toggleCallCamera() {
+  if (!call.active) return;
+  if (call.cam) {
+    if (call.localCam) { call.localCam.onended = null; call.localCam.stop(); call.localCam = null; }
+    call.cam = false;
+    if (!call.screen) await setOutgoingVideo(null);
+  } else {
+    try {
+      const s = await navigator.mediaDevices.getUserMedia({ video: VIDEO_CONSTRAINTS });
+      call.localCam = s.getVideoTracks()[0];
+      call.localCam.onended = () => { if (call.cam) toggleCallCamera(); };
+      call.cam = true;
+      if (!call.screen) await setOutgoingVideo(call.localCam);
+    } catch (e) { return toast("Camera unavailable: " + (e.message || e.name), "error"); }
+  }
+  syncMyState(); updateControls(); renderCallTiles();
+}
+async function toggleCallScreen() {
+  if (!call.active) return;
+  if (call.screen) return stopScreenShare();
+  if (!navigator.mediaDevices.getDisplayMedia) return toast("Screen sharing isn't supported in this browser.", "error");
+  try {
+    const s = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: { ideal: 15, max: 30 } }, audio: false });
+    const track = s.getVideoTracks()[0];
+    try { track.contentHint = "detail"; } catch (e) {}
+    call.localScreen = track; call.screen = true;
+    track.onended = () => stopScreenShare();
+    await setOutgoingVideo(track);
+    syncMyState(); updateControls(); renderCallTiles();
+  } catch (e) {
+    if (e && e.name !== "NotAllowedError") toast("Couldn't start screen sharing: " + (e.message || e.name), "error");
+  }
+}
+async function stopScreenShare() {
+  if (!call.screen) return;
+  if (call.localScreen) { call.localScreen.onended = null; call.localScreen.stop(); call.localScreen = null; }
+  call.screen = false;
+  await setOutgoingVideo(call.cam ? call.localCam : null);
+  syncMyState(); updateControls(); renderCallTiles();
+}
+function updateControls() {
+  const mic = document.getElementById("ctl-mic"), cam = document.getElementById("ctl-cam"), scr = document.getElementById("ctl-screen");
+  mic.classList.toggle("off", !call.mic);
+  mic.title = call.mic ? "Mute" : "Unmute";
+  cam.classList.toggle("off", !call.cam);
+  cam.title = call.cam ? "Turn camera off" : "Turn camera on";
+  scr.classList.toggle("on", !!call.screen);
+  scr.title = call.screen ? "Stop sharing" : "Share your screen";
+  scr.classList.toggle("hidden", !(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia));
+}
+
+/* ---------- leaving ---------- */
+function hangUp() { leaveCall(); }
+async function leaveCall(opts) {
+  opts = opts || {};
+  if (!call.active && !call.refs) { await releaseSlot(); return; }
+  const chat = call.chat, callId = call.id, startedAt = call.startedAt, refs = call.refs;
+  const othersLeft = Object.keys(call.participants).filter(k => k !== call.peerId).length;
+
+  [call.localAudio, call.localCam, call.localScreen].forEach(t => { if (t) { t.onended = null; try { t.stop(); } catch (e) {} } });
+  Object.keys(call.peers).forEach(closePeer);
+  (call.listeners || []).forEach(([ref, ev, cb]) => { try { ref.off(ev, cb); } catch (e) {} });
+  clearInterval(call.ticker); clearInterval(call.levelTimer);
+  Object.values(call.meters).forEach(m => { try { m.src.disconnect(); } catch (e) {} });
+
+  const wasActive = call.active;
+  Object.assign(call, {
+    active: false, id: null, peerId: null, chat: null, peers: {}, participants: {}, chains: {}, earlyCandidates: {},
+    localAudio: null, localCam: null, localScreen: null, outVideo: null, localPreview: null,
+    mic: true, cam: false, screen: false, refs: null, listeners: [], ticker: null, levelTimer: null,
+    minimized: false, audioBlocked: false, meters: {}
+  });
+  closeCallPanel();
+
+  try {
+    if (refs) {
+      refs.me.onDisconnect().cancel();
+      await Promise.race([Promise.resolve(refs.me.remove()), sleep(2000)]);
+      if (othersLeft === 0) await Promise.race([Promise.resolve(refs.room.remove()), sleep(2000)]);
+    }
+  } catch (e) {}
+  await releaseSlot();
+  if (wasActive && !opts.silent && othersLeft === 0 && chat) {
+    sendCallMarker(chat, "callend", { callId, duration: Math.round((Date.now() - startedAt) / 1000) });
+  }
+}
+
+/* ---------- panel UI ---------- */
+function openCallPanel(chat) {
+  document.getElementById("call-title-text").textContent = displayNameFor(chat);
+  document.getElementById("call-grid").innerHTML = "";
+  document.getElementById("call-panel").classList.remove("hidden", "minimized");
+  document.getElementById("call-pill").classList.add("hidden");
+  updateControls();
+}
+function closeCallPanel() {
+  document.getElementById("call-panel").classList.add("hidden");
+  document.getElementById("call-pill").classList.add("hidden");
+  document.getElementById("call-grid").innerHTML = "";
+  document.getElementById("call-audio-sink").innerHTML = "";
+  updateBannerVisibility();
+}
+function minimizeCall() {
+  if (!call.active) return;
+  call.minimized = true;
+  document.getElementById("call-panel").classList.add("minimized");
+  document.getElementById("call-pill").classList.remove("hidden");
+  updateCallSub();
+}
+function restoreCall() {
+  if (!call.active) return;
+  call.minimized = false;
+  document.getElementById("call-panel").classList.remove("minimized");
+  document.getElementById("call-pill").classList.add("hidden");
+}
+function startCallTimers() {
+  clearInterval(call.ticker); clearInterval(call.levelTimer);
+  call.ticker = setInterval(updateCallSub, 1000);
+  call.levelTimer = setInterval(pollLevels, 200);
+  const ctx = getAudioCtx(); if (ctx && ctx.state === "suspended") ctx.resume().catch(() => {});
+}
+function updateCallSub() {
+  if (!call.active) return;
+  const count = 1 + Object.keys(call.participants).filter(k => k !== call.peerId).length;
+  const t = formatDuration((Date.now() - call.startedAt) / 1000);
+  document.getElementById("call-sub").textContent = `${t} \u00b7 ${count} in call`;
+  document.getElementById("call-pill-text").textContent = `In call \u00b7 ${t}`;
+}
+function updateCallNotice() {
+  const el = document.getElementById("call-notice");
+  const alone = Object.keys(call.participants).filter(k => k !== call.peerId).length === 0;
+  if (call.audioBlocked) {
+    el.innerHTML = 'Your browser blocked call audio. <button type="button" onclick="enableCallAudio()">Tap to enable</button>';
+    el.classList.remove("hidden");
+  } else if (alone) {
+    el.textContent = "Waiting for others to join\u2026";
+    el.classList.remove("hidden");
+  } else { el.classList.add("hidden"); }
+}
+
+/* ---------- incoming call banner + ring ---------- */
+function updateCallBanner(events) {
+  const ended = new Set(events.filter(e => e.type === "callend").map(e => e.callId));
+  const open = events.filter(e => e.type === "call" && !ended.has(e.callId));
+  const latest = open.length ? open[open.length - 1] : null;
+  const fresh = latest && (Date.now() - Date.parse(latest.time) < 3 * 3600 * 1000);
+  liveCall = fresh ? latest : null;
+
+  if (liveCall && liveCall.sender !== user && !ringedCalls.has(liveCall.callId)
+      && !call.active && (Date.now() - Date.parse(liveCall.time) < 30000)) {
+    ringedCalls.add(liveCall.callId);
+    startRing();
+  }
+  updateBannerVisibility();
+}
+function updateBannerVisibility() {
+  const banner = document.getElementById("call-banner");
+  if (!banner) return;
+  const inThis = liveCall && call.active && call.id === liveCall.callId;
+  if (!liveCall || inThis || dismissedCalls.has(liveCall.callId)) {
+    banner.classList.add("hidden");
+    if (!liveCall || inThis) stopRing();
+    return;
+  }
+  const who = liveCall.sender === user ? "You" : ((usersMap[liveCall.sender] || {}).d || liveCall.sender);
+  const kind = liveCall.mode === "video" ? "video call" : "voice call";
+  document.getElementById("call-banner-title").textContent = liveCall.sender === user ? `${kind[0].toUpperCase() + kind.slice(1)} in progress` : `${who} started a ${kind}`;
+  document.getElementById("call-banner-sub").textContent = "Join to talk, share video, or share your screen";
+  banner.classList.remove("hidden");
+}
+function dismissCallBanner() {
+  if (liveCall) dismissedCalls.add(liveCall.callId);
+  stopRing(); updateBannerVisibility();
+}
+let ringTimer = null, ringStopTimer = null;
+function ringOnce() {
+  const ctx = getAudioCtx(); if (!ctx) return;
+  if (ctx.state === "suspended") ctx.resume().catch(() => {});
+  const t0 = ctx.currentTime;
+  [[440, 0], [554, 0.2]].forEach(([f, d]) => {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.frequency.value = f;
+    g.gain.setValueAtTime(0.0001, t0 + d);
+    g.gain.exponentialRampToValueAtTime(0.1, t0 + d + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + d + 0.18);
+    o.connect(g); g.connect(ctx.destination);
+    o.start(t0 + d); o.stop(t0 + d + 0.2);
+  });
+}
+function startRing() { stopRing(); ringOnce(); ringTimer = setInterval(ringOnce, 2200); ringStopTimer = setTimeout(stopRing, 30000); }
+function stopRing() { clearInterval(ringTimer); clearTimeout(ringStopTimer); ringTimer = ringStopTimer = null; }
+
+function copyRules() {
+  const txt = document.getElementById("rules-pre").textContent;
+  navigator.clipboard.writeText(txt).then(() => toast("Rules copied.", "success")).catch(() => toast("Couldn't copy \u2014 select the text manually.", "error"));
+}
+window.addEventListener("pagehide", () => {
+  try { if (call.active && call.refs) call.refs.me.remove(); } catch (e) {}
+});
+
+
+/* =========================================================================
    INIT
    ========================================================================= */
-window.addEventListener("DOMContentLoaded", () => {
+window.addEventListener("DOMContentLoaded", async () => {
   setupManifest();
+  loadNicknames();
+  maybeShowStorageNotice();
+  if (!speechRecognitionSupported()) document.getElementById("mic-btn").classList.add("hidden");
 
   const params = new URLSearchParams(location.search);
   const join = params.get("join");
@@ -1348,6 +2905,11 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("auth-password2").addEventListener("keydown", e => {
     if (e.key === "Enter") handleAuthSubmit();
   });
+
+  const session = loadSession();
+  if (session && session.user && session.userCipher) {
+    await resumeSession(session);
+  }
 
   if (modeApp) showInstallPanel(true);
 });
