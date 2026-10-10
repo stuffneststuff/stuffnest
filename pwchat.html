@@ -235,7 +235,21 @@ svg{width:19px;height:19px;stroke-width:2;stroke:currentColor;fill:none;stroke-l
 /* composer attachment preview */
 #composer-preview{padding:.6rem 1.4rem 0; display:flex; gap:.6rem;}
 #composer-preview.hidden{display:none;}
-.preview-chip{position:relative; flex-shrink:0;}
+.preview-chip{position:relative; flex-shrink:0; display:flex; align-items:center;}
+.file-chip-preview{width:58px; height:58px; border-radius:9px; border:1px solid var(--border); background:var(--surface-1); display:flex; align-items:center; justify-content:center; color:var(--text-muted);}
+.file-chip-preview svg{width:24px; height:24px;}
+.preview-filename{max-width:160px; margin-left:.6rem; margin-right:1.4rem; font-size:.82rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+
+/* file attachment chip inside a message bubble */
+.file-chip{display:flex; align-items:center; gap:.7rem; background:rgba(0,0,0,.18); border:1px solid var(--border); border-radius:var(--radius-sm); padding:.6rem .7rem; min-width:200px; max-width:280px;}
+.msg-wrap.mine .file-chip{background:rgba(0,0,0,.15); border-color:rgba(255,255,255,.18);}
+.file-chip-icon{width:34px; height:34px; border-radius:8px; background:rgba(255,255,255,.08); display:flex; align-items:center; justify-content:center; flex-shrink:0; color:inherit;}
+.file-chip-icon svg{width:18px; height:18px;}
+.file-chip-meta{flex:1; min-width:0;}
+.file-chip-name{font-size:.84rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.file-chip-size{font-size:.72rem; opacity:.75; margin-top:.1rem;}
+.file-chip-dl{width:30px; height:30px; flex-shrink:0; color:inherit; opacity:.85;}
+.file-chip-dl:hover{opacity:1; background:rgba(255,255,255,.12);}
 .preview-chip img{width:58px; height:58px; object-fit:cover; border-radius:9px; border:1px solid var(--border);}
 .preview-chip button{
   position:absolute; top:-7px; right:-7px; width:20px; height:20px; border-radius:50%;
@@ -524,10 +538,10 @@ svg{width:19px;height:19px;stroke-width:2;stroke:currentColor;fill:none;stroke-l
 
       <div id="composer-preview" class="hidden"></div>
       <div class="input-area">
-        <button class="icon-btn attach-btn" title="Attach image" onclick="document.getElementById('msg-image-file').click()">
-          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><path d="M21 15l-5-5L5 21"></path></svg>
+        <button class="icon-btn attach-btn" title="Attach a file or image" onclick="document.getElementById('msg-image-file').click()">
+          <svg viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
         </button>
-        <input type="file" id="msg-image-file" accept="image/*" class="hidden" onchange="handleComposerImageChange(event)">
+        <input type="file" id="msg-image-file" class="hidden" onchange="handleComposerImageChange(event)">
         <textarea id="msg-input" rows="1" placeholder="Message..." onkeydown="handleComposerKey(event)" oninput="handleComposerInput(this)"></textarea>
         <button class="icon-btn attach-btn" id="mic-btn" title="Speech to text" onclick="toggleMic()">
           <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
@@ -1067,7 +1081,7 @@ async function compressImageToDataURL(file, opts) {
 
   // Images with real transparency are kept as PNG so the transparent
   // background survives - JPEG has no alpha channel and would flatten it
-  // to solid black. PNG has no quality *****, so we can only shrink
+  // to solid black. PNG has no quality knob, so we can only shrink
   // dimensions to hit the size budget, not lower the quality.
   if (hasTransparency(img)) {
     for (const dim of dimSteps) {
@@ -1141,25 +1155,74 @@ async function handleAdminLogoFileChange(e) {
   hideLoader();
 }
 
-let pendingMessageImage = null;
+/**
+ * Non-image files can't be shrunk the way photos can (no resize/quality
+ * knob for a PDF or a zip), so they're capped hard by what actually fits
+ * in a Google Sheets cell once JSON + encryption + base64 overhead is
+ * added on top. ~20KB raw is the honest ceiling here - fine for small
+ * documents, text files, tiny configs; too small for most PDFs/videos.
+ */
+const GENERIC_FILE_MAX_BYTES = 20000;
+function formatFileSize(bytes) {
+  if (bytes < 1024) return bytes + " B";
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(bytes < 10240 ? 1 : 0) + " KB";
+  return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+}
+function readFileAsDataURL(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("Couldn't read that file."));
+    reader.onload = () => resolve(reader.result);
+    reader.readAsDataURL(file);
+  });
+}
+async function encodeGenericFile(file) {
+  if (file.size > GENERIC_FILE_MAX_BYTES) {
+    throw new Error(`That file is ${formatFileSize(file.size)} \u2014 attachments need to stay under ${formatFileSize(GENERIC_FILE_MAX_BYTES)} (messages are stored as spreadsheet cells, which cap how big one can be).`);
+  }
+  const dataUrl = await readFileAsDataURL(file);
+  return { name: file.name, type: file.type || "application/octet-stream", size: file.size, dataUrl };
+}
+
+const FILE_CHIP_SVG = `<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>`;
+
+let pendingAttachment = null; // { kind: "image", dataUrl } | { kind: "file", name, type, size, dataUrl }
 async function handleComposerImageChange(e) {
   const file = e.target.files[0];
   e.target.value = "";
   if (!file) return;
-  showLoader("Compressing image\u2026");
+  const isImage = file.type && file.type.startsWith("image/");
+  showLoader(isImage ? "Compressing image\u2026" : "Attaching file\u2026");
   try {
-    pendingMessageImage = await compressImageToDataURL(file, { maxDim: 900, targetBytes: 24000, startQuality: 0.75 });
-    const strip = document.getElementById("composer-preview");
-    strip.innerHTML = `<div class="preview-chip"><img src="${pendingMessageImage}" alt=""><button type="button" title="Remove" onclick="clearComposerImage()">&times;</button></div>`;
-    strip.classList.remove("hidden");
+    if (isImage) {
+      const dataUrl = await compressImageToDataURL(file, { maxDim: 900, targetBytes: 24000, startQuality: 0.75 });
+      pendingAttachment = { kind: "image", dataUrl };
+      showComposerPreview(`<img src="${dataUrl}" alt="">`);
+    } else {
+      const f = await encodeGenericFile(file);
+      pendingAttachment = Object.assign({ kind: "file" }, f);
+      showComposerPreview(`
+        <div class="file-chip-preview">${FILE_CHIP_SVG}</div>
+        <div class="preview-filename" title="${escapeHTML(f.name)}">${escapeHTML(f.name)}</div>`);
+    }
   } catch (err) { toast(err.message, "error"); }
   hideLoader();
 }
+function showComposerPreview(innerHtml) {
+  const strip = document.getElementById("composer-preview");
+  strip.innerHTML = `<div class="preview-chip">${innerHtml}<button type="button" title="Remove" onclick="clearComposerImage()">&times;</button></div>`;
+  strip.classList.remove("hidden");
+}
 function clearComposerImage() {
-  pendingMessageImage = null;
+  pendingAttachment = null;
   const strip = document.getElementById("composer-preview");
   strip.innerHTML = "";
   strip.classList.add("hidden");
+}
+function downloadAttachment(dataUrl, name) {
+  const a = document.createElement("a");
+  a.href = dataUrl; a.download = name || "file";
+  document.body.appendChild(a); a.click(); a.remove();
 }
 
 function openLightbox(src) {
@@ -1493,7 +1556,7 @@ async function deployServer() {
 async function openChat(chat) {
   showLoader("Connecting\u2026");
   activeChat = chat; knownMessages = -1;
-  typingUsers = {}; typingIdx = {};
+  typingUsers = {}; typingIdx = {}; lastPaintSignature = "";
   const staleBubble = document.getElementById("typing-bubble-el");
   if (staleBubble) staleBubble.remove();
   setHeaderStatus("");
@@ -1582,6 +1645,7 @@ let typingUsers = {};   // sender -> local ms when we last saw a NEW typing mark
 let typingIdx = {};     // sender -> row index of the newest typing marker already seen
 let typingTicker = null;
 
+let lastPaintSignature = "";
 async function renderMessages(rawRows) {
   const chat = activeChat;
   const firstRender = knownMessages === -1;
@@ -1619,7 +1683,15 @@ async function renderMessages(rawRows) {
   const newestOtherIdx = Math.max(-1, ...others(lastRealIdx));
   const myReadIdx = readIdx[user] ?? -1;
 
-  paintMessages(decoded, otherReadMax, firstRender);
+  // Typing/read markers change the raw row count (and so would otherwise
+  // trigger a full rebuild) without changing anything actually VISIBLE in
+  // the message list - skip the repaint when nothing a reader would notice
+  // has changed, so chatting nearby doesn't jostle your scroll position.
+  const signature = `${decoded.length}:${decoded.length ? decoded[decoded.length - 1]._idx : -1}:${otherReadMax}`;
+  if (firstRender || signature !== lastPaintSignature) {
+    lastPaintSignature = signature;
+    paintMessages(decoded, otherReadMax, firstRender);
+  }
   updateCallBanner(callEvents);
   updateTypingBubble();
   if (newestOtherIdx > myReadIdx) sendReadMarker(chat);
@@ -1662,6 +1734,17 @@ function paintMessages(decoded, otherReadMax, forceBottom) {
 
     let bodyHtml = "";
     if (msg.image) bodyHtml += `<img class="msg-image" alt="Attached image">`;
+    if (msg.file && msg.file.name) {
+      bodyHtml += `
+        <div class="file-chip">
+          <div class="file-chip-icon">${FILE_CHIP_SVG}</div>
+          <div class="file-chip-meta">
+            <div class="file-chip-name" title="${escapeHTML(msg.file.name)}">${escapeHTML(msg.file.name)}</div>
+            <div class="file-chip-size">${escapeHTML(formatFileSize(msg.file.size || 0))}</div>
+          </div>
+          <button type="button" class="icon-btn file-chip-dl" title="Download"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg></button>
+        </div>`;
+    }
     if (msg.text) bodyHtml += `<div class="msg-text">${escapeHTML(msg.text)}</div>`;
 
     const timeLabel = formatTime(msg.time);
@@ -1681,6 +1764,10 @@ function paintMessages(decoded, otherReadMax, forceBottom) {
       const src = safeImageUrl(msg.image);
       imgEl.src = src;
       imgEl.onclick = () => openLightbox(src);
+    }
+    if (msg.file && msg.file.dataUrl) {
+      const dlBtn = wrap.querySelector(".file-chip-dl");
+      if (dlBtn) dlBtn.onclick = () => downloadAttachment(msg.file.dataUrl, msg.file.name);
     }
     container.appendChild(wrap);
   });
@@ -1789,12 +1876,15 @@ function handleComposerKey(event) {
 async function sendMsg() {
   const input = document.getElementById("msg-input");
   const text = input.value.trim();
-  if (!activeChat || (!text && !pendingMessageImage)) return;
+  if (!activeChat || (!text && !pendingAttachment)) return;
   input.value = "";
   autoResizeInput(input);
 
   const msgObj = { sender: user, text, time: new Date().toISOString() };
-  if (pendingMessageImage) msgObj.image = pendingMessageImage;
+  if (pendingAttachment && pendingAttachment.kind === "image") msgObj.image = pendingAttachment.dataUrl;
+  else if (pendingAttachment && pendingAttachment.kind === "file") {
+    msgObj.file = { name: pendingAttachment.name, type: pendingAttachment.type, size: pendingAttachment.size, dataUrl: pendingAttachment.dataUrl };
+  }
   clearComposerImage();
 
   const cipher = await enc(msgObj, activeChat.key);
@@ -2488,6 +2578,8 @@ async function createPeer(peerId, initiator) {
     renderCallTiles();
   };
   pc.onconnectionstatechange = () => {
+    if (pc.connectionState === "connected" && !peer.connectedSince) peer.connectedSince = Date.now();
+    if (pc.connectionState !== "connected") { peer.connectedSince = null; peer.lastBytes = null; peer.noMedia = false; }
     renderCallTiles();
     if (pc.connectionState === "failed" && peer.initiator) restartIce(peer);
   };
@@ -2593,6 +2685,29 @@ function watchLevel(id, track) {
     call.meters[id] = { an, data: new Uint8Array(an.fftSize), src };
   } catch (e) {}
 }
+/**
+ * WebRTC can report connectionState "connected" even when a strict
+ * firewall/NAT is still silently dropping the actual media packets (ICE
+ * found *a* path, just not one media can reliably flow over). Watching
+ * getStats() for inbound bytes catches that case - "connected" alone
+ * doesn't prove anything is actually being heard or seen on the other end.
+ */
+async function pollCallStats() {
+  if (!call.active) return;
+  for (const peer of Object.values(call.peers)) {
+    if (peer.pc.connectionState !== "connected" || !peer.connectedSince) continue;
+    try {
+      const stats = await peer.pc.getStats();
+      let bytes = 0;
+      stats.forEach(r => { if (r.type === "inbound-rtp" && (r.kind === "audio" || r.kind === "video")) bytes += (r.bytesReceived || 0); });
+      const stalled = peer.lastBytes != null && bytes <= peer.lastBytes;
+      peer.noMedia = stalled && (Date.now() - peer.connectedSince) > 6000;
+      peer.lastBytes = bytes;
+    } catch (e) {}
+  }
+  renderCallTiles();
+}
+
 function pollLevels() {
   for (const id of Object.keys(call.meters)) {
     const m = call.meters[id];
@@ -2655,10 +2770,12 @@ function updateTile(el, id, isMe, p) {
   if (stream && video.srcObject !== stream) video.srcObject = stream;
   let status = "";
   if (!isMe) {
-    const st = call.peers[id] ? call.peers[id].pc.connectionState : "new";
+    const pr = call.peers[id];
+    const st = pr ? pr.pc.connectionState : "new";
     if (st === "failed") status = "Couldn't connect \u2014 network may be blocking calls";
     else if (st === "disconnected") status = "Reconnecting\u2026";
     else if (st !== "connected") status = "Connecting\u2026";
+    else if (pr && pr.noMedia) status = "Connected, but nothing is coming through \u2014 likely a network blocking media (see TURN note in FIREBASE_SETUP.md)";
   }
   el.querySelector(".tile-status").textContent = status;
 }
@@ -2745,7 +2862,7 @@ async function leaveCall(opts) {
   [call.localAudio, call.localCam, call.localScreen].forEach(t => { if (t) { t.onended = null; try { t.stop(); } catch (e) {} } });
   Object.keys(call.peers).forEach(closePeer);
   (call.listeners || []).forEach(([ref, ev, cb]) => { try { ref.off(ev, cb); } catch (e) {} });
-  clearInterval(call.ticker); clearInterval(call.levelTimer);
+  clearInterval(call.ticker); clearInterval(call.levelTimer); clearInterval(call.statsTimer);
   Object.values(call.meters).forEach(m => { try { m.src.disconnect(); } catch (e) {} });
 
   const wasActive = call.active;
@@ -2799,9 +2916,10 @@ function restoreCall() {
   document.getElementById("call-pill").classList.add("hidden");
 }
 function startCallTimers() {
-  clearInterval(call.ticker); clearInterval(call.levelTimer);
+  clearInterval(call.ticker); clearInterval(call.levelTimer); clearInterval(call.statsTimer);
   call.ticker = setInterval(updateCallSub, 1000);
   call.levelTimer = setInterval(pollLevels, 200);
+  call.statsTimer = setInterval(pollCallStats, 3000);
   const ctx = getAudioCtx(); if (ctx && ctx.state === "suspended") ctx.resume().catch(() => {});
 }
 function updateCallSub() {
@@ -2814,8 +2932,15 @@ function updateCallSub() {
 function updateCallNotice() {
   const el = document.getElementById("call-notice");
   const alone = Object.keys(call.participants).filter(k => k !== call.peerId).length === 0;
+  const anyStalled = Object.values(call.peers).some(p => p.noMedia);
   if (call.audioBlocked) {
     el.innerHTML = 'Your browser blocked call audio. <button type="button" onclick="enableCallAudio()">Tap to enable</button>';
+    el.classList.remove("hidden");
+  } else if (!call.localAudio) {
+    el.innerHTML = "Your microphone isn't available, so others can't hear you. <button type=\"button\" onclick=\"toggleCallMic()\">Try again</button>";
+    el.classList.remove("hidden");
+  } else if (anyStalled) {
+    el.textContent = "Connected, but media isn't getting through to someone \u2014 this is almost always a network/firewall issue, not a bug. See the TURN server note in FIREBASE_SETUP.md.";
     el.classList.remove("hidden");
   } else if (alone) {
     el.textContent = "Waiting for others to join\u2026";
