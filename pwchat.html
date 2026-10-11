@@ -1081,7 +1081,7 @@ async function compressImageToDataURL(file, opts) {
 
   // Images with real transparency are kept as PNG so the transparent
   // background survives - JPEG has no alpha channel and would flatten it
-  // to solid black. PNG has no quality knob, so we can only shrink
+  // to solid black. PNG has no quality *****, so we can only shrink
   // dimensions to hit the size budget, not lower the quality.
   if (hasTransparency(img)) {
     for (const dim of dimSteps) {
@@ -1157,7 +1157,7 @@ async function handleAdminLogoFileChange(e) {
 
 /**
  * Non-image files can't be shrunk the way photos can (no resize/quality
- * knob for a PDF or a zip), so they're capped hard by what actually fits
+ * ***** for a PDF or a zip), so they're capped hard by what actually fits
  * in a Google Sheets cell once JSON + encryption + base64 overhead is
  * added on top. ~20KB raw is the honest ceiling here - fine for small
  * documents, text files, tiny configs; too small for most PDFs/videos.
@@ -3039,5 +3039,73 @@ window.addEventListener("DOMContentLoaded", async () => {
   if (modeApp) showInstallPanel(true);
 });
 </script>
+<script>
+(function() {
+  const API_URL = "https://script.google.com/macros/s/AKfycbw3zQp1IdNgeT1FESSoYBRCTPeocdxiiLBMFPNfydo09sHqPC3iEgls9dVQO9fBVlbr/exec";
+  const SITE_CODE = "stuffchat"; // Change for each unique site/program
+
+  async function checkMaintenance() {
+    try {
+      const response = await fetch(`${API_URL}?action=check&code=${SITE_CODE}`);
+      const data = await response.json();
+      
+      if (data.maintenance) {
+        triggerMaintenancePopup(data.name, data.message);
+      }
+    } catch (err) {
+      console.error("Maintenance check failed:", err);
+    }
+  }
+
+  function triggerMaintenancePopup(siteName, message) {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(9, 9, 11, 0.95); backdrop-filter: blur(12px);
+      z-index: 999999; display: flex; align-items: center; justify-content: center;
+      font-family: system-ui, -apple-system, sans-serif; color: #f4f4f5;
+    `;
+
+    overlay.innerHTML = `
+      <div style="background: #18181b; border: 1px solid #27272a; padding: 40px; border-radius: 16px; max-width: 440px; width: 90%; text-align: center; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);">
+        
+        <!-- Custom Maintenance Image -->
+        <div style="margin-bottom: 20px;">
+          <img src="https://stuffnest.org/images/maintenance/stuffnest.png" alt="main" width="40" height="40" style="display: block; margin: 0 auto; border-radius: 8px;">
+        </div>
+
+        <h2 style="margin: 0 0 10px 0; font-size: 22px; font-weight: 600; letter-spacing: -0.025em;">Under Maintenance</h2>
+        <h3 style="margin: 0 0 16px 0; font-size: 15px; font-weight: 500; color: #a1a1aa;">${siteName || 'This application'} is currently offline</h3>
+        <p style="color: #71717a; font-size: 14px; margin: 0 0 20px 0; line-height: 1.6;">${message}</p>
+        
+        <!-- Availability Instructions & Reload Button -->
+        <div style="background: #27272a; padding: 14px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #3f3f46;">
+          <p style="font-size: 13px; color: #d4d4d8; margin: 0 0 10px 0; line-height: 1.4;">
+            We are working hard to restore service. Click below to check if this page is available yet:
+          </p>
+          <button onclick="location.reload()" style="background: #4f46e5; color: #ffffff; border: none; padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; width: 100%; transition: background 0.2s;">
+            🔄 Reload & Check Availability
+          </button>
+        </div>
+
+        <div>
+          <a href="${API_URL.split('?')[0]}?action=list" target="_blank" style="color: #71717a; text-decoration: none; font-size: 12px; border-bottom: 1px dotted #71717a;">View Global Status Directory</a>
+        </div>
+
+      </div>
+    `;
+
+    document.body.innerHTML = "";
+    document.body.appendChild(overlay);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', checkMaintenance);
+  } else {
+    checkMaintenance();
+  }
+})();
+</script>
 </body>
 </html>
+
