@@ -250,6 +250,8 @@ svg{width:19px;height:19px;stroke-width:2;stroke:currentColor;fill:none;stroke-l
 .file-chip-size{font-size:.72rem; opacity:.75; margin-top:.1rem;}
 .file-chip-dl{width:30px; height:30px; flex-shrink:0; color:inherit; opacity:.85;}
 .file-chip-dl:hover{opacity:1; background:rgba(255,255,255,.12);}
+.attachment-loading{display:flex; align-items:center; gap:.6rem; background:rgba(0,0,0,.18); border:1px solid var(--border); border-radius:var(--radius-sm); padding:.8rem 1rem; min-width:200px; font-size:.82rem; color:var(--text-muted);}
+.attachment-loading .loader{width:16px; height:16px; border-width:2px; flex-shrink:0;}
 .preview-chip img{width:58px; height:58px; object-fit:cover; border-radius:9px; border:1px solid var(--border);}
 .preview-chip button{
   position:absolute; top:-7px; right:-7px; width:20px; height:20px; border-radius:50%;
@@ -542,6 +544,10 @@ svg{width:19px;height:19px;stroke-width:2;stroke:currentColor;fill:none;stroke-l
           <svg viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
         </button>
         <input type="file" id="msg-image-file" class="hidden" onchange="handleComposerImageChange(event)">
+        <button class="icon-btn attach-btn" title="High-quality upload (larger files, split into parts)" onclick="document.getElementById('msg-hq-file').click()">
+          <svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 0-3.54-5.89A6 6 0 0 0 6.1 10.1 4.5 4.5 0 0 0 7 19h12a3 3 0 0 0 2-5z"></path><polyline points="9 17 12 14 15 17"></polyline><line x1="12" y1="14" x2="12" y2="22"></line></svg>
+        </button>
+        <input type="file" id="msg-hq-file" class="hidden" onchange="handleComposerHQChange(event)">
         <textarea id="msg-input" rows="1" placeholder="Message..." onkeydown="handleComposerKey(event)" oninput="handleComposerInput(this)"></textarea>
         <button class="icon-btn attach-btn" id="mic-btn" title="Speech to text" onclick="toggleMic()">
           <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
@@ -812,11 +818,32 @@ const FIREBASE_SDK_VERSION = "10.12.2";    // gstatic CDN version; bump if you l
 const FIREBASE_MAX_CONNECTIONS = 90;       // Spark (free) plan hard limit is 100; Blaze allows 200,000
 const FIREBASE_CONNECT_TIMEOUT_MS = 8000;  // how long to wait before showing the "busy" queue page
 const MAX_CALL_PARTICIPANTS = 6;           // full-mesh WebRTC gets heavy beyond ~6 people
+/**
+ * STUN alone only works when at least one side has a "friendly" NAT - it
+ * fails whenever BOTH people are behind stricter NATs/firewalls (common
+ * across different networks: home wifi + mobile data, two offices, etc.).
+ * That shows up as "it only works when we're on the same network." A TURN
+ * entry relays the call through a real server instead, which fixes it -
+ * see the "Making calls work across any network (TURN)" section in
+ * FIREBASE_SETUP.md for free options and exact setup steps. Once you have
+ * credentials, replace the commented block below with your own.
+ */
 const ICE_SERVERS = [
   { urls: "stun:stun.l.google.com:19302" },
   { urls: "stun:stun1.l.google.com:19302" }
-  // STUN alone fails on some strict networks. For reliable calls add a TURN server, e.g.:
-  // { urls: "turn:YOUR_TURN_HOST:443?transport=tcp", username: "USER", credential: "PASS" }
+  // Example using ExpressTURN's free tier (expressturn.com - 1TB/month free,
+  // static credentials, no server-side setup needed). Uncomment and fill in
+  // the username/credential from your ExpressTURN dashboard:
+   ,{
+    urls: [
+    
+    "turn:free.expressturn.com:3478?transport=tcp",    
+    "turn:free.expressturn.com:3478?transport=udp",
+    "turns:free.expressturn.com:443?transport=tcp"  // survives strict corporate firewalls
+  ],
+     username: "000000002107914029",
+     credential: "hr2mFedddsXNFI1G5HiHSLKp1bg="
+  }
 ];
 const ICON_192 = "data:image/png;base64,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";
 const ICON_512 = "data:image/png;base64,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";
@@ -1081,7 +1108,7 @@ async function compressImageToDataURL(file, opts) {
 
   // Images with real transparency are kept as PNG so the transparent
   // background survives - JPEG has no alpha channel and would flatten it
-  // to solid black. PNG has no quality *****, so we can only shrink
+  // to solid black. PNG has no quality knob, so we can only shrink
   // dimensions to hit the size budget, not lower the quality.
   if (hasTransparency(img)) {
     for (const dim of dimSteps) {
@@ -1156,13 +1183,26 @@ async function handleAdminLogoFileChange(e) {
 }
 
 /**
- * Non-image files can't be shrunk the way photos can (no resize/quality
- * ***** for a PDF or a zip), so they're capped hard by what actually fits
- * in a Google Sheets cell once JSON + encryption + base64 overhead is
- * added on top. ~20KB raw is the honest ceiling here - fine for small
- * documents, text files, tiny configs; too small for most PDFs/videos.
+ * Attachments, two ways:
+ *
+ *  - Quick attach (paperclip): images get compressed down small, other
+ *    files are capped at ~20KB. Always exactly one message - fast to send,
+ *    fast for everyone else to load, minimal rows written to the sheet.
+ *
+ *  - High-quality upload (the cloud-upload button): much lighter
+ *    compression for images, and a much higher size cap for any file. A
+ *    single Google Sheets cell tops out around 50,000 characters, so
+ *    anything too big for one cell is split into several "filechunk"
+ *    marker rows (same invisible-marker mechanism as read receipts/typing)
+ *    and reassembled on the receiving end once every piece has arrived.
+ *    That trades more rows and a slower send/first-load for real quality -
+ *    worth it for a real photo, overkill for a quick snapshot.
  */
-const GENERIC_FILE_MAX_BYTES = 20000;
+const GENERIC_FILE_MAX_BYTES = 20000;   // quick-attach non-image cap - always a single message
+const CHUNK_SIZE = 28000;               // base64 chars per chunk row - safely under the ~45KB server cap
+const HQ_MAX_BYTES = 1500000;           // ~1.5MB raw cap for high-quality/chunked uploads
+const HQ_IMAGE_OPTS = { maxDim: 2000, targetBytes: HQ_MAX_BYTES, startQuality: 0.92 };
+
 function formatFileSize(bytes) {
   if (bytes < 1024) return bytes + " B";
   if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(bytes < 10240 ? 1 : 0) + " KB";
@@ -1178,15 +1218,24 @@ function readFileAsDataURL(file) {
 }
 async function encodeGenericFile(file) {
   if (file.size > GENERIC_FILE_MAX_BYTES) {
-    throw new Error(`That file is ${formatFileSize(file.size)} \u2014 attachments need to stay under ${formatFileSize(GENERIC_FILE_MAX_BYTES)} (messages are stored as spreadsheet cells, which cap how big one can be).`);
+    throw new Error(`That file is ${formatFileSize(file.size)} \u2014 quick attachments need to stay under ${formatFileSize(GENERIC_FILE_MAX_BYTES)}. Use the high-quality upload button (cloud icon) for bigger files, up to ${formatFileSize(HQ_MAX_BYTES)}.`);
   }
   const dataUrl = await readFileAsDataURL(file);
   return { name: file.name, type: file.type || "application/octet-stream", size: file.size, dataUrl };
 }
-
+function chunkProgress(fileId) {
+  const fc = fileChunks[fileId];
+  return fc ? Object.keys(fc.parts).length : 0;
+}
+function downloadAttachment(dataUrl, name) {
+  const a = document.createElement("a");
+  a.href = dataUrl; a.download = name || "file";
+  document.body.appendChild(a); a.click(); a.remove();
+}
 const FILE_CHIP_SVG = `<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>`;
 
-let pendingAttachment = null; // { kind: "image", dataUrl } | { kind: "file", name, type, size, dataUrl }
+let pendingAttachment = null; // { kind:"image"|"file", dataUrl, name?, type?, size?, hq?:bool }
+
 async function handleComposerImageChange(e) {
   const file = e.target.files[0];
   e.target.value = "";
@@ -1201,13 +1250,48 @@ async function handleComposerImageChange(e) {
     } else {
       const f = await encodeGenericFile(file);
       pendingAttachment = Object.assign({ kind: "file" }, f);
-      showComposerPreview(`
-        <div class="file-chip-preview">${FILE_CHIP_SVG}</div>
-        <div class="preview-filename" title="${escapeHTML(f.name)}">${escapeHTML(f.name)}</div>`);
+      showComposerPreview(`<div class="file-chip-preview">${FILE_CHIP_SVG}</div><div class="preview-filename" title="${escapeHTML(f.name)}">${escapeHTML(f.name)}</div>`);
     }
   } catch (err) { toast(err.message, "error"); }
   hideLoader();
 }
+
+async function handleComposerHQChange(e) {
+  const file = e.target.files[0];
+  e.target.value = "";
+  if (!file) return;
+  const isImage = file.type && file.type.startsWith("image/");
+  showLoader("Preparing high-quality upload\u2026");
+  try {
+    let dataUrl, meta;
+    if (isImage) {
+      dataUrl = await compressImageToDataURL(file, HQ_IMAGE_OPTS);
+      meta = { kind: "image" };
+    } else {
+      if (file.size > HQ_MAX_BYTES) {
+        throw new Error(`That file is ${formatFileSize(file.size)} \u2014 high-quality attachments are capped at ${formatFileSize(HQ_MAX_BYTES)} here (bigger means a lot more rows written to your sheet, and a lot slower to send).`);
+      }
+      dataUrl = await readFileAsDataURL(file);
+      meta = { kind: "file", name: file.name, type: file.type || "application/octet-stream", size: file.size };
+    }
+    if (Math.round(dataUrl.length * 0.75) > HQ_MAX_BYTES * 1.1) {
+      throw new Error(`Even at reduced quality this is too large (cap: ${formatFileSize(HQ_MAX_BYTES)}). Try the regular attach button instead, which compresses further.`);
+    }
+
+    const chunkCount = Math.max(1, Math.ceil(dataUrl.length / CHUNK_SIZE));
+    if (chunkCount > 1 && !confirm(`This will upload as ${chunkCount} parts to preserve quality \u2014 it'll take longer to send, and longer for others to load. Continue?`)) {
+      hideLoader(); return;
+    }
+
+    pendingAttachment = Object.assign({ hq: true, dataUrl }, meta);
+    showComposerPreview(isImage
+      ? `<img src="${dataUrl}" alt="">`
+      : `<div class="file-chip-preview">${FILE_CHIP_SVG}</div><div class="preview-filename" title="${escapeHTML(meta.name)}">${escapeHTML(meta.name)}</div>`);
+    toast(chunkCount > 1 ? `Ready \u2014 will send as ${chunkCount} parts.` : "Ready to send.", "success");
+  } catch (err) { toast(err.message, "error"); }
+  hideLoader();
+}
+
 function showComposerPreview(innerHtml) {
   const strip = document.getElementById("composer-preview");
   strip.innerHTML = `<div class="preview-chip">${innerHtml}<button type="button" title="Remove" onclick="clearComposerImage()">&times;</button></div>`;
@@ -1219,10 +1303,45 @@ function clearComposerImage() {
   strip.innerHTML = "";
   strip.classList.add("hidden");
 }
-function downloadAttachment(dataUrl, name) {
-  const a = document.createElement("a");
-  a.href = dataUrl; a.download = name || "file";
-  document.body.appendChild(a); a.click(); a.remove();
+
+/**
+ * Splits a large data URL across several encrypted marker rows and sends
+ * them with limited concurrency (gentle on the Apps Script backend, still
+ * much faster than one-at-a-time) and a few retries per chunk, since a
+ * single flaky request shouldn't sink a 40-part upload.
+ */
+async function sendMarkerWithRetry(chat, type, extra, attempts) {
+  attempts = attempts || 3;
+  let lastErr = "unknown error";
+  for (let i = 0; i < attempts; i++) {
+    const res = await sendMarker(chat, type, extra);
+    if (!res || !res.error) return res;
+    lastErr = res.error;
+    await sleep(400 * (i + 1));
+  }
+  return { error: lastErr };
+}
+async function sendChunkedPayload(chat, fullDataUrl) {
+  const fileId = randomHex(8);
+  const total = Math.max(1, Math.ceil(fullDataUrl.length / CHUNK_SIZE));
+  const CONCURRENCY = 4;
+  const queue = Array.from({ length: total }, (_, i) => i);
+  let sent = 0, failed = null;
+  showLoader(`Uploading\u2026 0/${total} parts`);
+
+  async function worker() {
+    while (queue.length && !failed) {
+      const i = queue.shift();
+      const data = fullDataUrl.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
+      const res = await sendMarkerWithRetry(chat, "filechunk", { fileId, index: i, total, data });
+      if (res && res.error) { failed = res.error; return; }
+      sent++;
+      showLoader(`Uploading\u2026 ${sent}/${total} parts`);
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(CONCURRENCY, total) }, worker));
+  if (failed) throw new Error("Upload didn't finish: " + failed);
+  return { fileId, total };
 }
 
 function openLightbox(src) {
@@ -1556,7 +1675,7 @@ async function deployServer() {
 async function openChat(chat) {
   showLoader("Connecting\u2026");
   activeChat = chat; knownMessages = -1;
-  typingUsers = {}; typingIdx = {}; lastPaintSignature = "";
+  typingUsers = {}; typingIdx = {}; lastPaintSignature = ""; fileChunks = {}; reconstructedFiles = {}; totalChunksSeen = 0;
   const staleBubble = document.getElementById("typing-bubble-el");
   if (staleBubble) staleBubble.remove();
   setHeaderStatus("");
@@ -1643,6 +1762,9 @@ async function refreshRoster(force) {
  */
 let typingUsers = {};   // sender -> local ms when we last saw a NEW typing marker from them
 let typingIdx = {};     // sender -> row index of the newest typing marker already seen
+let fileChunks = {};        // fileId -> { total, parts: {index: base64Slice} } - parts collected so far
+let reconstructedFiles = {}; // fileId -> fully assembled data URL (cached once complete)
+let totalChunksSeen = 0;    // monotonic - used so new chunk arrivals still trigger a repaint
 let typingTicker = null;
 
 let lastPaintSignature = "";
@@ -1668,6 +1790,11 @@ async function renderMessages(rawRows) {
       msg._idx = i; callEvents.push(msg); decoded.push(msg);
       continue;
     }
+    if (msg.type === "filechunk" && msg.fileId != null && typeof msg.data === "string") {
+      const fc = fileChunks[msg.fileId] || (fileChunks[msg.fileId] = { total: msg.total, parts: {} });
+      if (!(msg.index in fc.parts)) { fc.parts[msg.index] = msg.data; totalChunksSeen++; }
+      continue;
+    }
     if (typeof msg.text === "string") {
       msg._idx = i; decoded.push(msg); lastRealIdx[msg.sender] = i;
       // a real message from someone means they've stopped typing
@@ -1678,6 +1805,22 @@ async function renderMessages(rawRows) {
 
   if (decoded.some(m => m.sender && !usersMap[m.sender])) await refreshRoster();
 
+  // Reconstruct any chunked attachment whose parts have all now arrived.
+  // Chunks can land out of order (upload is parallelized) and across many
+  // polls, so this just checks "do we have every index 0..total-1 yet?"
+  // each time, and caches the assembled result so it's only concatenated
+  // once per file.
+  decoded.forEach(m => {
+    const ref = (m.image && m.image.chunked) ? m.image : (m.file && m.file.chunked) ? m.file : null;
+    if (!ref || !ref.fileId || reconstructedFiles[ref.fileId]) return;
+    const fc = fileChunks[ref.fileId];
+    if (fc && fc.total && Object.keys(fc.parts).length >= fc.total) {
+      let full = "";
+      for (let k = 0; k < fc.total; k++) full += fc.parts[k] || "";
+      reconstructedFiles[ref.fileId] = full;
+    }
+  });
+
   const others = obj => Object.keys(obj).filter(k => k !== user).map(k => obj[k]);
   const otherReadMax = Math.max(-1, ...others(readIdx));
   const newestOtherIdx = Math.max(-1, ...others(lastRealIdx));
@@ -1687,7 +1830,7 @@ async function renderMessages(rawRows) {
   // trigger a full rebuild) without changing anything actually VISIBLE in
   // the message list - skip the repaint when nothing a reader would notice
   // has changed, so chatting nearby doesn't jostle your scroll position.
-  const signature = `${decoded.length}:${decoded.length ? decoded[decoded.length - 1]._idx : -1}:${otherReadMax}`;
+  const signature = `${decoded.length}:${decoded.length ? decoded[decoded.length - 1]._idx : -1}:${otherReadMax}:${totalChunksSeen}:${Object.keys(reconstructedFiles).length}`;
   if (firstRender || signature !== lastPaintSignature) {
     lastPaintSignature = signature;
     paintMessages(decoded, otherReadMax, firstRender);
@@ -1732,17 +1875,31 @@ function paintMessages(decoded, otherReadMax, forceBottom) {
     const wrap = document.createElement("div");
     wrap.className = `msg-wrap ${isMine ? "mine" : "other"}${grouped ? " grouped" : ""}`;
 
+    // image may be a plain data-URL string (quick attach) or
+    // { chunked:true, fileId, totalChunks } (high-quality, assembled from
+    // filechunk markers) - same for file.
+    const imgChunked = msg.image && typeof msg.image === "object" && msg.image.chunked;
+    const imgReady = imgChunked ? reconstructedFiles[msg.image.fileId] : msg.image;
+    const fileChunked = msg.file && msg.file.chunked;
+    const fileReady = msg.file && (fileChunked ? reconstructedFiles[msg.file.fileId] : msg.file.dataUrl);
+
     let bodyHtml = "";
-    if (msg.image) bodyHtml += `<img class="msg-image" alt="Attached image">`;
+    if (msg.image) {
+      bodyHtml += imgReady
+        ? `<img class="msg-image" alt="Attached image">`
+        : `<div class="attachment-loading"><div class="loader"></div>Loading image\u2026 ${chunkProgress(msg.image.fileId)}/${msg.image.totalChunks} parts</div>`;
+    }
     if (msg.file && msg.file.name) {
       bodyHtml += `
         <div class="file-chip">
           <div class="file-chip-icon">${FILE_CHIP_SVG}</div>
           <div class="file-chip-meta">
             <div class="file-chip-name" title="${escapeHTML(msg.file.name)}">${escapeHTML(msg.file.name)}</div>
-            <div class="file-chip-size">${escapeHTML(formatFileSize(msg.file.size || 0))}</div>
+            <div class="file-chip-size">${fileReady ? escapeHTML(formatFileSize(msg.file.size || 0)) : `Loading\u2026 ${chunkProgress(msg.file.fileId)}/${msg.file.totalChunks} parts`}</div>
           </div>
-          <button type="button" class="icon-btn file-chip-dl" title="Download"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg></button>
+          ${fileReady
+            ? `<button type="button" class="icon-btn file-chip-dl" title="Download"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg></button>`
+            : `<div class="loader" style="width:16px;height:16px;border-width:2px;flex-shrink:0;"></div>`}
         </div>`;
     }
     if (msg.text) bodyHtml += `<div class="msg-text">${escapeHTML(msg.text)}</div>`;
@@ -1759,15 +1916,15 @@ function paintMessages(decoded, otherReadMax, forceBottom) {
         <span class="msg-meta">${escapeHTML(metaLabel)}</span>
       </div>`;
 
-    if (msg.image) {
+    if (msg.image && imgReady) {
       const imgEl = wrap.querySelector(".msg-image");
-      const src = safeImageUrl(msg.image);
+      const src = safeImageUrl(imgReady);
       imgEl.src = src;
       imgEl.onclick = () => openLightbox(src);
     }
-    if (msg.file && msg.file.dataUrl) {
+    if (msg.file && fileReady) {
       const dlBtn = wrap.querySelector(".file-chip-dl");
-      if (dlBtn) dlBtn.onclick = () => downloadAttachment(msg.file.dataUrl, msg.file.name);
+      if (dlBtn) dlBtn.onclick = () => downloadAttachment(fileReady, msg.file.name);
     }
     container.appendChild(wrap);
   });
@@ -1881,11 +2038,31 @@ async function sendMsg() {
   autoResizeInput(input);
 
   const msgObj = { sender: user, text, time: new Date().toISOString() };
-  if (pendingAttachment && pendingAttachment.kind === "image") msgObj.image = pendingAttachment.dataUrl;
-  else if (pendingAttachment && pendingAttachment.kind === "file") {
-    msgObj.file = { name: pendingAttachment.name, type: pendingAttachment.type, size: pendingAttachment.size, dataUrl: pendingAttachment.dataUrl };
-  }
+  const att = pendingAttachment;
   clearComposerImage();
+
+  try {
+    if (att && att.kind === "image") {
+      if (att.hq && att.dataUrl.length > CHUNK_SIZE) {
+        const info = await sendChunkedPayload(activeChat, att.dataUrl);
+        msgObj.image = { chunked: true, fileId: info.fileId, totalChunks: info.total };
+      } else {
+        msgObj.image = att.dataUrl;
+      }
+    } else if (att && att.kind === "file") {
+      if (att.hq && att.dataUrl.length > CHUNK_SIZE) {
+        const info = await sendChunkedPayload(activeChat, att.dataUrl);
+        msgObj.file = { name: att.name, type: att.type, size: att.size, chunked: true, fileId: info.fileId, totalChunks: info.total };
+      } else {
+        msgObj.file = { name: att.name, type: att.type, size: att.size, dataUrl: att.dataUrl };
+      }
+    }
+  } catch (err) {
+    hideLoader();
+    toast(err.message, "error");
+    return;
+  }
+  hideLoader();
 
   const cipher = await enc(msgObj, activeChat.key);
   const res = await apiPost({
@@ -3108,4 +3285,3 @@ window.addEventListener("DOMContentLoaded", async () => {
 </script>
 </body>
 </html>
-
