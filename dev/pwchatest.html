@@ -197,6 +197,18 @@ svg{width:19px;height:19px;stroke-width:2;stroke:currentColor;fill:none;stroke-l
 .hint-text{font-size:.78rem; color:var(--text-faint); margin:-.35rem 0 .8rem; line-height:1.4;}
 .modal-divider{height:1px; background:var(--border); margin:1.2rem 0;}
 
+/* notifications */
+.notif-dot{position:absolute; top:4px; right:4px; width:9px; height:9px; border-radius:50%; background:var(--danger); border:2px solid var(--surface-2);}
+.notif-card{padding:0; overflow:hidden; max-width:440px;}
+.notif-media{width:100%; max-height:260px; object-fit:cover; display:block; background:var(--surface-1);}
+.notif-badge{display:inline-block; background:var(--danger); color:#fff; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; padding:.2rem .55rem; border-radius:999px; margin-bottom:.6rem;}
+.notif-center-item{padding:.9rem 1rem; border:1px solid var(--border); border-radius:var(--radius-sm); margin-bottom:.6rem; cursor:pointer; transition:.12s;}
+.notif-center-item:hover{background:rgba(255,255,255,.04);}
+.notif-center-item-head{display:flex; align-items:center; justify-content:space-between; gap:.7rem; margin-bottom:.3rem;}
+.notif-center-item-title{font-weight:600; font-size:.92rem;}
+.notif-center-item-date{font-size:.72rem; color:var(--text-faint); flex-shrink:0;}
+.notif-center-item-preview{font-size:.82rem; color:var(--text-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+
 /* install panel */
 #install-panel{position:fixed; inset:0; background:rgba(6,8,14,.72); backdrop-filter:blur(5px); z-index:200; display:flex; justify-content:center; align-items:center; padding:1.2rem;}
 .install-card{width:100%; max-width:520px; max-height:90vh; overflow-y:auto; padding:1.8rem; border-radius:var(--radius-lg);}
@@ -418,7 +430,7 @@ svg{width:19px;height:19px;stroke-width:2;stroke:currentColor;fill:none;stroke-l
       </div>
     </div>
     <button class="btn" id="auth-submit" onclick="handleAuthSubmit()">Log In</button>
-    <p style="font-size:.76rem; color:var(--text-faint); margin-top:.4rem; line-height:1.5;">Messages are encrypted in your browser before they're sent. Losing your password means losing access &mdash; there's no recovery.</p>
+    <p style="font-size:.76rem; color:var(--text-faint); margin-top:.4rem; line-height:1.5;">Messages are encrypted in your browser before they're sent. Forgot your password? <a href="#" onclick="event.preventDefault(); openModal('recovery-modal');" style="color:var(--text-muted); text-decoration:underline;">Recover with a security code</a>.</p>
   </div>
 </div>
 
@@ -442,6 +454,10 @@ svg{width:19px;height:19px;stroke-width:2;stroke:currentColor;fill:none;stroke-l
       <img id="my-avatar-img" class="profile-avatar" onclick="openSettings()" src="" alt="">
       <span id="my-displayname" class="profile-name">User</span>
       <div class="profile-actions">
+        <button class="icon-btn" title="Announcements" onclick="openNotificationCenter()" style="position:relative;">
+          <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+          <span id="notif-dot" class="notif-dot hidden"></span>
+        </button>
         <button class="icon-btn" title="Help &amp; Install" onclick="showInstallPanel(true)">
           <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
         </button>
@@ -582,6 +598,13 @@ svg{width:19px;height:19px;stroke-width:2;stroke:currentColor;fill:none;stroke-l
     <button class="btn" style="margin-top:.5rem;" onclick="saveSettings()">Save changes</button>
     <p class="hint-text" style="margin-top:.8rem;">Your password is hashed on your device before it's ever sent &mdash; Stuffchat's storage never sees it in plain text.</p>
     <div class="modal-divider"></div>
+    <label style="display:flex; align-items:center; justify-content:space-between; gap:1rem; cursor:pointer; margin-bottom:1.1rem;">
+      <span style="font-size:.88rem;">Use my device's notification system<br><span class="hint-text" style="margin:0;">Off: just an in-app sound. On: also a system notification when the tab isn't focused.</span></span>
+      <input type="checkbox" id="native-notif-toggle" style="width:auto; margin:0; flex-shrink:0;" onchange="toggleNativeNotifications(this.checked)">
+    </label>
+    <div class="modal-divider"></div>
+    <button class="btn secondary" onclick="closeModal('settings-modal'); startSecurityCodesSetup();">Regenerate security codes</button>
+    <p class="hint-text" style="margin-bottom:.9rem;">Replaces your old codes — do this if you think they've been seen by anyone else.</p>
     <p class="hint-text" style="margin-bottom:.7rem;">Signed in as <span id="settings-signed-in-as" style="color:var(--text); font-weight:600;"></span> on this device.</p>
     <button class="btn danger" onclick="signOut()">
       <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
@@ -720,6 +743,20 @@ svg{width:19px;height:19px;stroke-width:2;stroke:currentColor;fill:none;stroke-l
 </div>
 
 <!-- Calls setup help (shown when Firebase isn't configured yet) -->
+<!-- Shown when this device/session hasn't unlocked calls yet (no password re-entry on a
+     fresh login would be needed, but a resumed "remember me" session has nothing cached). -->
+<div id="reauth-modal" class="modal hidden">
+  <div class="modal-card glass">
+    <div class="modal-head">
+      <h2 id="reauth-title">Confirm your password</h2>
+      <button class="icon-btn" onclick="closeModal('reauth-modal')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+    </div>
+    <p id="reauth-hint" class="hint-text" style="margin:-.4rem 0 .9rem;"></p>
+    <input type="password" id="reauth-password" placeholder="Password" autocomplete="current-password">
+    <button class="btn" id="reauth-submit-btn" style="margin-top:.3rem;" onclick="submitReauth()">Confirm</button>
+  </div>
+</div>
+
 <div id="calls-setup-modal" class="modal hidden">
   <div class="modal-card glass" style="max-width:580px;">
     <div class="modal-head">
@@ -731,7 +768,7 @@ svg{width:19px;height:19px;stroke-width:2;stroke:currentColor;fill:none;stroke-l
       <li>Create a project at <b>console.firebase.google.com</b>.</li>
       <li><b>Build &rarr; Realtime Database &rarr; Create database</b> (locked mode is fine).</li>
       <li><b>Build &rarr; Authentication &rarr; Sign-in method</b> &rarr; enable <b>Anonymous</b>.</li>
-      <li><b>Project settings &rarr; Your apps &rarr; Web (&lt;/&gt;)</b>, then copy the config into <b>FIREBASE_CONFIG</b> near the top of <b>stuffchat.html</b>.</li>
+      <li><b>Project settings &rarr; Your apps &rarr; Web (&lt;/&gt;)</b>, then copy the config into <b>setupCallsConfig()</b> near the bottom of <b>Code.gs</b> and run it once from the Apps Script editor.</li>
       <li><b>Realtime Database &rarr; Rules</b>: paste the rules below and <b>Publish</b>.</li>
     </ol>
     <label class="field-label">Realtime Database rules</label>
@@ -781,6 +818,70 @@ svg{width:19px;height:19px;stroke-width:2;stroke:currentColor;fill:none;stroke-l
   </div>
 </div>
 
+<!-- Notification popup: shows one at a time, queued -->
+<div id="notif-popup" class="modal hidden" style="z-index:260;">
+  <div class="modal-card glass notif-card">
+    <img id="notif-image" class="notif-media hidden" alt="">
+    <video id="notif-video" class="notif-media hidden" controls playsinline></video>
+    <div style="padding:1.5rem 1.7rem 1.7rem;">
+      <span id="notif-required-badge" class="notif-badge hidden">Required</span>
+      <h2 id="notif-title" style="margin-bottom:.6rem;"></h2>
+      <p id="notif-body" style="color:var(--text-muted); font-size:.92rem; line-height:1.6; white-space:pre-wrap;"></p>
+      <div id="notif-actions" style="margin-top:1.3rem;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Notification center: browse everything, including completed required ones -->
+<div id="notif-center-modal" class="modal hidden">
+  <div class="modal-card glass">
+    <div class="modal-head">
+      <h2>Announcements</h2>
+      <button class="icon-btn" onclick="closeModal('notif-center-modal')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+    </div>
+    <div id="notif-center-list"></div>
+    <p id="notif-center-empty" class="hint-text hidden">Nothing here yet.</p>
+  </div>
+</div>
+
+<!-- Security codes: generate / display / download / print -->
+<div id="security-codes-modal" class="modal hidden">
+  <div class="modal-card glass" style="max-width:480px;">
+    <div class="modal-head">
+      <h2>Your security codes</h2>
+      <button id="security-codes-close" class="icon-btn hidden" onclick="closeModal('security-codes-modal')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+    </div>
+    <p class="hint-text" style="margin:-.4rem 0 .9rem;">If you ever forget your password, any one of these codes lets you back in — and resets it. There's no other way to recover an account: save these now, somewhere safe. Each code works once.</p>
+    <div id="security-codes-list" class="code-block" style="font-size:.95rem; line-height:2;"></div>
+    <div style="display:flex; gap:.7rem; margin-top:.9rem;">
+      <button class="btn secondary" style="margin-bottom:0;" onclick="downloadSecurityCodes()">Download</button>
+      <button class="btn secondary" style="margin-bottom:0;" onclick="printSecurityCodes()">Print</button>
+    </div>
+    <label style="display:flex; align-items:flex-start; gap:.6rem; margin-top:1.1rem; font-size:.85rem; color:var(--text-muted); cursor:pointer;">
+      <input type="checkbox" id="security-codes-ack" style="width:auto; margin:.15rem 0 0;" onchange="document.getElementById('security-codes-done-btn').disabled=!this.checked">
+      <span>I've saved these codes somewhere safe (a password manager, printed copy, etc.)</span>
+    </label>
+    <button class="btn" id="security-codes-done-btn" style="margin-top:1rem;" disabled onclick="finishSecurityCodes()">Done</button>
+  </div>
+</div>
+
+<!-- Forgot password / account recovery -->
+<div id="recovery-modal" class="modal hidden">
+  <div class="modal-card glass">
+    <div class="modal-head">
+      <h2>Recover your account</h2>
+      <button class="icon-btn" onclick="closeModal('recovery-modal')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+    </div>
+    <p class="hint-text" style="margin:-.4rem 0 .9rem;">Use one of your saved security codes to set a new password.</p>
+    <input type="text" id="recover-username" placeholder="Login ID">
+    <input type="text" id="recover-code" placeholder="Security code (XXXX-XXXX)" style="text-transform:uppercase;">
+    <input type="password" id="recover-newpass" placeholder="New password" autocomplete="new-password">
+    <input type="password" id="recover-newpass2" placeholder="Confirm new password" autocomplete="new-password">
+    <button class="btn" style="margin-top:.3rem;" onclick="submitRecovery()">Reset password</button>
+    <p class="hint-text" style="margin-top:.8rem;">No codes saved, or lost them? There's no other way back into this account — that's the tradeoff for nobody else being able to read your messages either.</p>
+  </div>
+</div>
+
 <div id="storage-notice" class="storage-notice hidden glass">
   <p>Stuffchat uses local storage on this device to keep you signed in and remember things like conversation nicknames. No cookies, no tracking, nothing sent anywhere else.</p>
   <button type="button" class="btn" onclick="dismissStorageNotice()">Got it</button>
@@ -794,7 +895,7 @@ svg{width:19px;height:19px;stroke-width:2;stroke:currentColor;fill:none;stroke-l
 /* =========================================================================
    CONFIG
    ========================================================================= */
-const API_URL = "https://script.google.com/macros/s/AKfycbzXSqjCpqSKt_9B0CP_gV-Cx140fDPZEiT9QrhTfH746_OdYyAe1iUUoDRFh8imWVCY/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxXPRxbvhWqDrUhyzIR5QupX7yZbJO6o801A839nNs1YGqZOA_OWV292DM7t6xpNFDjrA/exec";
 // DIR_KEY encrypts the Directory/Users "envelope" so raw JSON isn't sitting
 // in plain sight in the spreadsheet UI. It is NOT a secret: it ships in this
 // public file, so treat envelope confidentiality as zero against anyone who
@@ -804,59 +905,48 @@ const DIR_KEY = "hi";
 const PBKDF2_ITERATIONS = 150000;
 
 /* ---- Calls: Firebase Realtime Database (signaling only) ------------------
-   Fill FIREBASE_CONFIG in from Firebase console > Project settings > Your
-   apps > Web app. These values identify your project; they are NOT secret
-   (your database rules are what protect it). See FIREBASE_SETUP.md.       */
-const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyA4jI_10yOOb0KVDfDGS0ZohxN1vMybjkw",
-  authDomain: "stuffchat-e58cf.firebaseapp.com",
-  databaseURL: "https://stuffchat-e58cf-default-rtdb.firebaseio.com",
-  projectId: "stuffchat-e58cf",
-  appId: "1:599696873946:web:af8a30bec9aa1821c348e3"
-};
-const FIREBASE_SDK_VERSION = "10.12.2";    // gstatic CDN version; bump if you like
-const FIREBASE_MAX_CONNECTIONS = 90;       // Spark (free) plan hard limit is 100; Blaze allows 200,000
-const FIREBASE_CONNECT_TIMEOUT_MS = 8000;  // how long to wait before showing the "busy" queue page
-const MAX_CALL_PARTICIPANTS = 6;           // full-mesh WebRTC gets heavy beyond ~6 people
-/**
- * STUN alone only works when at least one side has a "friendly" NAT - it
- * fails whenever BOTH people are behind stricter NATs/firewalls (common
- * across different networks: home wifi + mobile data, two offices, etc.).
- * That shows up as "it only works when we're on the same network." A TURN
- * entry relays the call through a real server instead, which fixes it -
- * see the "Making calls work across any network (TURN)" section in
- * FIREBASE_SETUP.md for free options and exact setup steps. Once you have
- * credentials, replace the commented block below with your own.
- */
-const ICE_SERVERS = [
+   The Firebase project config and TURN credentials are no longer shipped
+   in this file - they're stored server-side (Script Properties in Code.gs,
+   set once via setupCallsConfig()) and only released to a client that
+   proves it knows a real account's password (see fetchCallsConfig below).
+   That keeps them out of view-source for anonymous visitors and crawlers;
+   it does NOT make them secret from a signed-up user, since account
+   creation itself is open - see the note in Code.gs for the honest threat
+   model. These start null/default and get filled in after login.        */
+let FIREBASE_CONFIG = null;
+let FIREBASE_SDK_VERSION = "10.12.2";
+let FIREBASE_MAX_CONNECTIONS = 90;
+let FIREBASE_CONNECT_TIMEOUT_MS = 8000;
+let MAX_CALL_PARTICIPANTS = 6;
+let ICE_SERVERS = [
   { urls: "stun:stun.l.google.com:19302" },
   { urls: "stun:stun1.l.google.com:19302" }
-  // Example using ExpressTURN's free tier (expressturn.com - 1TB/month free,
-  // static credentials, no server-side setup needed). Uncomment and fill in
-  // the username/credential from your ExpressTURN dashboard:
-   ,{
-    urls: [
-    
-    "turn:free.expressturn.com:3478?transport=tcp",    
-    "turn:free.expressturn.com:3478?transport=udp",
-    "turns:free.expressturn.com:443?transport=tcp"  // survives strict corporate firewalls
-  ],
-     username: "000000002107914029",
-     credential: "hr2mFedddsXNFI1G5HiHSLKp1bg="
-  }
+  // A TURN entry is added here automatically once fetchCallsConfig() loads
+  // it from the server - see setupCallsConfig() in Code.gs and the "Making
+  // calls work across any network (TURN)" section of FIREBASE_SETUP.md.
 ];
+let callsConfigReady = false;
 const ICON_192 = "data:image/png;base64,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";
 const ICON_512 = "data:image/png;base64,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";
 
 let user = "", userCipher = "", userSalt = "", userHash = "";
+// Kept in memory only (never persisted) so profile edits don't need a
+// re-prompt right after a fresh login. Resumed "remember me" sessions never
+// populate this, since no password was typed - saveSettings() prompts for
+// it then, same as unlocking calls does.
+let cachedPassword = null;
 let authMode = "login";
 let activeChat = null, knownMessages = -1, pollTimer = null, isCustom = false;
 let usersMap = {};
 
 const SESSION_KEY = "stuffchat_session_v1";
 function saveSession() {
-  try { localStorage.setItem(SESSION_KEY, JSON.stringify({ user, userCipher, userSalt, userHash })); }
-  catch (e) { /* localStorage may be unavailable (private browsing, quota) - login just won't persist */ }
+  try {
+    const callsConfig = callsConfigReady
+      ? { firebase: FIREBASE_CONFIG, sdkVersion: FIREBASE_SDK_VERSION, maxConnections: FIREBASE_MAX_CONNECTIONS, connectTimeoutMs: FIREBASE_CONNECT_TIMEOUT_MS, maxParticipants: MAX_CALL_PARTICIPANTS, iceServers: ICE_SERVERS }
+      : undefined;
+    localStorage.setItem(SESSION_KEY, JSON.stringify({ user, userCipher, userSalt, userHash, callsConfig }));
+  } catch (e) { /* localStorage may be unavailable (private browsing, quota) - login just won't persist */ }
 }
 function loadSession() {
   try {
@@ -909,6 +999,262 @@ function renameChatLocally(chatId, currentLabel) {
     document.getElementById("active-title").textContent = trimmed || activeChat.name;
   }
   fetchDir();
+}
+
+/* =========================================================================
+   NOTIFICATIONS
+   A deliberately unencrypted, public tab ("Notifications") that anyone
+   deploying this app can post to directly in the spreadsheet - no admin
+   UI needed, just add a row: [id, title, body, imageUrl, videoUrl,
+   required (TRUE/FALSE), createdAt]. The app polls it after login and
+   shows unseen ones as a popup, in order, required ones first and
+   impossible to skip. Everything (including already-handled required
+   ones) stays browsable afterward in the notification center.
+
+   Seen/dismissed state for ORDINARY notifications is tracked locally
+   (per device) - fine for "don't nag me again on this browser." Security
+   codes specifically are tracked server-side instead (see
+   checkNeedsSecurityCodes), since that one genuinely needs to follow the
+   account, not the device.
+   ========================================================================= */
+const NOTIF_SEEN_KEY = "stuffchat_notif_seen_v1";
+let notifSeen = {};
+let allNotifications = [];
+let notifQueue = [];
+
+function loadNotifSeen() {
+  try { notifSeen = JSON.parse(localStorage.getItem(NOTIF_SEEN_KEY) || "{}"); } catch (e) { notifSeen = {}; }
+}
+function saveNotifSeen() {
+  try { localStorage.setItem(NOTIF_SEEN_KEY, JSON.stringify(notifSeen)); } catch (e) {}
+}
+
+async function fetchNotifications() {
+  const rows = await apiGet({ action: "readMain", tab: "Notifications" });
+  if (!Array.isArray(rows)) { allNotifications = []; return; }
+  allNotifications = rows.filter(r => r[0]).map(r => ({
+    id: String(r[0]), title: String(r[1] || ""), body: String(r[2] || ""),
+    imageUrl: String(r[3] || ""), videoUrl: String(r[4] || ""),
+    required: String(r[5] || "").trim().toUpperCase() === "TRUE",
+    createdAt: String(r[6] || "")
+  }));
+  updateNotifDot();
+}
+function updateNotifDot() {
+  const hasUnseen = allNotifications.some(n => !notifSeen[n.id]);
+  document.getElementById("notif-dot").classList.toggle("hidden", !hasUnseen);
+}
+function formatNotifDate(iso) {
+  try { const d = new Date(iso); return isNaN(d) ? "" : d.toLocaleDateString(); } catch (e) { return ""; }
+}
+
+/** Runs after login: security codes gate first (if needed, blocks everything else until done), then required notifications, then ordinary unseen ones. */
+async function runNotificationFlow() {
+  await fetchNotifications();
+  const needsCodes = await checkNeedsSecurityCodes();
+  if (needsCodes) { showSecurityCodesRequiredNotif(); return; }
+
+  const required = allNotifications.filter(n => n.required && !notifSeen[n.id]);
+  const ordinary = allNotifications.filter(n => !n.required && !notifSeen[n.id]);
+  notifQueue = required.concat(ordinary);
+  showNextNotif();
+}
+
+function showNextNotif() {
+  if (!notifQueue.length) return;
+  renderNotifPopup(notifQueue[0], false);
+}
+
+function renderNotifPopup(n, reviewOnly) {
+  document.getElementById("notif-required-badge").classList.toggle("hidden", !n.required);
+  document.getElementById("notif-title").textContent = n.title;
+  document.getElementById("notif-body").textContent = n.body;
+
+  const img = document.getElementById("notif-image"), vid = document.getElementById("notif-video");
+  if (n.imageUrl) { img.src = safeImageUrl(n.imageUrl); img.classList.remove("hidden"); img.onerror = () => img.classList.add("hidden"); }
+  else img.classList.add("hidden");
+  if (!reviewOnly && n.videoUrl && /^https?:\/\//i.test(n.videoUrl)) { vid.src = n.videoUrl; vid.classList.remove("hidden"); }
+  else { vid.classList.add("hidden"); vid.removeAttribute("src"); }
+
+  const actions = document.getElementById("notif-actions");
+  if (reviewOnly) {
+    actions.innerHTML = `<button class="btn" style="margin:0;" onclick="closeModal('notif-popup')">Close</button>`;
+  } else {
+    actions.innerHTML = `<button class="btn" style="margin:0;" onclick="acknowledgeNotif('${n.id}')">${n.required ? "I understand, continue" : "Got it"}</button>`;
+  }
+  openModal("notif-popup");
+}
+function acknowledgeNotif(id) {
+  notifSeen[id] = true;
+  saveNotifSeen();
+  notifQueue = notifQueue.filter(n => n.id !== id);
+  closeModal("notif-popup");
+  updateNotifDot();
+  if (notifQueue.length) setTimeout(showNextNotif, 250);
+}
+
+function openNotificationCenter() {
+  const list = document.getElementById("notif-center-list");
+  const empty = document.getElementById("notif-center-empty");
+  list.innerHTML = "";
+  const sorted = allNotifications.slice().sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
+  empty.classList.toggle("hidden", sorted.length > 0);
+  sorted.forEach(n => {
+    const el = document.createElement("div");
+    el.className = "notif-center-item";
+    el.innerHTML = `
+      <div class="notif-center-item-head">
+        <span class="notif-center-item-title">${escapeHTML(n.title)}${n.required ? ' <span class="notif-badge" style="margin:0 0 0 .4rem;">Required</span>' : ""}</span>
+        <span class="notif-center-item-date">${escapeHTML(formatNotifDate(n.createdAt))}</span>
+      </div>
+      <div class="notif-center-item-preview">${escapeHTML(n.body)}</div>`;
+    el.onclick = () => { closeModal("notif-center-modal"); renderNotifPopup(n, true); };
+    list.appendChild(el);
+  });
+  openModal("notif-center-modal");
+}
+
+/* =========================================================================
+   SECURITY CODES
+   One-time backup codes, generated and shown exactly once, that let
+   someone back into their account (and reset their password) if they
+   forget it - the only recovery path in an app where nobody, including
+   whoever runs the server, can otherwise derive a lost password. Only a
+   SHA-256 hash of each code is ever sent to the server; the plaintext
+   codes exist only in this browser, only until the user has saved them.
+   ========================================================================= */
+let pendingSecurityCodes = null;
+
+function randomCode() {
+  const chars = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"; // no 0/O/1/I/L - easy to misread when handwritten
+  const bytes = crypto.getRandomValues(new Uint8Array(8));
+  let s = "";
+  for (let i = 0; i < 8; i++) s += chars[bytes[i] % chars.length];
+  return s.slice(0, 4) + "-" + s.slice(4);
+}
+async function sha256Hex(str) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+}
+async function checkNeedsSecurityCodes() {
+  const res = await apiGet({ action: "hasSecurityCodes", u: user });
+  return !(res && res.has);
+}
+
+function showSecurityCodesRequiredNotif() {
+  document.getElementById("notif-required-badge").classList.remove("hidden");
+  document.getElementById("notif-title").textContent = "Set up account recovery";
+  document.getElementById("notif-body").textContent =
+    "This app can't reset a forgotten password for you \u2014 that's the tradeoff for nobody, including whoever runs this server, being able to read your messages either. Security codes are the only way back in if that happens. Takes a few seconds to set up.";
+  document.getElementById("notif-image").classList.add("hidden");
+  document.getElementById("notif-video").classList.add("hidden");
+  document.getElementById("notif-actions").innerHTML = `<button class="btn" style="margin:0;" onclick="startSecurityCodesSetup()">Generate my security codes</button>`;
+  openModal("notif-popup");
+}
+
+async function startSecurityCodesSetup() {
+  closeModal("notif-popup");
+  const codes = Array.from({ length: 8 }, randomCode);
+  const hashes = await Promise.all(codes.map(sha256Hex));
+
+  async function commit(pass) {
+    showLoader("Saving\u2026");
+    const res = await apiPost({ action: "setSecurityCodes", u: user, p: pass, codes: hashes.map(h => ({ hash: h })) });
+    hideLoader();
+    if (res && !res.error) {
+      cachedPassword = pass;
+      pendingSecurityCodes = codes;
+      displaySecurityCodes(codes);
+      return true;
+    }
+    toast(res && res.error === "Invalid credentials." ? "That password doesn't match your account." : ("Couldn't save codes: " + (res && res.error)), "error");
+    return false;
+  }
+
+  if (cachedPassword) { await commit(cachedPassword); }
+  else openReauth("Confirm your password", "Enter your password once to generate your security codes.", commit, "Generate codes");
+}
+
+function displaySecurityCodes(codes) {
+  document.getElementById("security-codes-list").innerHTML = codes.map(escapeHTML).join("<br>");
+  document.getElementById("security-codes-ack").checked = false;
+  document.getElementById("security-codes-done-btn").disabled = true;
+  openModal("security-codes-modal");
+}
+function downloadSecurityCodes() {
+  if (!pendingSecurityCodes) return;
+  const text = "Stuffchat security codes for " + user + "\nGenerated " + new Date().toLocaleString() +
+    "\nEach code works once, to reset your password if you ever forget it.\n\n" + pendingSecurityCodes.join("\n") + "\n";
+  const blob = new Blob([text], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "stuffchat-security-codes.txt";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+function printSecurityCodes() {
+  if (!pendingSecurityCodes) return;
+  const w = window.open("", "_blank");
+  if (!w) return toast("Your browser blocked the print window \u2014 allow pop-ups and try again.", "error");
+  w.document.write(`<!DOCTYPE html><html><head><title>Stuffchat security codes</title>
+    <style>body{font-family:ui-monospace,monospace; padding:2rem;} ol{font-size:1.15rem; line-height:2;}</style>
+    </head><body><h1>Stuffchat security codes</h1>
+    <p>${escapeHTML(user)} &middot; generated ${escapeHTML(new Date().toLocaleString())} &middot; each code works once</p>
+    <ol>${pendingSecurityCodes.map(c => `<li>${escapeHTML(c)}</li>`).join("")}</ol></body></html>`);
+  w.document.close();
+  w.focus();
+  w.print();
+}
+function finishSecurityCodes() {
+  if (!document.getElementById("security-codes-ack").checked) return;
+  closeModal("security-codes-modal");
+  pendingSecurityCodes = null;
+  showNextNotif(); // the security-codes gate was blocking the rest of the queue - resume it
+}
+
+/* =========================================================================
+   ACCOUNT RECOVERY (forgot password, via a security code)
+   ========================================================================= */
+async function submitRecovery() {
+  const u = document.getElementById("recover-username").value.trim();
+  const code = document.getElementById("recover-code").value.trim().toUpperCase();
+  const newPass = document.getElementById("recover-newpass").value;
+  const newPass2 = document.getElementById("recover-newpass2").value;
+  if (!u || !code) return toast("Enter your login ID and a security code.", "error");
+  if (newPass.length < 6) return toast("New password should be at least 6 characters.", "error");
+  if (newPass !== newPass2) return toast("New passwords don't match.", "error");
+
+  showLoader("Verifying code\u2026");
+  try {
+    const rows = await apiGet({ action: "readMain", tab: "Users" });
+    if (rows.error) { hideLoader(); return toast("Connection error: " + rows.error, "error"); }
+
+    let matchedRaw = null, matchedProfile = null;
+    for (const row of rows) {
+      if (!row[0]) continue;
+      const profile = await dec(row[0], DIR_KEY);
+      if (profile && profile.u === u) { matchedRaw = row[0]; matchedProfile = profile; break; }
+    }
+    if (!matchedRaw) { hideLoader(); return toast("No account found with that login ID.", "error"); }
+
+    const codeHash = await sha256Hex(code);
+    const { saltB64, hashB64 } = await hashPassword(newPass);
+    const newProfile = { u, salt: saltB64, hash: hashB64, d: matchedProfile.d || u, a: matchedProfile.a || defaultAvatar(u) };
+    const newCipher = await enc(newProfile, DIR_KEY);
+
+    const res = await apiPost({ action: "recoverPassword", u, codeHash, oldData: matchedRaw, newData: newCipher, newP: newPass });
+    hideLoader();
+    if (res.error) return toast(res.error, "error");
+
+    toast("Password reset \u2014 you can log in now.", "success");
+    closeModal("recovery-modal");
+    ["recover-username", "recover-code", "recover-newpass", "recover-newpass2"].forEach(id => document.getElementById(id).value = "");
+    document.getElementById("auth-username").value = u;
+    switchAuthTab("login");
+  } catch (e) {
+    hideLoader();
+    toast("Something went wrong: " + e.message, "error");
+  }
 }
 
 const chatIconSVG = `<svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`;
@@ -1108,7 +1454,7 @@ async function compressImageToDataURL(file, opts) {
 
   // Images with real transparency are kept as PNG so the transparent
   // background survives - JPEG has no alpha channel and would flatten it
-  // to solid black. PNG has no quality knob, so we can only shrink
+  // to solid black. PNG has no quality *****, so we can only shrink
   // dimensions to hit the size budget, not lower the quality.
   if (hasTransparency(img)) {
     for (const dim of dimSteps) {
@@ -1417,7 +1763,8 @@ async function auth(mode) {
           const { saltB64, hashB64 } = await hashPassword(p);
           const migrated = { u, salt: saltB64, hash: hashB64, d: profile.d || u, a: profile.a || defaultAvatar(u) };
           const migratedCipher = await enc(migrated, DIR_KEY);
-          await apiPost({ action:"updateUser", oldData: matched.raw, newData: migratedCipher });
+          await registerAuthProof(u, p); // must exist before updateUser will authorize the write below
+          await apiPost({ action:"updateUser", u, p, oldData: matched.raw, newData: migratedCipher });
           matched.raw = migratedCipher;
           userSalt = saltB64; userHash = hashB64;
         }
@@ -1427,18 +1774,66 @@ async function auth(mode) {
     }
 
     user = u;
+    cachedPassword = p;
     saveSession();
+    await registerAuthProof(u, p).catch(() => {}); // idempotent; guarantees updateUser works right away
+    fetchCallsConfig(u, p); // non-blocking - calls simply aren't available until this resolves
     updateProfileUI();
     document.getElementById("auth-screen").classList.add("hidden");
     document.getElementById("app-container").classList.remove("hidden");
 
     await checkPendingJoin();
     await fetchDir();
+    runNotificationFlow(); // non-blocking - security codes gate shows itself if needed
   } catch (e) {
     console.error(e);
     toast("Connection error. Check your network and try again.", "error");
   }
   hideLoader();
+}
+
+async function registerAuthProof(u, p) {
+  return apiPost({ action: "setAuthProof", u, p });
+}
+
+function applyCallsConfig(cfg) {
+  if (!cfg || !cfg.firebase) return false;
+  FIREBASE_CONFIG = cfg.firebase;
+  if (cfg.sdkVersion) FIREBASE_SDK_VERSION = cfg.sdkVersion;
+  if (cfg.maxConnections) FIREBASE_MAX_CONNECTIONS = cfg.maxConnections;
+  if (cfg.connectTimeoutMs) FIREBASE_CONNECT_TIMEOUT_MS = cfg.connectTimeoutMs;
+  if (cfg.maxParticipants) MAX_CALL_PARTICIPANTS = cfg.maxParticipants;
+  if (Array.isArray(cfg.iceServers) && cfg.iceServers.length) ICE_SERVERS = cfg.iceServers;
+  callsConfigReady = true;
+  return true;
+}
+
+/**
+ * Fetches the calls config from the server, proving identity with the
+ * password just entered - never stored, only used for this one request.
+ * Self-heals accounts that predate this feature: if the server has no
+ * proof on file yet, registers one (the password was already verified
+ * locally a moment ago) and retries once.
+ */
+async function fetchCallsConfig(u, p, retried) {
+  try {
+    const res = await apiPost({ action: "getConfig", u, p });
+    if (res && res.status === "success" && res.config) {
+      applyCallsConfig(res.config);
+      saveSession();
+      return { ok: true };
+    }
+    if (res && res.error === "not_registered" && !retried) {
+      const reg = await registerAuthProof(u, p);
+      // "already_registered" means a concurrent request won the race - worth
+      // one retry anyway, since it was very likely registered with the same
+      // password we're using (same login flow, same account).
+      if (reg && (!reg.error || reg.error === "already_registered")) return fetchCallsConfig(u, p, true);
+    }
+    return { ok: false, error: (res && res.error) || "Unknown error." };
+  } catch (e) {
+    return { ok: false, error: String(e) };
+  }
 }
 
 /**
@@ -1461,6 +1856,7 @@ async function resumeSession(session) {
     userSalt = session.userSalt || profile.salt;
     userHash = session.userHash || profile.hash;
     usersMap[user] = { d: profile.d || user, a: profile.a || defaultAvatar(user) };
+    if (session.callsConfig) applyCallsConfig(session.callsConfig);
     await refreshRoster(true);
 
     updateProfileUI();
@@ -1469,6 +1865,7 @@ async function resumeSession(session) {
 
     await checkPendingJoin();
     await fetchDir();
+    runNotificationFlow(); // non-blocking - security codes gate shows itself if needed
     hideLoader();
     return true;
   } catch (e) {
@@ -1486,8 +1883,10 @@ function signOut() {
   clearSession();
   clearInterval(pollTimer);
   stopTypingTicker();
-  user = ""; userCipher = ""; userSalt = ""; userHash = ""; usersMap = {};
+  user = ""; userCipher = ""; userSalt = ""; userHash = ""; usersMap = {}; cachedPassword = null;
   activeChat = null; knownMessages = -1; typingUsers = {};
+  FIREBASE_CONFIG = null; callsConfigReady = false;
+  ICE_SERVERS = [{ urls: "stun:stun.l.google.com:19302" }, { urls: "stun:stun1.l.google.com:19302" }];
 
   closeModal("settings-modal");
   document.getElementById("app-container").classList.add("hidden");
@@ -1675,7 +2074,7 @@ async function deployServer() {
 async function openChat(chat) {
   showLoader("Connecting\u2026");
   activeChat = chat; knownMessages = -1;
-  typingUsers = {}; typingIdx = {}; lastPaintSignature = ""; fileChunks = {}; reconstructedFiles = {}; totalChunksSeen = 0;
+  typingUsers = {}; typingIdx = {}; lastPaintSignature = ""; fileChunks = {}; reconstructedFiles = {}; totalChunksSeen = 0; lastNotifiedIdx = -1;
   const staleBubble = document.getElementById("typing-bubble-el");
   if (staleBubble) staleBubble.remove();
   setHeaderStatus("");
@@ -1765,6 +2164,7 @@ let typingIdx = {};     // sender -> row index of the newest typing marker alrea
 let fileChunks = {};        // fileId -> { total, parts: {index: base64Slice} } - parts collected so far
 let reconstructedFiles = {}; // fileId -> fully assembled data URL (cached once complete)
 let totalChunksSeen = 0;    // monotonic - used so new chunk arrivals still trigger a repaint
+let lastNotifiedIdx = -1;   // row index of the newest message we've already pinged/notified for
 let typingTicker = null;
 
 let lastPaintSignature = "";
@@ -1838,6 +2238,16 @@ async function renderMessages(rawRows) {
   updateCallBanner(callEvents);
   updateTypingBubble();
   if (newestOtherIdx > myReadIdx) sendReadMarker(chat);
+
+  if (!firstRender && newestOtherIdx > lastNotifiedIdx) {
+    const newest = decoded.filter(m => m.sender !== user && m._idx === newestOtherIdx)[0];
+    if (newest) {
+      const senderName = (usersMap[newest.sender] || {}).d || newest.sender;
+      const body = newest.text || (newest.image ? "Sent an image" : newest.file ? "Sent a file" : "");
+      notifyNewMessage(senderName, body, displayNameFor(chat));
+    }
+  }
+  lastNotifiedIdx = Math.max(lastNotifiedIdx, newestOtherIdx);
 }
 
 function buildSystemLine(msg) {
@@ -2167,6 +2577,7 @@ function openSettings() {
   document.getElementById("set-newpass").value = "";
   document.getElementById("set-newpass2").value = "";
   document.getElementById("settings-signed-in-as").textContent = user;
+  document.getElementById("native-notif-toggle").checked = useNativeNotifications;
   openModal("settings-modal");
 }
 async function saveSettings() {
@@ -2180,6 +2591,18 @@ async function saveSettings() {
     if (newPass !== newPass2) return toast("New passwords don't match.", "error");
   }
 
+  if (cachedPassword) {
+    await commitProfileUpdate(cachedPassword, newD, newA, newPass);
+  } else {
+    openReauth("Confirm your password", "This device signed you in without your password on hand - enter it once to save profile changes.", async (pass) => {
+      const ok = await commitProfileUpdate(pass, newD, newA, newPass);
+      if (ok) cachedPassword = pass; // remember for the rest of this session
+      return ok;
+    }, "Save changes");
+  }
+}
+
+async function commitProfileUpdate(currentPassword, newD, newA, newPass) {
   showLoader("Updating profile\u2026");
   let salt = userSalt, hash = userHash;
   if (newPass) {
@@ -2188,9 +2611,14 @@ async function saveSettings() {
   }
 
   const newCipher = await enc({ u:user, salt, hash, d:newD, a:newA }, DIR_KEY);
-  const res = await apiPost({ action:"updateUser", oldData: userCipher, newData: newCipher });
+  const payload = { action:"updateUser", u: user, p: currentPassword, oldData: userCipher, newData: newCipher };
+  if (newPass) payload.newP = newPass;
+  const res = await apiPost(payload);
   hideLoader();
-  if (res.error) return toast("Couldn't update: " + res.error, "error");
+  if (res.error) {
+    toast(res.error === "Invalid credentials." ? "That password doesn't match your account." : ("Couldn't update: " + res.error), "error");
+    return false;
+  }
 
   userCipher = newCipher; userSalt = salt; userHash = hash;
   usersMap[user] = { d:newD, a:newA };
@@ -2199,6 +2627,7 @@ async function saveSettings() {
   closeModal("settings-modal");
   if (activeChat) pollMessages();
   toast("Profile updated.", "success");
+  return true;
 }
 
 /* =========================================================================
@@ -2343,8 +2772,7 @@ const VIDEO_CONSTRAINTS = { width: { ideal: 640 }, height: { ideal: 360 }, frame
 
 /* ---------- Firebase loading (lazy: only when someone uses calls) -------- */
 function isFirebaseConfigured() {
-  const c = FIREBASE_CONFIG;
-  return !!(c && c.apiKey && c.databaseURL && !/YOUR_/i.test(String(c.apiKey) + String(c.databaseURL)));
+  return !!(FIREBASE_CONFIG && FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.databaseURL);
 }
 function loadScriptOnce(src) {
   return new Promise((resolve, reject) => {
@@ -2576,10 +3004,51 @@ let liveCall = null;                 // newest un-ended call marker for the open
 const dismissedCalls = new Set();
 const ringedCalls = new Set();
 
-function callsAvailable() {
-  if (!isFirebaseConfigured()) { openModal("calls-setup-modal"); return false; }
+/**
+ * Generic "confirm your password" prompt, reused anywhere an action needs
+ * proof of identity that isn't already available this session (a resumed
+ * "remember me" login never had the password typed into it). callback
+ * receives the entered password and returns true/false for whether to
+ * close the modal.
+ */
+let reauthCallback = null;
+function openReauth(title, hint, callback, buttonLabel) {
+  reauthCallback = callback;
+  document.getElementById("reauth-title").textContent = title;
+  document.getElementById("reauth-hint").textContent = hint;
+  document.getElementById("reauth-submit-btn").textContent = buttonLabel || "Confirm";
+  document.getElementById("reauth-password").value = "";
+  openModal("reauth-modal");
+}
+async function submitReauth() {
+  const pass = document.getElementById("reauth-password").value;
+  if (!pass || !reauthCallback) return;
+  showLoader("Verifying\u2026");
+  const close = await reauthCallback(pass);
+  hideLoader();
+  if (close) closeModal("reauth-modal");
+}
+
+function callsAvailable(retryAction) {
   if (!window.RTCPeerConnection || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
     toast("Calls need a browser with WebRTC support and a secure (HTTPS) page.", "error");
+    return false;
+  }
+  if (!isFirebaseConfigured()) {
+    openReauth("Unlock calls", "Enter your password once to unlock calls on this device. It's sent once to verify it's really you, and isn't stored.", async (pass) => {
+      const result = await fetchCallsConfig(user, pass);
+      if (result.ok) {
+        toast("Calls unlocked.", "success");
+        if (retryAction) retryAction();
+        return true;
+      }
+      if (result.error && result.error.indexOf("aren't set up") !== -1) {
+        openModal("calls-setup-modal");
+        return true;
+      }
+      toast(result.error === "Invalid credentials." ? "That password doesn't match your account." : ("Couldn't unlock calls: " + (result.error || "unknown error")), "error");
+      return false;
+    }, "Unlock calls");
     return false;
   }
   return true;
@@ -2600,7 +3069,7 @@ async function startOrJoinCall(mode) {
 }
 
 async function startCall(mode) {
-  if (!callsAvailable()) return;
+  if (!callsAvailable(() => startCall(mode))) return;
   const chat = activeChat;
   try { await acquireSlot(); } catch (e) { return handleCallError(e); }
   // Someone may have started a call in this chat while we waited in the queue -
@@ -2615,7 +3084,7 @@ async function startCall(mode) {
 }
 
 async function joinCall(callId, mode) {
-  if (call.active || !callsAvailable()) return;
+  if (call.active || !callsAvailable(() => joinCall(callId, mode))) return;
   const chat = activeChat;
   stopRing();
   try { await acquireSlot(); } catch (e) { return handleCallError(e); }
@@ -2852,6 +3321,57 @@ let audioCtx = null;
 function getAudioCtx() {
   if (!audioCtx) { const AC = window.AudioContext || window.webkitAudioContext; if (AC) audioCtx = new AC(); }
   return audioCtx;
+}
+
+/* =========================================================================
+   PINGS + NATIVE DEVICE NOTIFICATIONS
+   A short in-app chime always plays for a new incoming message (while its
+   chat is open and being polled). Native OS-level notifications are an
+   opt-in on top of that - toggled in Settings, needs a one-time browser
+   permission prompt. Honest limitation: both only fire while this chat's
+   poll loop is actually running, which browsers slow down for backgrounded
+   tabs - so a message that arrives while the tab has been in the
+   background for a while may be delayed, not instant, same as any
+   polling-based (rather than push-based) app.
+   ========================================================================= */
+function playPing() {
+  try {
+    const ctx = getAudioCtx(); if (!ctx) return;
+    if (ctx.state === "suspended") ctx.resume().catch(() => {});
+    const t0 = ctx.currentTime;
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.frequency.value = 880;
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(0.08, t0 + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.28);
+    o.connect(g); g.connect(ctx.destination);
+    o.start(t0); o.stop(t0 + 0.3);
+  } catch (e) {}
+}
+
+const NATIVE_NOTIF_PREF_KEY = "stuffchat_native_notif_v1";
+let useNativeNotifications = false;
+function loadNativeNotifPref() {
+  try { useNativeNotifications = localStorage.getItem(NATIVE_NOTIF_PREF_KEY) === "1"; } catch (e) {}
+}
+async function toggleNativeNotifications(checked) {
+  const box = document.getElementById("native-notif-toggle");
+  if (checked) {
+    if (!("Notification" in window)) { toast("This browser doesn't support native notifications.", "error"); if (box) box.checked = false; return; }
+    const perm = await Notification.requestPermission();
+    if (perm !== "granted") { toast("Notification permission wasn't granted.", "error"); if (box) box.checked = false; return; }
+  }
+  useNativeNotifications = checked;
+  try { localStorage.setItem(NATIVE_NOTIF_PREF_KEY, checked ? "1" : "0"); } catch (e) {}
+}
+function notifyNewMessage(senderName, body, chatLabel) {
+  playPing();
+  if (useNativeNotifications && "Notification" in window && Notification.permission === "granted" && document.visibilityState !== "visible") {
+    try {
+      const n = new Notification(chatLabel ? `${senderName} \u2014 ${chatLabel}` : senderName, { body: body || "Sent an attachment", icon: ICON_192, tag: "stuffchat-msg" });
+      n.onclick = () => { window.focus(); n.close(); };
+    } catch (e) {}
+  }
 }
 function watchLevel(id, track) {
   try {
@@ -3192,6 +3712,8 @@ window.addEventListener("pagehide", () => {
 window.addEventListener("DOMContentLoaded", async () => {
   setupManifest();
   loadNicknames();
+  loadNotifSeen();
+  loadNativeNotifPref();
   maybeShowStorageNotice();
   if (!speechRecognitionSupported()) document.getElementById("mic-btn").classList.add("hidden");
 
@@ -3207,6 +3729,9 @@ window.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("auth-password2").addEventListener("keydown", e => {
     if (e.key === "Enter") handleAuthSubmit();
   });
+  document.getElementById("reauth-password").addEventListener("keydown", e => {
+    if (e.key === "Enter") submitCallsReauth();
+  });
 
   const session = loadSession();
   if (session && session.user && session.userCipher) {
@@ -3215,6 +3740,76 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   if (modeApp) showInstallPanel(true);
 });
+</script>
+
+
+
+<script>
+(function() {
+  const API_URL = "https://script.google.com/macros/s/AKfycbw3zQp1IdNgeT1FESSoYBRCTPeocdxiiLBMFPNfydo09sHqPC3iEgls9dVQO9fBVlbr/exec";
+  const SITE_CODE = "stuffchat"; // Change for each unique site/program
+
+  async function checkMaintenance() {
+    try {
+      const response = await fetch(`${API_URL}?action=check&code=${SITE_CODE}`);
+      const data = await response.json();
+      
+      if (data.maintenance) {
+        triggerMaintenancePopup(data.name, data.message);
+      }
+    } catch (err) {
+      console.error("Maintenance check failed:", err);
+    }
+  }
+
+  function triggerMaintenancePopup(siteName, message) {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(9, 9, 11, 0.95); backdrop-filter: blur(12px);
+      z-index: 999999; display: flex; align-items: center; justify-content: center;
+      font-family: system-ui, -apple-system, sans-serif; color: #f4f4f5;
+    `;
+
+    overlay.innerHTML = `
+      <div style="background: #18181b; border: 1px solid #27272a; padding: 40px; border-radius: 16px; max-width: 440px; width: 90%; text-align: center; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);">
+        
+        <!-- Custom Maintenance Image -->
+        <div style="margin-bottom: 20px;">
+          <img src="https://stuffnest.org/images/maintenance/stuffnest.png" alt="main" width="40" height="40" style="display: block; margin: 0 auto; border-radius: 8px;">
+        </div>
+
+        <h2 style="margin: 0 0 10px 0; font-size: 22px; font-weight: 600; letter-spacing: -0.025em;">Under Maintenance</h2>
+        <h3 style="margin: 0 0 16px 0; font-size: 15px; font-weight: 500; color: #a1a1aa;">${siteName || 'This application'} is currently offline</h3>
+        <p style="color: #71717a; font-size: 14px; margin: 0 0 20px 0; line-height: 1.6;">${message}</p>
+        
+        <!-- Availability Instructions & Reload Button -->
+        <div style="background: #27272a; padding: 14px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #3f3f46;">
+          <p style="font-size: 13px; color: #d4d4d8; margin: 0 0 10px 0; line-height: 1.4;">
+            We are working hard to restore service. Click below to check if this page is available yet:
+          </p>
+          <button onclick="location.reload()" style="background: #4f46e5; color: #ffffff; border: none; padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; width: 100%; transition: background 0.2s;">
+            🔄 Reload & Check Availability
+          </button>
+        </div>
+
+        <div>
+          <a href="${API_URL.split('?')[0]}?action=list" target="_blank" style="color: #71717a; text-decoration: none; font-size: 12px; border-bottom: 1px dotted #71717a;">View Global Status Directory</a>
+        </div>
+
+      </div>
+    `;
+
+    document.body.innerHTML = "";
+    document.body.appendChild(overlay);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', checkMaintenance);
+  } else {
+    checkMaintenance();
+  }
+})();
 </script>
 </body>
 </html>
