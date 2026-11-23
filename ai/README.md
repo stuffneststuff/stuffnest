@@ -1,27 +1,24 @@
 # Stuffnest Code
 
-A static, GitHub Pages-friendly local-first coding assistant with a browser IDE, saved conversations, GitHub public-file import, and a small break-time game.
+A static GitHub Pages coding workspace with local AI, persistent chats/files, a multi-file browser IDE, a public GitHub file importer, and a mini-game.
 
-## Features
+## Run and publish
 
-- **On-device AI chat:** Uses WebLLM/WebGPU. The model downloads on first use and is cached by the browser. The first download and compilation can take several minutes; keep the tab open and monitor the progress indicator. Chrome or Edge with WebGPU is recommended. Model quality and speed depend on device memory and GPU.
-- **Persistent chats:** Conversations and IDE files are stored in the browser's local storage. They are local to that browser/profile and are not synced. Download important files as a backup.
-- **Browser IDE:** Edit files, import from your computer, download edits, copy text, and preview HTML/CSS/JavaScript in a sandboxed iframe using a Blob/srcdoc.
-- **Python:** Runs in Pyodide in your browser. The Python runtime downloads on first use. Put a comment such as `# packages: numpy` in a Python file to request a Pyodide-supported package.
-- **Java/C++:** Uses the public Piston execution service, so an internet connection is required and code is sent to that service. Do not send secrets or private code. It may be unavailable or rate-limited.
-- **GitHub:** Browse public repositories by `owner/repository` and branch, then import selected files into the IDE. This is read-only. Edit locally and download the file to upload through GitHub yourself. No GitHub token is requested or stored.
-- **Mini game:** A quick click-the-orb break game with a locally saved best score.
-
-## Publish / run
-
-The app is plain static HTML and needs no build step. GitHub Pages can serve it from the repository root; open `/ai/` once published. For local testing, serve the repository root over HTTP (module imports and WebGPU generally do not work from a `file://` URL):
+No build step is needed. Publish the repository root with GitHub Pages and visit `/ai/`. For local testing, serve the repository over HTTP (module imports and browser AI do not generally work from `file://`):
 
 ```bash
 python3 -m http.server 8080
 ```
 
-Then visit `http://localhost:8080/ai/`.
+Then open `http://localhost:8080/ai/`.
 
-## Notes
+## Languages and tools
 
-The site source is static, but first-time model/runtime downloads and the Java/C++ runner rely on third-party CDNs/services. A downloaded model may use substantial bandwidth, storage, and GPU memory. Browser storage can be cleared by browser settings, so export work you need to keep.
+- **AI chat:** WebLLM with WebGPU; model download/compilation can take several minutes. The browser caches the model after download. A supported Chrome/Edge browser and capable GPU are recommended.
+- **HTML/CSS/JavaScript:** Edit the workspace files and use Preview web. Rendering runs in a sandboxed iframe.
+- **Python:** Runs in Pyodide in the browser. The runtime downloads on first use. Put `# packages: numpy` (or another Pyodide-supported package) in a Python file to request package loading.
+- **Java, C++, Rust, Go, Node.js, TypeScript, C, C#, PHP, Ruby:** Run selected sends the current project source file to the public Piston service. Java expects `Main.java` and C++ expects `main.cpp` for best results. The app supplies stdin, uses the service's reported runtime version when available, and shows compile and execution output. Execution needs internet access and can be rate-limited or unavailable; never send secrets or private code.
+- **GitHub:** Import individual files from public repositories by `owner/repository` and branch. No token is requested; the repository is not modified. Download edited files or export the workspace JSON, then upload changes through GitHub yourself.
+- **Storage:** Chats, workspace files, and game score are stored in browser local storage. This is browser/profile-specific and can be cleared by browser settings; download/export important work.
+
+The site source is static, but first-time model and Python runtime downloads and remote native-language execution rely on third-party services. The remote runner is not a local Java/C++ installation.
