@@ -1,26 +1,24 @@
 # Stuffnest Code
 
-A static, GitHub Pages coding workspace with local AI, saved conversations, a multi-file IDE, an integrated code/explanation assistant sidebar, GitHub public-file import, and language runners.
+A static, GitHub Pages coding workspace with a local AI, saved conversations, multi-file IDE, AI coding sidebar, GitHub public-file import, and language runners.
 
 ## Run and publish
 
-No build step is required. Publish the repository root with GitHub Pages and visit `/ai/`. For local testing, serve the repository over HTTP (module imports and WebGPU generally do not work from a `file://` URL):
+No build step is required. Publish the repository root with GitHub Pages and visit `/ai/`. For local testing, serve the repository over HTTP:
 
 ```bash
 python3 -m http.server 8080
 ```
 
-Open `http://localhost:8080/ai/`.
+Then open `http://localhost:8080/ai/`.
 
-## Features
+## Features and limitations
 
-- **On-device AI:** WebLLM/WebGPU with first-load progress reporting and browser model caching. Chrome/Edge with a capable GPU is recommended. Model loading can take several minutes and requires available memory/storage.
-- **AI sidebar on IDE and GitHub views:** Select a local or imported GitHub file, ask for a review, explanation, fix, or refactor. The explanation appears separately from generated code. Copy generated code or apply it to the current IDE file after review.
-- **AI chat:** Conversations are saved in local storage. Code blocks have copy buttons.
-- **Browser IDE:** Local multi-file editing, autosave, upload/download, project JSON export/import, and sandboxed HTML/CSS/JavaScript preview.
-- **Python:** Runs in-browser with Pyodide; the first runtime download can take a while. A line such as `# packages: numpy` requests a Pyodide-supported package.
-- **Java, C++, Rust, Go, Node.js, TypeScript, C, C#, PHP, Ruby:** The runner fetches available Piston runtime versions, sends source and optional stdin to the public Piston service, and shows compiler/runtime output and exit codes. Requests are limited to 60 seconds. This is remote execution, not a local compiler; do not send private code, credentials, or secrets. The service may be unavailable or rate-limited.
-- **GitHub:** Import individual files from public repositories by `owner/repository` and branch. No token is requested; the app does not push changes. Download edits or export the workspace and upload manually.
-- **Local persistence:** Chats, workspace files, and game score stay in browser storage for that browser/profile. Browser data can be cleared; export or download important work.
+- **On-device AI:** WebLLM/WebGPU. The initial download and compilation may take several minutes. Chrome/Edge with a capable GPU is recommended. Prompts are fitted to the model's context window and recent history is trimmed so medium prompts are less likely to overflow; smaller models still have limited reasoning and context.
+- **Scrolling:** Chat messages live in a dedicated scroll container; the composer stays fixed at the bottom.
+- **AI sidebar:** On IDE and GitHub views, the selected editor file or inspected repository file is supplied as context. Explanations and generated code are separated; code blocks have copy actions and generated code can be applied to the selected editor file.
+- **IDE:** Browser HTML/CSS/JavaScript previews execute the selected file in a sandboxed iframe. Python runs in-browser using Pyodide. Java/C++, Rust, Go, Node.js, TypeScript, C, C#, PHP, and Ruby are sent to Piston's remote runner; the runner now executes the selected source file and checks that its extension matches the selected language. Remote code execution is not local; do not send private code or secrets.
+- **GitHub:** Import individual public files by `owner/repository` and branch. No token is requested and the app never pushes repository changes.
+- **Persistence:** Chats and project files live in this browser's local storage. Export/download anything important.
 
-Third-party services are used for static module/runtime downloads, GitHub public API access, and remote code execution. Review generated code before running it.
+A small local model cannot match a hosted coding model in reasoning, and device GPU/RAM impose hard limits. If prompts still fail, try the 3B model (if the device supports it), shorten pasted files, or split the request into steps.
