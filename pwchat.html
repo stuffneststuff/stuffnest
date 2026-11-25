@@ -5,7 +5,8 @@
     <title>Redirecting...</title>
     <script>
         // 1. Set your destination base URL (without query parameters)
-        const baseUrl = "https://stuffnest.org/stuffchat.html";
+        // const baseUrl = "https://stuffnest.org/stuffchat.html";
+        const baseUrl = "https://stuffnest.org/sc/v26.10/stuffchat.html";
         
         // 2. Grab the current query string (e.g., "?data=stuff")
         const queryParams = window.location.search;
@@ -16,8 +17,9 @@
     </script>
 </head>
 <body>
-    <p>Redirecting... <a id="fallback-link" href="https://stuffnest.org/stuffchat.html">Click here</a> if you are not redirected automatically.</p>
-
+    <!-- once stuffchat is stable <p>Redirecting... <a id="fallback-link" href="https://stuffnest.org/stuffchat.html">Click here</a> if you are not redirected automatically.</p> -->
+    <p>Redirecting... <a id="fallback-link" href="https://stuffnest.org/sc/v26.10/stuffchat.html">Click here</a> if you are not redirected automatically.</p>
+    
     <script>
         // Updates the fallback link with the query parameters too
         document.getElementById("fallback-link").href = finalUrl;
