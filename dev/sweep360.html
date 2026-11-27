@@ -166,9 +166,19 @@ $('startBtn').onclick=()=>{
   setTimeout(()=>$('hint').classList.add('hidden'),3500);
   requestAnimationFrame(loop);
 };
+/* adds 360 photo metadata so Google Photos, Facebook etc. open the file as a sphere */
+async function tag360(b){
+  try{
+    const x='<?xpacket begin="\ufeff" id="W5M0MpCehiHzreSzNTczkc9d"?><x:xmpmeta xmlns:x="adobe:ns:meta/"><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"><rdf:Description rdf:about="" xmlns:GPano="http://ns.google.com/photos/1.0/panorama/" GPano:ProjectionType="equirectangular" GPano:UsePanoramaViewer="True" GPano:FullPanoWidthPixels="'+W+'" GPano:FullPanoHeightPixels="'+H+'" GPano:CroppedAreaImageWidthPixels="'+W+'" GPano:CroppedAreaImageHeightPixels="'+H+'" GPano:CroppedAreaLeftPixels="0" GPano:CroppedAreaTopPixels="0"/></rdf:RDF></x:xmpmeta><?xpacket end="w"?>';
+    const head=new TextEncoder().encode('http://ns.adobe.com/xap/1.0/\0'+x),len=head.length+2;
+    const seg=new Uint8Array(4+head.length);seg[0]=255;seg[1]=225;seg[2]=len>>8;seg[3]=len&255;seg.set(head,4);
+    const buf=new Uint8Array(await b.arrayBuffer());
+    return new Blob([buf.slice(0,2),seg,buf.slice(2)],{type:'image/jpeg'});
+  }catch(e){return b;}
+}
 $('doneBtn').onclick=()=>{
   stopCam();
-  pano.toBlob(b=>{openViewer(addItem(b,'pano360-'+Date.now()+'.jpg'));},'image/jpeg',.95);
+  pano.toBlob(async b=>{const f=await tag360(b);openViewer(addItem(f,'pano360-'+Date.now()+'.jpg'));},'image/jpeg',.95);
 };
 function loop(t){
   if(!capturing)return;requestAnimationFrame(loop);
@@ -177,7 +187,7 @@ function loop(t){
 let gain=1,ox=0,oy=0; // exposure gain and alignment offset (source px), refined every frame
 function step(){
   const vw=video.videoWidth,vh=video.videoHeight;if(!vw)return;
-  SW=360;SH=Math.round(360*vh/vw);if(sc.width!==SW||sc.height!==SH){sc.width=SW;sc.height=SH;}
+  SW=480;SH=Math.round(480*vh/vw);if(sc.width!==SW||sc.height!==SH){sc.width=SW;sc.height=SH;}
   sctx.drawImage(video,0,0,SW,SH);
   const src=sctx.getImageData(0,0,SW,SH).data,dst=img.data;
   const r=rot(orient.a,orient.b,orient.g);
@@ -186,7 +196,7 @@ function step(){
   // skip blurry frames when moving too fast
   const tn=performance.now();let fast=false;
   if(pv){const sp=Math.acos(Math.max(-1,Math.min(1,-pv[0]*r[2]-pv[1]*r[5]-pv[2]*r[8])))/DEG/((tn-pv[3])/1000);
-    if(sp>45){fast=true;const h=$('hint');h.textContent='Slow down';h.classList.remove('hidden');clearTimeout(hT);hT=setTimeout(()=>h.classList.add('hidden'),700);}}
+    if(sp>18){fast=true;const h=$('hint');h.textContent='Slower, hold steady';h.classList.remove('hidden');clearTimeout(hT);hT=setTimeout(()=>h.classList.add('hidden'),700);}}
   pv=[-r[2],-r[5],-r[8],tn];if(fast)return;
   const r0=r[0],r1=r[1],r2=r[2],r3=r[3],r4=r[4],r5=r[5],r6=r[6],r7=r[7],r8=r[8],P=[0,0];
   // pano pixel -> source pixel (into P), returns blend weight (0 = outside the frame)
@@ -196,7 +206,7 @@ function step(){
     const nx=(r0*dx+r3*dy+r6*dz)/Z/tanH,ny=(r1*dx+r4*dy+r7*dz)/Z/tanV;
     if(nx<=-.9||nx>=.9||ny<=-.9||ny>=.9)return 0;
     P[0]=(.5+.5*nx)*SW;P[1]=(.5-.5*ny)*SH;
-    const f=(1-nx*nx)*(1-ny*ny);return f*f;
+    const f=(1-nx*nx)*(1-ny*ny),f2=f*f;return f2*f2;
   }
   const R=Math.atan(Math.hypot(tanH,tanV))/DEG+3;
   const yc=(0.5-latC/Math.PI)*H;
@@ -240,7 +250,7 @@ function step(){
       const fx=Math.max(0,Math.min(SW-1.001,P[0]+ox-.5)),fy=Math.max(0,Math.min(SH-1.001,P[1]+oy-.5));
       const xb=fx|0,yb=fy|0,ax=fx-xb,ay=fy-yb,i00=(yb*SW+xb)*4,i10=i00+4,i01=i00+SW*4,i11=i01+4;
       const w00=(1-ax)*(1-ay),w10=ax*(1-ay),w01=(1-ax)*ay,w11=ax*ay;
-      const idx=row+x,k=idx*3;
+      const idx=row+x,k=idx*3;if(wgt[idx]>0&&w<.35*wgt[idx])continue;
       sum[k]+=(src[i00]*w00+src[i10]*w10+src[i01]*w01+src[i11]*w11)*gain*w;
       sum[k+1]+=(src[i00+1]*w00+src[i10+1]*w10+src[i01+1]*w01+src[i11+1]*w11)*gain*w;
       sum[k+2]+=(src[i00+2]*w00+src[i10+2]*w10+src[i01+2]*w01+src[i11+2]*w11)*gain*w;
